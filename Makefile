@@ -47,13 +47,13 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsioServer/AsyncSigListen.cpp \
              HelpfulCodes/HDaemon.cpp
 
-ARENA_LDLIBS = -lstdc++ -pthread
+TESTING_LDLIBS = -lstdc++ -pthread
 
-ARENA_INCLUDES =
+TESTING_INCLUDES =
 
-ARENA_NAME = arena
+TESTING_NAME = testing
 
-ARENA_SOURCES = arena.cpp \
+TESTING_SOURCES = testing.cpp \
              HelpfulCodes/HStrings.cpp \
              HelpfulCodes/BTreeStore.cpp \
              HelpfulCodes/BTreeStoreCPP.cpp \
@@ -64,13 +64,13 @@ ARENA_SOURCES = arena.cpp \
              HelpfulCodes/HDaemon.cpp
 
 
-all : $(ASYNCD_NAME) $(ARENA_NAME)
+all : $(ASYNCD_NAME) $(TESTING_NAME)
 
 $(ASYNCD_NAME): $(ASYNCD_SOURCES)
 	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)
 
-$(ARENA_NAME): $(ARENA_SOURCES)
-	$(CXX) $(ARENA_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ARENA_LDLIBS)
+$(TESTING_NAME): $(TESTING_SOURCES)
+	$(CXX) $(TESTING_INCLUDES) $(CXXFLAGS) -o $@ $^ $(TESTING_LDLIBS)
 
 install: $(LIBNAME)
 	$(INSTALL) $(ASYNCD_NAME) /usr/local/bin
