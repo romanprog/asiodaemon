@@ -11,8 +11,9 @@ class AsyncConnManager
 {
 public:
     using SigCallback = std::function<int (int)>;
+    using StrandPtr = std::shared_ptr<asio::strand>;
 
-    AsyncConnManager(asio::io_service &io_service, SigCallback cb);
+    AsyncConnManager(StrandPtr strand, const std::string & ip, const unsigned port);
     void stop();
     void async_start();
 
@@ -22,8 +23,12 @@ private:
     AsyncConnManager & operator= (AsyncConnManager &&) = delete;
 
     SigCallback _ev_callback;
-    asio::deadline_timer _timeout_ev;
+    StrandPtr _ev_loop;
+    asio::deadline_timer _ev_timeout;
     bool _stoped;
+    std::string _conn_ip;
+    unsigned _conn_port;
+    asio::ip
 
     void get_sig(const asio::error_code& error, int signal_number);
     void _start_sig_listel();

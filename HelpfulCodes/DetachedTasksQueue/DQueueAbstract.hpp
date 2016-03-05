@@ -12,13 +12,12 @@
 template <typename GETNAME>
 class _type_GN;
 
-////////////////////////////////////////////////////////////////
-/// Abstract class for create detached (in own thread) queue
-/// worker. Create interface for add task and stop worker loop.
-/// Contain virtual method _do_job() wich must be overrided
-/// by derived class. Actual use if you want to perform a
-/// blocking action as asynchronous event.
-////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+/// Abstract class for create detached (in own thread) queue worker. Create interface
+/// for add task and stop worker loop. Contain virtual method _do_job() wich must be
+/// overrided by derived class. Actual use if you want to perform a blocking action
+/// as asynchronous event.
+//////////////////////////////////////////////////////////////////////////////////////
 
 // T - type of argument that describes the job.
 // F - std::function obj, wich should be called from _do_job() after job finished.

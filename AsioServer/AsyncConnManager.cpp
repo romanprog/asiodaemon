@@ -1,10 +1,14 @@
 #include "AsyncConnManager.hpp"
 
-AsyncConnManager::AsyncConnManager(asio::io_service & io_service, SigCallback cb)
+AsyncConnManager::AsyncConnManager(StrandPtr strand, const std::string &ip, const unsigned port)
     :_ev_callback(cb),
-     _timeout_ev(io_service),
-     _stoped(false)
+     _ev_loop(strand),
+     _ev_timeout(strand->get_io_service()),
+     _stoped(false),
+     _conn_ip(ip),
+     _conn_port(port)
 {  }
+
 
 void AsyncConnManager::stop()
 {
