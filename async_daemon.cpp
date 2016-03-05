@@ -2,6 +2,8 @@
 #include "HelpfulCodes/HStrings.hpp"
 #include "HelpfulCodes/AsyncQueue.hpp"
 #include "AsioServer/AsyncSigListen.hpp"
+#include "AsioServer/AsyncConnManager.hpp"
+
 #include "HelpfulCodes/HDaemon.hpp"
 
 #include <asio.hpp>
@@ -17,11 +19,12 @@ void cbfunc(std::string s)
     std::cout << "Callback " << s << std::endl;
 }
 
-auto handler = [](int signal_number)->int
+auto handler = [&](int signal_number)->int
 {
       std::cout << signal_number << std::endl;
       if (signal_number == SIGUSR1) {
           std::cout << "Stop work pid " << getpid() << std::endl;
+          exit(0);
           return AsyncSigListener::StopSigListening;
       }
 
@@ -67,6 +70,9 @@ int main()
         _signals.add(SIGALRM);
 
         _signals.async_start();
+
+        AsyncConnManager main_proc(m_strand,"127.0.0.1",8800);
+
 
         std::cout << "Helo World!" << std::endl;
         main_io.run();

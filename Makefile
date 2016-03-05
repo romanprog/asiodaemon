@@ -45,6 +45,8 @@ ASYNCD_SOURCES = async_daemon.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
              AsioServer/AsyncSigListen.cpp \
+             AsioServer/AsyncConnManager.cpp \
+             AsioServer/AsyncConnection.cpp \
              HelpfulCodes/HDaemon.cpp
 
 TESTING_LDLIBS = -lstdc++ -pthread
@@ -61,6 +63,8 @@ TESTING_SOURCES = testing.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
              AsioServer/AsyncSigListen.cpp \
+             AsioServer/AsyncConnManager.cpp \
+             AsioServer/AsyncConnection.cpp \
              HelpfulCodes/HDaemon.cpp
 
 
