@@ -5,7 +5,7 @@
 
 namespace aev {
 
-class AEventsAbstract : public std::enable_shared_from_this<AEventsAbstract>
+class AEventsAbstract
 {
 public:
     AEventsAbstract(AEvRootConf & config);
@@ -29,7 +29,7 @@ private:
          _child_ev_list.insert(child_ev);
     }
 
-    AEvChildConf _gen_child_conf(int timeout);
+    AEvChildConf _gen_conf_for_child(int timeout);
     int _child_callback(AEvPtr _child, int _ret);
 
     virtual void _ev_begin() = 0;
@@ -42,6 +42,7 @@ private:
     unsigned _timeout;
     unsigned _id;
     AEvSet _child_ev_list;
+    AEvPtr _my_ptr = nullptr;
 };
 
 } // namespace
