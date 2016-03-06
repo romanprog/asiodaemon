@@ -103,8 +103,9 @@ private:
                 else {
                     // Somthing strange:
                     // queue is empty, but worker was awakened. Go sleep, worker.
-                    continue;
-                    _lock_data.unlock();
+                   _lock_data.unlock();
+                   continue;
+
                 }
             }
 

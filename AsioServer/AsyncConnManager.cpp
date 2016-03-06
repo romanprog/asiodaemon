@@ -1,4 +1,5 @@
 #include "AsyncConnManager.hpp"
+#include <functional>
 
 AsyncConnManager::AsyncConnManager(StrandPtr strand, const std::string &ip, const unsigned port)
     :_ev_loop(strand),
@@ -41,15 +42,27 @@ void AsyncConnManager::async_start()
 
 }
 
+int AsyncConnManager::child_callback(int chID, int command)
+{
+    // example command 0 "event finished"
+    if (command == 0)
+        _connections.erase(_connections.begin() + chID);
+
+    return 0;
+
+}
+
 void AsyncConnManager::start_accept_()
 {
-    _acceptor.async_accept(_socket,
+    using namespace std::placeholders;
+    _acceptor.async_accept(_socket, _ev_loop->wrap(
                            [this] (std::error_code ec)
-                           {
-                             std::shared_ptr<AsyncConnection> conn_ptr = std::make_shared<AsyncConnection>(_ev_loop, std::move(_socket));
-                             std::cout << "conn" << std::endl;
-                             _connections.push_back(conn_ptr);
-                             start_accept_();
-                           }
-                           );
+    {
+        auto callback = std::bind(&AsyncConnManager::child_callback, this, _1, _2);
+        std::shared_ptr<AsyncConnection> conn_ptr = std::make_shared<AsyncConnection>(_ev_loop, std::move(_socket), _connections.size() ,callback);
+        std::cout << "conn" << std::endl;
+        _connections.push_back(conn_ptr);
+        start_accept_();
+    })
+    );
 }

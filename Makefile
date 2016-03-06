@@ -47,7 +47,8 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsioServer/AsyncSigListen.cpp \
              AsioServer/AsyncConnManager.cpp \
              AsioServer/AsyncConnection.cpp \
-             HelpfulCodes/HDaemon.cpp
+             HelpfulCodes/HDaemon.cpp \
+             AsioServer/AEventsAbstract.cpp
 
 TESTING_LDLIBS = -lstdc++ -pthread
 
