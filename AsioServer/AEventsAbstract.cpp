@@ -38,16 +38,16 @@ void AEventsAbstract::finish()
 
 void AEventsAbstract::stop()
 {
-    for (AEvAbstractPtr ev : _child_ev_list)
-        ev->stop();
+    for (auto child : _child_ev_list)
+        child->stop();
 
     _ev_stop();
     finish();
 }
 
-void AEventsAbstract::_create_child(AEvAbstractPtr _ev)
+void AEventsAbstract::run()
 {
-    _child_ev_list.insert(_ev);
+    _ev_loop->get_io_service().run();
 }
 
 AEvChildConf AEventsAbstract::_gen_child_conf(int timeout)
@@ -57,7 +57,7 @@ AEvChildConf AEventsAbstract::_gen_child_conf(int timeout)
 
 }
 
-int AEventsAbstract::_child_callback(AEvAbstractPtr _child, int _ret)
+int AEventsAbstract::_child_callback(AEvPtr _child, int _ret)
 {
     if (!_ret)
         _child_ev_list.erase(_child);

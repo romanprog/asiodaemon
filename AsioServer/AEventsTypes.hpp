@@ -10,10 +10,10 @@ namespace aev {
 
 class AEventsAbstract;
 
-using AEvAbstractPtr = std::shared_ptr<AEventsAbstract>;
-using AEvFinishCallback = std::function<int (AEvAbstractPtr, int)>;
+using AEvPtr = std::shared_ptr<AEventsAbstract>;
+using AEvFinishCallback = std::function<int (AEvPtr, int)>;
 using AEvStrandPtr = std::shared_ptr<asio::strand>;
-using AEvSet = std::set<AEvAbstractPtr>;
+using AEvSet = std::set<AEvPtr>;
 
 struct AEvChildConf
 {

@@ -12,17 +12,25 @@ public:
     AEventsAbstract(const AEvChildConf config);
     virtual ~AEventsAbstract();
     void stop();
+    void run();
 
 private:
     AEventsAbstract(AEventsAbstract &&) = delete;
     AEventsAbstract & operator= (AEventsAbstract &&) = delete;
 
     void begin();
+
     void finish();
 
-    void _create_child(AEvAbstractPtr _ev);
+    template <typename EvType, typename... _Args>
+    void _create_child(_Args&&... __args)
+    {
+         AEvPtr child_ev = std::make_shared<EvType>(std::forward<_Args>(__args)...);
+         _child_ev_list.insert(child_ev);
+    }
+
     AEvChildConf _gen_child_conf(int timeout);
-    int _child_callback(AEvAbstractPtr _child, int _ret);
+    int _child_callback(AEvPtr _child, int _ret);
 
     virtual void _ev_begin() = 0;
     virtual void _ev_finish() = 0;
