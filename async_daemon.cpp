@@ -1,87 +1,28 @@
-#include "HelpfulCodes/HFiles.hpp"
-#include "HelpfulCodes/HStrings.hpp"
-#include "HelpfulCodes/AsyncQueue.hpp"
-#include "AsioServer/AsyncSigListen.hpp"
-#include "AsioServer/AsyncConnManager.hpp"
-
-#include "HelpfulCodes/HDaemon.hpp"
-
-#include <asio.hpp>
 #include <iostream>
-#include <fstream>
-#include <functional>
 #include <string>
+#include <set>
+#include <tuple>
+#include <map>
+#include <memory>
 
-const std::string pfilename = "/home/arti/run/async_daemon.pid";
+#include "AsioServer/AEvConnAcc.hpp"
+#include "AsioServer/AEventsTypes.hpp"
 
-void cbfunc(std::string s)
+auto cb = [](aev::AEvPtrBase tptr, int sin_num) -> int
 {
-    std::cout << "Callback " << s << std::endl;
-}
-
-auto handler = [&](int signal_number)->int
-{
-      std::cout << signal_number << std::endl;
-      if (signal_number == SIGUSR1) {
-          std::cout << "Stop work pid " << getpid() << std::endl;
-          exit(0);
-          return AsyncSigListener::StopSigListening;
-      }
-
-      if (signal_number == SIGUSR2) {
-            std::cout << "Stop work pid " << getpid() << std::endl;
-      }
-
-      if (signal_number == SIGALRM) {
-            std::cout << "Stop work pid " << getpid() << std::endl;
-      }
-
+    std::cout << "aCBACK" << std::endl;
     return 0;
 };
 
 
+
 int main()
 {
-    if (int pid = hdaemon::pid_fread(pfilename)) {
-        std::cout << "Runing proces found. Restarting pid " << getpid() << std::endl;
-        kill(pid, SIGUSR1);
-    }
 
-    int pid = fork();
-
-    if (pid < 0) {
-        std::cout << "fork error" << std::endl;
-        exit(1);
-    }
-
-    if (pid == 0) {
-
-
-        hdaemon::pid_fwrite(pfilename, getpid());
-
-        asio::io_service main_io;
-        std::shared_ptr<asio::strand> m_strand = std::make_shared<asio::strand>(main_io);
-        AsyncQueueExample aq;
-        AsyncSigListener _signals(m_strand, handler);
-
-        _signals.add(SIGHUP);
-        _signals.add(SIGUSR2);
-        _signals.add(SIGUSR1);
-        _signals.add(SIGALRM);
-
-        _signals.async_start();
-
-        AsyncConnManager main_proc(m_strand,"127.0.0.1",8800);
-
-
-        std::cout << "Helo World!" << std::endl;
-        main_io.run();
-        aq.stop();
-        aq.join();
-
-    } else {
-        std::cout << "Main process exiting." << std::endl;
-        return 0;
-    }
+    aev::AEvRootConf main_conf(cb);
+    main_conf.timeout = 3;
+    aev::AEvConnAcc conn(main_conf, "127.0.0.1", 8888);
+    conn.begin();
+    main_conf.evloop->get_io_service().run();
 
 }

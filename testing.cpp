@@ -19,8 +19,11 @@ public:
     int i;
     void del_me()
     {
-        ptrset.erase(shared_from_this());
+        // ptrset.erase(shared_from_this());
         std::cout << "set size" << ptrset.size() << std::endl;
+        std::shared_ptr<base> t = shared_from_this();
+
+        vt1();
     }
 
 };
@@ -33,6 +36,7 @@ public:
     int sd;
     virtual int vt1()
     {
+        std::cout << "set size" << ptrset.size() << std::endl;
         return 50;
     }
 

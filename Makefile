@@ -15,7 +15,8 @@ LIBXML_LIBS ?= -lxml2
 CLD_INCLUDES = -I/usr/local/include/cld
 CLD_LIBS = -lcld2
 
-CXXFLAGS += -fPIC -g -fstack-protector -DUSE_CXX0X -std=c++11
+CXXFLAGS += -fPIC -g -fstack-protector -DUSE_CXX0X -std=c++1y
+#CXXFLAGS += -DASIO_STANDALONE -DASIO_CPP11_DATE_TIME -fPIC -g -fstack-protector -DUSE_CXX0X -std=c++1y
 
 STDLIB =
 ifeq ($(shell uname -s), FreeBSD)
@@ -44,11 +45,11 @@ ASYNCD_SOURCES = async_daemon.cpp \
              HelpfulCodes/MLocker.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
-             AsioServer/AsyncSigListen.cpp \
-             AsioServer/AsyncConnManager.cpp \
-             AsioServer/AsyncConnection.cpp \
+             AsioServer/AEvConnAcc.cpp \
+             AsioServer/AEvConnUnit.cpp \
+             AsioServer/AEvSysSig.cpp \
+             AsioServer/AEventsAbstract.cpp \
              HelpfulCodes/HDaemon.cpp \
-             AsioServer/AEventsAbstract.cpp
 
 TESTING_LDLIBS = -lstdc++ -pthread
 
@@ -63,11 +64,14 @@ TESTING_SOURCES = testing.cpp \
              HelpfulCodes/MLocker.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
+             AsioServer/AEvConnAcc.cpp \
+             AsioServer/AEvConnUnit.cpp \
+             AsioServer/AEvSysSig.cpp \
+             AsioServer/AEventsAbstract.cpp \
              HelpfulCodes/HDaemon.cpp
 
 
-all : $(TESTING_NAME)
-# $(ASYNCD_NAME)
+all : $(TESTING_NAME) $(ASYNCD_NAME)
 
 $(ASYNCD_NAME): $(ASYNCD_SOURCES)
 	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)

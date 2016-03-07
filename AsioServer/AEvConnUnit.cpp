@@ -1,29 +1,41 @@
-#include "AsyncConnection.hpp"
-#include <tuple>
+#include "AEvConnUnit.hpp"
 
+namespace aev {
 
-AsyncConnection::AsyncConnection(AsyncConnection::StrandPtr strand, asio::ip::tcp::socket socket, int chID, EvCallback cb)
-    :_ev_callback(cb),
-     _ev_loop(strand),
-     _ev_timeout(strand->get_io_service()),
-     _stoped(false),
-     _socket(std::move(socket)),
-     myID(chID)
+AEvConnUnit::AEvConnUnit(const AEvChildConf config, asio::ip::tcp::socket _soc)
+    :AEventsAbstract::AEventsAbstract(config),
+     _socket(std::move(_soc))
 {
-    async_start();
+
 }
 
-AsyncConnection::~AsyncConnection()
+void AEvConnUnit::_ev_begin()
 {
-    std::cout << "destruct" << std::endl;
+    _start_read();
 }
 
-void AsyncConnection::stop()
+void AEvConnUnit::_ev_finish()
 {
-    _stoped = true;
+    std::cout << "asasdf" << std::endl;
 }
 
-void AsyncConnection::async_start()
+void AEvConnUnit::_ev_stop()
+{
+    _socket.cancel();
+
+}
+
+void AEvConnUnit::_ev_timeout()
+{
+
+}
+
+void AEvConnUnit::_ev_child_callback(int _ret)
+{
+
+}
+
+void AEvConnUnit::_start_read()
 {
     std::cout << "accept" << std::endl;
 
@@ -31,8 +43,7 @@ void AsyncConnection::async_start()
                            [this](std::error_code ec, std::size_t bytes_transferred){
 
         if (ec) {
-            _ev_callback(myID, 0);
-            std::cout << "erro" << ec.message() << std::endl;
+            stop();
             return;
         }
 
@@ -43,21 +54,20 @@ void AsyncConnection::async_start()
             std::cout << "Char num:" << ch << std::endl;
 
             if (ch == 4) {
-                _ev_callback(myID, 0);
                 std::cout << "Close connection:" << ch << std::endl;
+                stop();
                 return;
             }
             ++iter;
         }
 
         std::cout << std::string(_buffer.data(), bytes_transferred) << bytes_transferred << std::endl;
-        async_start();
+        _start_read();
     });
+
 }
 
-int AsyncConnection::child_callback(int chID, int command)
-{
-;
 
-    return 0;
-}
+} //namespace#include "AEvConnUnit.hpp"
+
+

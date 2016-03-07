@@ -3,17 +3,24 @@
 
 #include <set>
 #include <map>
-#include "asio.hpp"
+#include <chrono>
+#include <asio.hpp>
+#include <asio/steady_timer.hpp>
 
 // Asyncronus Events chain namespase
 namespace aev {
 
 class AEventsAbstract;
 
-using AEvPtr = std::shared_ptr<AEventsAbstract>;
-using AEvFinishCallback = std::function<int (AEvPtr, int)>;
+using AEvPtrBase = std::shared_ptr<AEventsAbstract>;
+using AEvPtrBaseConst = std::shared_ptr<const AEventsAbstract>;
+
+using AEvFinishCallback = std::function<int (AEvPtrBase&, int)>;
 using AEvStrandPtr = std::shared_ptr<asio::strand>;
-using AEvSet = std::set<AEvPtr>;
+//using AEvTimer = asio::basic_deadline_timer<std::chrono::system_clock, asio::detail::chrono_time_traits<std::chrono::system_clock, asio::wait_traits<std::chrono::system_clock>>>;
+using AEvTimer = asio::steady_timer;
+using AEvSet = std::set<AEvPtrBase>;
+using AEvIoPtr = std::shared_ptr<asio::io_service>;
 
 struct AEvChildConf
 {
@@ -46,6 +53,7 @@ enum AEvStatus
     evchild
 };
 
+static const size_t ev_default_timecheck = 5;
 
 } //namespace aev
 
