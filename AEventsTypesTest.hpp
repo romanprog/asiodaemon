@@ -1,6 +1,5 @@
-#ifndef AEVENTSTYPS_HPP
-#define AEVENTSTYPS_HPP
-
+#ifndef AEVENTSTYPESTEST_HPP
+#define AEVENTSTYPESTEST_HPP
 #include <set>
 #include <map>
 #include <chrono>
@@ -10,12 +9,12 @@
 // Asyncronus Events chain namespase
 namespace aev {
 
-class AEventsAbstract;
+class base;
 
-using AEvPtrBase = std::shared_ptr<AEventsAbstract>;
-using AEvPtrBaseConst = std::shared_ptr<const AEventsAbstract>;
+using AEvPtrBase = std::shared_ptr<base>;
+using AEvPtrBaseConst = std::shared_ptr<const base>;
 
-using AEvFinishCallback = std::function<int (AEvPtrBase, int)>;
+using AEvFinishCallback = std::function<void (AEvPtrBase, int)>;
 using AEvStrandPtr = std::shared_ptr<asio::strand>;
 //using AEvTimer = asio::basic_deadline_timer<std::chrono::system_clock, asio::detail::chrono_time_traits<std::chrono::system_clock, asio::wait_traits<std::chrono::system_clock>>>;
 using AEvTimer = asio::steady_timer;
@@ -40,10 +39,7 @@ struct AEvRootConf
     explicit AEvRootConf(AEvFinishCallback cb)
         :onFinishCallback(cb)
     {}
-    explicit AEvRootConf(AEvFinishCallback cb, unsigned tout)
-        :onFinishCallback(cb),
-         timeout(tout)
-    {}
+
     AEvStrandPtr evloop = nullptr;
     AEvFinishCallback onFinishCallback;
     unsigned timeout = 0;
@@ -60,4 +56,5 @@ static const size_t ev_default_timecheck = 5;
 
 } //namespace aev
 
-#endif // AEVENTSTYPS_HPP
+
+#endif // AEVENTSTYPESTEST_HPP

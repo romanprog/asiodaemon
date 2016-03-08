@@ -12,7 +12,7 @@ AEventsAbstract::AEventsAbstract(aev::AEvRootConf &config)
      _status(evroot),
      _finish_callback(config.onFinishCallback),
      _timeout(config.timeout),
-     _timer(_ev_loop->get_io_service(), _timeout ? std::chrono::seconds(ev_default_timecheck) :  std::chrono::seconds(_timeout))
+     _timer(_ev_loop->get_io_service())
 {
     config.evloop = std::make_shared<asio::strand>(_ev_loop->get_io_service());
 }
@@ -22,43 +22,47 @@ AEventsAbstract::AEventsAbstract(const AEvChildConf config)
      _status(evchild),
      _finish_callback(config.onFinishCallback),
      _timeout(config.timeout),
-     _timer(_ev_loop->get_io_service(), _timeout ? std::chrono::seconds(ev_default_timecheck) :  std::chrono::seconds(_timeout))
+     _timer(_ev_loop->get_io_service())
 {
 
 }
 
 AEventsAbstract::~AEventsAbstract()
 {
-
+    std::cout << "BASE DESYTRUCTOR! " << std::endl;
 }
 
 void AEventsAbstract::begin()
 {
-    auto me = AEventsAbstract::shared_from_this();
-    start_timer();
+    _my_ptr = shared_from_this();
+    reset_and_start_timer();
     _ev_begin();
 }
 
 void AEventsAbstract::finish()
 {
-     _ev_stop();
     _timer.cancel();
-
-    //std::shared_ptr<AEventsAbstract> me = shared_from_this();
     std::cout << "1000" << std::endl;
-    //_finish_callback(me, _ev_status);
-
+    _finish_callback(std::move(_my_ptr), _ev_status);
 }
 
-void AEventsAbstract::start_timer()
+void AEventsAbstract::reset_and_start_timer()
 {
+
+    _timer.expires_from_now(!_timeout ? std::chrono::seconds(ev_default_timecheck) :  std::chrono::seconds(_timeout));
+
+    int i = _timeout ? ev_default_timecheck :  _timeout;
+
     _timer.async_wait(_ev_loop->wrap(
                           [this](const asio::error_code & ec)
     {
+        if (ec)
+            return;
+
         if (!_timeout)
         {
             _timer.expires_from_now(std::chrono::seconds(ev_default_timecheck));
-            start_timer();
+            reset_and_start_timer();
         } else {
 
         // timeout!
@@ -66,7 +70,7 @@ void AEventsAbstract::start_timer()
             stop();
         }
     }
-                          ));
+    ));
 }
 
 void AEventsAbstract::stop()
@@ -74,7 +78,7 @@ void AEventsAbstract::stop()
     for (auto child : _child_ev_list)
         child->stop();
 
-    // _ev_stop();
+    _ev_stop();
     finish();
 }
 
@@ -90,7 +94,7 @@ AEvChildConf AEventsAbstract::_gen_conf_for_child(int timeout)
 
 }
 
-int AEventsAbstract::_child_callback(AEvPtrBase &_child, int _ret)
+int AEventsAbstract::_child_callback(AEvPtrBase _child, int _ret)
 {
 
     _ev_child_callback(_ret);
@@ -99,10 +103,11 @@ int AEventsAbstract::_child_callback(AEvPtrBase &_child, int _ret)
 
     std::cout << " Shared count: " << s_count << std::endl;
 
-    if (!_ret)
-        _child_ev_list.erase(_child);
+     _child_ev_list.erase(_child);
 
     s_count = _child.use_count();
+
+//    _child.reset();
 
     std::cout << " Shared count: " << s_count << std::endl;
 

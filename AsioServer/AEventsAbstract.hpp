@@ -44,9 +44,9 @@ protected:
 
 
     void finish();
-    void start_timer();
+    void reset_and_start_timer();
 
-    int _child_callback(AEvPtrBase &_child, int _ret);
+    int _child_callback(AEvPtrBase _child, int _ret);
     void _timer_callback();
 
     AEvStatus _status;

@@ -22,6 +22,7 @@ void AEvConnUnit::_ev_finish()
 void AEvConnUnit::_ev_stop()
 {
     _socket.cancel();
+    _socket.close();
 
 }
 
@@ -38,15 +39,16 @@ void AEvConnUnit::_ev_child_callback(int _ret)
 void AEvConnUnit::_start_read()
 {
     std::cout << "accept" << std::endl;
+    auto ppp = shared_from_this();
 
     _socket.async_read_some(asio::buffer(_buffer.data(), _buffer.size()),
-                           [this](std::error_code ec, std::size_t bytes_transferred){
+                           _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){
 
         if (ec) {
-            stop();
             return;
         }
 
+        reset_and_start_timer();
         auto iter = _buffer.begin();
 
         for (int i = bytes_transferred; i>0;--i) {
@@ -63,7 +65,7 @@ void AEvConnUnit::_start_read()
 
         std::cout << std::string(_buffer.data(), bytes_transferred) << bytes_transferred << std::endl;
         _start_read();
-    });
+    }));
 
 }
 

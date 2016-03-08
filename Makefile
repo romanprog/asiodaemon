@@ -64,10 +64,6 @@ TESTING_SOURCES = testing.cpp \
              HelpfulCodes/MLocker.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
-             AsioServer/AEvConnAcc.cpp \
-             AsioServer/AEvConnUnit.cpp \
-             AsioServer/AEvSysSig.cpp \
-             AsioServer/AEventsAbstract.cpp \
              HelpfulCodes/HDaemon.cpp
 
 
