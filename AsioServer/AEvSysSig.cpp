@@ -15,6 +15,7 @@ void AEvSysSig::_ev_begin()
     _sig_set.add(SIGUSR2);
     _sig_set.add(SIGUSR1);
     _sig_set.add(SIGALRM);
+    _sig_listen();
 
 }
 
@@ -43,7 +44,6 @@ void AEvSysSig::_sig_listen()
     _sig_set.async_wait(_ev_loop->wrap(
                             [this] (std::error_code ec, int signal_number)
                         {
-
                             _ev_status = 1;
                             stop();
                         })

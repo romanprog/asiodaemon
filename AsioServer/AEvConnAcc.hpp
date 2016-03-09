@@ -11,6 +11,11 @@ public:
     AEvConnAcc(AEvRootConf & config, const std::string &ip, const unsigned port);
     AEvConnAcc(const AEvChildConf config, const std::string &ip, const unsigned port);
 
+    virtual ~AEvConnAcc()
+    {
+        std::cout << "AEvConnAcc DESTRUCTOR! " << std::endl;
+    }
+
 private:
 
     asio::ip::tcp::acceptor _acceptor;

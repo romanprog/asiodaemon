@@ -1,5 +1,6 @@
 #include "AEvConnAcc.hpp"
 #include "AEvConnUnit.hpp"
+#include "AEvSysSig.hpp"
 
 namespace aev {
 
@@ -10,7 +11,7 @@ AEvConnAcc::AEvConnAcc(AEvRootConf &config, const std::string &ip, const unsigne
       _conn_ip(ip),
       _conn_port(port)
 {
-
+    std::cout << "AEvConnAcc CONSTRUCTOR! " << std::endl;
 }
 
 AEvConnAcc::AEvConnAcc(const AEvChildConf config, const std::string &ip, const unsigned port)
@@ -20,7 +21,7 @@ AEvConnAcc::AEvConnAcc(const AEvChildConf config, const std::string &ip, const u
      _conn_ip(ip),
      _conn_port(port)
 {
-
+    std::cout << "AEvConnAcc CONSTRUCTOR! " << std::endl;
 }
 
 void AEvConnAcc::_ev_begin()
@@ -40,6 +41,8 @@ void AEvConnAcc::_ev_begin()
     _acceptor.bind(endpoint);
     _acceptor.listen();
 
+    _create_child<AEvSysSig>(_gen_conf_for_child(0));
+
     _start_acceept();
 
 }
@@ -51,7 +54,8 @@ void AEvConnAcc::_ev_finish()
 
 void AEvConnAcc::_ev_stop()
 {
-
+    _acceptor.cancel();
+    std::cout << "AEvConnUnit _ev_stop: "  << std::endl;
 }
 
 void AEvConnAcc::_ev_timeout()
@@ -61,7 +65,9 @@ void AEvConnAcc::_ev_timeout()
 
 void AEvConnAcc::_ev_child_callback(int _ret)
 {
-
+    std::cout << "AEvConnUnit _ev_child_callback: " << _ret << std::endl;
+    if (_ret == 1)
+        stop();
 }
 
 void AEvConnAcc::_start_acceept()

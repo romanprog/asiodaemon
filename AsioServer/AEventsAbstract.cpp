@@ -14,6 +14,7 @@ AEventsAbstract::AEventsAbstract(aev::AEvRootConf &config)
      _timeout(config.timeout),
      _timer(_ev_loop->get_io_service())
 {
+    std::cout << "AEventsAbstract CONSTRUCTOR! " << std::endl;
     config.evloop = std::make_shared<asio::strand>(_ev_loop->get_io_service());
 }
 
@@ -24,12 +25,12 @@ AEventsAbstract::AEventsAbstract(const AEvChildConf config)
      _timeout(config.timeout),
      _timer(_ev_loop->get_io_service())
 {
-
+    std::cout << "AEventsAbstract CONSTRUCTOR! " << std::endl;
 }
 
 AEventsAbstract::~AEventsAbstract()
 {
-    std::cout << "BASE DESYTRUCTOR! " << std::endl;
+    std::cout << "AEventsAbstract DESTRUCTOR! " << std::endl;
 }
 
 void AEventsAbstract::begin()
@@ -97,24 +98,17 @@ AEvChildConf AEventsAbstract::_gen_conf_for_child(int timeout)
 int AEventsAbstract::_child_callback(AEvPtrBase _child, int _ret)
 {
 
-    _ev_child_callback(_ret);
-
     int s_count = _child.use_count();
 
-    std::cout << " Shared count: " << s_count << std::endl;
+    // std::cout << " Shared count: " << s_count << std::endl;
 
      _child_ev_list.erase(_child);
 
     s_count = _child.use_count();
 
-//    _child.reset();
+    // std::cout << " Shared count: " << s_count << std::endl;
 
-    std::cout << " Shared count: " << s_count << std::endl;
-
-    if (_ret == 1) {
-        _ev_status = 1;
-        stop();
-    }
+    _ev_child_callback(_ret);
 
     int todo;
     // child sygnals processing

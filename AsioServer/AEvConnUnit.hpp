@@ -11,7 +11,7 @@ public:
 
     AEvConnUnit(const AEvChildConf config, asio::ip::tcp::socket _soc);
     virtual ~AEvConnUnit() {
-        std::cout << "CONNECTION DESYTRUCTOR! " << std::endl;
+        std::cout << "AEvConnUnit DESTRUCTOR! " << std::endl;
     }
 
 private:

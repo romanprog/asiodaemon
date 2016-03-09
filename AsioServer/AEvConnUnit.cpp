@@ -6,7 +6,7 @@ AEvConnUnit::AEvConnUnit(const AEvChildConf config, asio::ip::tcp::socket _soc)
     :AEventsAbstract::AEventsAbstract(config),
      _socket(std::move(_soc))
 {
-
+    std::cout << "AEvConnUnit CONSTRUCTOR! " << std::endl;
 }
 
 void AEvConnUnit::_ev_begin()

@@ -34,7 +34,7 @@ protected:
          _child_ev_list.insert(child_ev);
     }
     AEvStrandPtr _ev_loop;
-    int _ev_status = 0;
+    int _ev_status{0};
     AEvChildConf _gen_conf_for_child(int timeout);
 
 
@@ -55,7 +55,7 @@ protected:
     unsigned _timeout;
     unsigned _id;
     AEvSet _child_ev_list;
-    AEvPtrBase _my_ptr = nullptr;
+    AEvPtrBase _my_ptr {nullptr};
     AEvTimer _timer;
 };
 
