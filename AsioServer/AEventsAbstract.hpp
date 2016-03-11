@@ -16,41 +16,37 @@ public:
     void begin();
 
 private:
-        AEvIoPtr _asio_io;
+    AEvIoPtr _asio_io;
+    AEventsAbstract(AEventsAbstract &&) = delete;
+    AEventsAbstract & operator= (AEventsAbstract &&) = delete;
 
 protected:
     virtual void _ev_begin() = 0;
     virtual void _ev_finish() = 0;
     virtual void _ev_stop() = 0;
     virtual void _ev_timeout() = 0;
-    virtual void _ev_child_callback(int _ret) = 0;
-
+    virtual void _ev_child_callback(AEvExitSignal _ret) = 0;
 
     template <typename EvType, typename... _Args>
-    void _create_child(_Args&&... __args)
+    void _create_child(int timeout, _Args&&... __args)
     {
-         AEvPtrBase child_ev = std::make_shared<EvType>(std::forward<_Args>(__args)...);
+         AEvPtrBase child_ev = std::make_shared<EvType>(_gen_conf_for_child(timeout), std::forward<_Args>(__args)...);
          child_ev->begin();
          _child_ev_list.insert(child_ev);
     }
-    AEvStrandPtr _ev_loop;
-    int _ev_status{0};
-    AEvChildConf _gen_conf_for_child(int timeout);
-
-
-protected:
-    AEventsAbstract(AEventsAbstract &&) = delete;
-    AEventsAbstract & operator= (AEventsAbstract &&) = delete;
 
 
     void finish();
     void reset_and_start_timer();
+    int _child_callback(AEvPtrBase _child, AEvExitSignal _ret);
 
-    int _child_callback(AEvPtrBase _child, int _ret);
-    void _timer_callback();
 
+    AEvChildConf _gen_conf_for_child(int timeout);
+    AEvStrandPtr _ev_loop;
+
+    // when event is finished - run parent callback function with this sinnal.
+    AEvExitSignal _ev_exit_signal{normal};
     AEvStatus _status;
-
     AEvFinishCallback _finish_callback;
     unsigned _timeout;
     unsigned _id;

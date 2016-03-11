@@ -13,7 +13,7 @@ public:
 
     virtual ~AEvConnAcc()
     {
-        std::cout << "AEvConnAcc DESTRUCTOR! " << std::endl;
+       // std::cout << "AEvConnAcc DESTRUCTOR! " << std::endl;
     }
 
 private:
@@ -27,7 +27,7 @@ private:
     virtual void _ev_finish();
     virtual void _ev_stop();
     virtual void _ev_timeout();
-    virtual void _ev_child_callback(int _ret);
+    virtual void _ev_child_callback(AEvExitSignal _ret);
 
     void _start_acceept();
 

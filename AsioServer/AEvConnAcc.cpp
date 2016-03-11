@@ -41,7 +41,7 @@ void AEvConnAcc::_ev_begin()
     _acceptor.bind(endpoint);
     _acceptor.listen();
 
-    _create_child<AEvSysSig>(_gen_conf_for_child(0));
+    _create_child<AEvSysSig>(0);
 
     _start_acceept();
 
@@ -63,24 +63,24 @@ void AEvConnAcc::_ev_timeout()
 
 }
 
-void AEvConnAcc::_ev_child_callback(int _ret)
+void AEvConnAcc::_ev_child_callback(AEvExitSignal _ret)
 {
-    std::cout << "AEvConnUnit _ev_child_callback: " << _ret << std::endl;
-    if (_ret == 1)
+//    std::cout << "AEvConnUnit _ev_child_callback: " << _ret << std::endl;
+    if (_ret == abort)
         stop();
 }
 
 void AEvConnAcc::_start_acceept()
 {
     using namespace std::placeholders;
-    int i = 1;
     _acceptor.async_accept(_socket, _ev_loop->wrap(
                                [this] (std::error_code ec)
     {
                                if (ec)
                                     return;
+
                                std::cout << "conn" << std::endl;
-                                _create_child<AEvConnUnit>(_gen_conf_for_child(5), std::move(_socket));
+                                _create_child<AEvConnUnit>(5, std::move(_socket));
                                _start_acceept();
                            })
             );

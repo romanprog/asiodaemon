@@ -12,16 +12,46 @@ namespace aev {
 
 class AEventsAbstract;
 
+enum AEvExitSignal
+{
+    // Standart exit signal, parent must remove this child from list.
+    normal = 0,
+    // Parent must run stop procedure for itself and send "normal" exit signal.
+    stop_parent,
+    // All non-root parent events must init stop proc.
+    stop_branch,
+    // Abort process.
+    abort,
+    // User signals.
+    user1,
+    user2,
+    user3,
+    // Signal from connection to acceptor.
+    close_connection,
+    // Sigs from "System Signals Listener".
+    sys_sig_restart,
+    sys_sig_stop,
+    sys_sig_reload_config
+
+};
+
+enum AEvStatus
+{
+    evroot,
+    evchild
+};
+
 using AEvPtrBase = std::shared_ptr<AEventsAbstract>;
 using AEvPtrBaseConst = std::shared_ptr<const AEventsAbstract>;
 
-using AEvFinishCallback = std::function<int (AEvPtrBase, int)>;
+using AEvFinishCallback = std::function<int (AEvPtrBase, AEvExitSignal)>;
 using AEvStrandPtr = std::shared_ptr<asio::strand>;
 //using AEvTimer = asio::basic_deadline_timer<std::chrono::system_clock, asio::detail::chrono_time_traits<std::chrono::system_clock, asio::wait_traits<std::chrono::system_clock>>>;
 using AEvTimer = asio::steady_timer;
 using AEvSet = std::set<AEvPtrBase>;
 using AEvIoPtr = std::shared_ptr<asio::io_service>;
 
+// Config for base AEv type child (wich was created by "create_child").
 struct AEvChildConf
 {
     explicit AEvChildConf(AEvStrandPtr el, AEvFinishCallback cb, unsigned t_out)
@@ -35,6 +65,7 @@ struct AEvChildConf
     unsigned timeout = 0;
 };
 
+// Config for base AEv type root. Top parent.
 struct AEvRootConf
 {
     explicit AEvRootConf(AEvFinishCallback cb)
@@ -49,13 +80,7 @@ struct AEvRootConf
     unsigned timeout = 0;
 };
 
-
-enum AEvStatus
-{
-    evroot,
-    evchild
-};
-
+// Default time in seconds for run timer event. (If event config created with 0 timeout).
 static const size_t ev_default_timecheck = 5;
 
 } //namespace aev

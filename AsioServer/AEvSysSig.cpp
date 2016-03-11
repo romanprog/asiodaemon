@@ -26,7 +26,7 @@ void AEvSysSig::_ev_finish()
 
 void AEvSysSig::_ev_stop()
 {
-
+    _ev_exit_signal = abort;
 }
 
 void AEvSysSig::_ev_timeout()
@@ -34,7 +34,7 @@ void AEvSysSig::_ev_timeout()
 
 }
 
-void AEvSysSig::_ev_child_callback(int _ret)
+void AEvSysSig::_ev_child_callback(AEvExitSignal _ret)
 {
 
 }
@@ -44,7 +44,6 @@ void AEvSysSig::_sig_listen()
     _sig_set.async_wait(_ev_loop->wrap(
                             [this] (std::error_code ec, int signal_number)
                         {
-                            _ev_status = 1;
                             stop();
                         })
             );

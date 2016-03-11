@@ -19,10 +19,9 @@ private:
     virtual void _ev_finish();
     virtual void _ev_stop();
     virtual void _ev_timeout();
-    virtual void _ev_child_callback(int _ret);
+    virtual void _ev_child_callback(AEvExitSignal _ret);
 
     void _sig_listen();
-
 };
 
 } //namespace

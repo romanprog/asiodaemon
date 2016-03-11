@@ -16,14 +16,14 @@ void AEvConnUnit::_ev_begin()
 
 void AEvConnUnit::_ev_finish()
 {
-    std::cout << "asasdf" << std::endl;
+
 }
 
 void AEvConnUnit::_ev_stop()
 {
+    _ev_exit_signal = close_connection;
     _socket.cancel();
     _socket.close();
-
 }
 
 void AEvConnUnit::_ev_timeout()
@@ -31,7 +31,7 @@ void AEvConnUnit::_ev_timeout()
 
 }
 
-void AEvConnUnit::_ev_child_callback(int _ret)
+void AEvConnUnit::_ev_child_callback(AEvExitSignal _ret)
 {
 
 }

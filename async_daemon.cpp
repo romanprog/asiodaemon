@@ -8,7 +8,7 @@
 #include "AsioServer/AEvConnAcc.hpp"
 #include "AsioServer/AEventsTypes.hpp"
 
-auto cb = [](aev::AEvPtrBase tptr, int sin_num) -> int
+auto cb = [](aev::AEvPtrBase tptr, aev::AEvExitSignal sin_num) -> int
 {
     std::cout << "aCBACK" << std::endl;
     return 0;
