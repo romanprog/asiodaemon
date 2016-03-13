@@ -92,8 +92,6 @@ int AEventsAbstract::_child_callback(AEvPtrBase _child, AEvExitSignal _ret)
     _child_ev_list.erase(_child);
     _ev_child_callback(_ret);
 
-    int todo;
-    // child sygnals processing
     return 0;
 }
 

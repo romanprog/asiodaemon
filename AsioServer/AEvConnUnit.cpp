@@ -1,5 +1,7 @@
 #include "AEvConnUnit.hpp"
 
+#include "iostream"
+
 namespace aev {
 
 AEvConnUnit::AEvConnUnit(const AEvChildConf config, asio::ip::tcp::socket _soc)
@@ -51,7 +53,7 @@ void AEvConnUnit::_start_read()
         reset_and_start_timer();
         auto iter = _buffer.begin();
 
-        for (int i = bytes_transferred; i>0;--i) {
+        for (int i = bytes_transferred; i > 0; --i) {
             auto ch =  static_cast<unsigned>(static_cast<unsigned char>(*iter));
             std::cout << "Char num:" << ch << std::endl;
 

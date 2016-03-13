@@ -64,10 +64,12 @@ TESTING_SOURCES = testing.cpp \
              HelpfulCodes/MLocker.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
-             HelpfulCodes/HDaemon.cpp
+             HelpfulCodes/HDaemon.cpp \
+             AsioServer/AEvBuffer.cpp
 
 
-all : $(TESTING_NAME) $(ASYNCD_NAME)
+all : $(TESTING_NAME)
+#$(ASYNCD_NAME)
 
 $(ASYNCD_NAME): $(ASYNCD_SOURCES)
 	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)

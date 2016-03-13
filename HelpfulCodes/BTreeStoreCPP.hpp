@@ -82,7 +82,7 @@ private:
     std::mutex _mutex;
 
     // Recursive search and insert.
-    // If such a record already exists - do nothing.
+    // If such record already exists - do nothing.
     void _insert(const void * data, Node_ptr & _node);
     // Recursive search.
     bool _search(const void * data, Node_ptr & _node, bool add_new = false);

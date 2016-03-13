@@ -2,6 +2,8 @@
 #include "AEvConnUnit.hpp"
 #include "AEvSysSig.hpp"
 
+#include "iostream"
+
 namespace aev {
 
 AEvConnAcc::AEvConnAcc(AEvRootConf &config, const std::string &ip, const unsigned port)
