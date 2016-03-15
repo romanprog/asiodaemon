@@ -68,7 +68,7 @@ void AEvConnAcc::_ev_timeout()
 void AEvConnAcc::_ev_child_callback(AEvExitSignal _ret)
 {
 //    std::cout << "AEvConnUnit _ev_child_callback: " << _ret << std::endl;
-    if (_ret == abort)
+    if (_ret == AEvExitSignal::abort)
         stop();
 }
 

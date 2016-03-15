@@ -2,6 +2,7 @@
 #define AEVCONNUNIT_HPP
 
 #include "AEventsAbstract.hpp"
+#include "AEvBuffer.hpp"
 
 namespace aev {
 
@@ -18,6 +19,7 @@ private:
 
     asio::ip::tcp::socket _socket;
     std::array<char, 8192> _buffer;
+    AEvBuffer _read_buf;
 
 protected:
     virtual void _ev_begin();

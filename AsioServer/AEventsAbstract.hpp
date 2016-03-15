@@ -45,7 +45,7 @@ protected:
     AEvStrandPtr _ev_loop;
 
     // when event is finished - run parent callback function with this sinnal.
-    AEvExitSignal _ev_exit_signal{normal};
+    AEvExitSignal _ev_exit_signal{AEvExitSignal::normal};
     AEvStatus _status;
     AEvFinishCallback _finish_callback;
     unsigned _timeout;

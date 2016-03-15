@@ -1,6 +1,7 @@
 #ifndef AEVCONNACC_HPP
 #define AEVCONNACC_HPP
 #include "AEventsAbstract.hpp"
+#include "AEvBuffer.hpp"
 
 namespace aev {
 

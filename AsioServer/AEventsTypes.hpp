@@ -12,7 +12,7 @@ namespace aev {
 
 class AEventsAbstract;
 
-enum AEvExitSignal
+enum class AEvExitSignal
 {
     // Standart exit signal, parent must remove this child from list.
     normal = 0,

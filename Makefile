@@ -49,6 +49,7 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsioServer/AEvConnUnit.cpp \
              AsioServer/AEvSysSig.cpp \
              AsioServer/AEventsAbstract.cpp \
+             AsioServer/AEvBuffer.cpp \
              HelpfulCodes/HDaemon.cpp \
 
 TESTING_LDLIBS = -lstdc++ -pthread
@@ -68,8 +69,7 @@ TESTING_SOURCES = testing.cpp \
              AsioServer/AEvBuffer.cpp
 
 
-all : $(TESTING_NAME)
-#$(ASYNCD_NAME)
+all : $(TESTING_NAME) $(ASYNCD_NAME)
 
 $(ASYNCD_NAME): $(ASYNCD_SOURCES)
 	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)
@@ -82,4 +82,5 @@ install: $(LIBNAME)
 
 clean:
 	rm -rf $(ASYNCD_NAME)
+	rm -rf $(TESTING_NAME)
 

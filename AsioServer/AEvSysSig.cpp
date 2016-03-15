@@ -26,7 +26,7 @@ void AEvSysSig::_ev_finish()
 
 void AEvSysSig::_ev_stop()
 {
-    _ev_exit_signal = abort;
+    _ev_exit_signal = AEvExitSignal::abort;
 }
 
 void AEvSysSig::_ev_timeout()
