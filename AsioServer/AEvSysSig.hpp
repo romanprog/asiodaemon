@@ -10,16 +10,20 @@ class AEvSysSig : public AEventsAbstract
 public:
 
     AEvSysSig(const AEvChildConf config);
+    virtual ~AEvSysSig() override
+    {
+
+    }
 
 private:
 
     asio::signal_set _sig_set;
 
-    virtual void _ev_begin();
-    virtual void _ev_finish();
-    virtual void _ev_stop();
-    virtual void _ev_timeout();
-    virtual void _ev_child_callback(AEvExitSignal _ret);
+    virtual void _ev_begin() override;
+    virtual void _ev_finish() override;
+    virtual void _ev_stop() override;
+    virtual void _ev_timeout() override;
+    virtual void _ev_child_callback(AEvExitSignal _ret) override;
 
     void _sig_listen();
 };

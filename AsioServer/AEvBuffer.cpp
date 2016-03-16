@@ -2,14 +2,8 @@
 #include <cstring>
 #include <iostream>
 namespace aev {
-//AEvBuffer::AEvBuffer()
-//   :_size(0)
-//{
-//    _reserved = (_size/_block_size+_blocks_reserved)*_block_size;
-//    _cdata =  static_cast<char *>(malloc(_reserved));
-//}
 
-AEvBuffer::AEvBuffer(size_t block_size, std::string &&separator)
+AEvBuffer::AEvBuffer(size_t block_size, std::string separator)
     :_block_size(block_size),
      _separator(separator),
      _reserved(_blocks_reserved * _block_size)
@@ -112,5 +106,33 @@ void AEvBuffer::read_string_test(const std::string &&str)
     memcpy(_cdata + _top_offset, str.c_str(), str.size());
     parse(str.size());
 }
+
+size_t AEvBuffer::redundant_data_size() const
+{
+    return _top_offset - _unparsed_offset;
+}
+
+std::string AEvBuffer::get_separator() const
+{
+    return _separator;
+}
+
+const DataOffsetList &AEvBuffer::get_offsets_list() const
+{
+    return _data_parts;
+}
+
+
+BufferDataList get_buff_dala_list(const AEvBuffer &_buffer, bool trim_separator)
+{
+    BufferDataList _temp_data_list;
+
+    for (auto pair_ : _buffer.get_offsets_list())
+        _temp_data_list.push_back(std::string(_buffer.data() + pair_.first, (trim_separator ? pair_.second - _buffer.get_separator().length() : pair_.second)));
+
+    return std::move(_temp_data_list);
+}
+
+
 
 }

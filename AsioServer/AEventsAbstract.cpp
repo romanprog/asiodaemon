@@ -5,10 +5,10 @@
 
 namespace aev {
 
-AEventsAbstract::AEventsAbstract(aev::AEvRootConf &config)
+AEventsAbstract::AEventsAbstract(aev::AEvRootConf & config)
     :_asio_io(std::make_shared<asio::io_service>()),
       _ev_loop(std::make_shared<asio::strand>(*_asio_io)),
-      _status(evroot),
+      _status(AEvStatus::evroot),
       _finish_callback(config.onFinishCallback),
       _timeout(config.timeout),
       _timer(_ev_loop->get_io_service())
@@ -17,9 +17,9 @@ AEventsAbstract::AEventsAbstract(aev::AEvRootConf &config)
     config.evloop = std::make_shared<asio::strand>(_ev_loop->get_io_service());
 }
 
-AEventsAbstract::AEventsAbstract(const AEvChildConf config)
+AEventsAbstract::AEventsAbstract(const AEvChildConf & config)
     :_ev_loop(std::make_shared<asio::strand>(config.evloop->get_io_service())),
-      _status(evchild),
+      _status(AEvStatus::evchild),
       _finish_callback(config.onFinishCallback),
       _timeout(config.timeout),
       _timer(_ev_loop->get_io_service())

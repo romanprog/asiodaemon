@@ -12,7 +12,7 @@ public:
     AEvConnAcc(AEvRootConf & config, const std::string &ip, const unsigned port);
     AEvConnAcc(const AEvChildConf config, const std::string &ip, const unsigned port);
 
-    virtual ~AEvConnAcc()
+    virtual ~AEvConnAcc() override
     {
        // std::cout << "AEvConnAcc DESTRUCTOR! " << std::endl;
     }
@@ -24,11 +24,11 @@ private:
     std::string _conn_ip;
     unsigned _conn_port;
 
-    virtual void _ev_begin();
-    virtual void _ev_finish();
-    virtual void _ev_stop();
-    virtual void _ev_timeout();
-    virtual void _ev_child_callback(AEvExitSignal _ret);
+    virtual void _ev_begin() override;
+    virtual void _ev_finish() override;
+    virtual void _ev_stop() override;
+    virtual void _ev_timeout() override;
+    virtual void _ev_child_callback(AEvExitSignal _ret) override;
 
     void _start_acceept();
 

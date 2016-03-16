@@ -7,9 +7,9 @@ namespace aev {
 AEvConnUnit::AEvConnUnit(const AEvChildConf config, asio::ip::tcp::socket _soc)
     :AEventsAbstract::AEventsAbstract(config),
      _socket(std::move(_soc)),
-   _read_buf(30, "\n")
+   _read_buf(30, "\r\n")
 {
-    std::cout << "AEvConnUnit CONSTRUCTOR! " << std::endl;
+    // std::cout << "AEvConnUnit CONSTRUCTOR! " << std::endl;
 }
 
 void AEvConnUnit::_ev_begin()
@@ -41,20 +41,24 @@ void AEvConnUnit::_ev_child_callback(AEvExitSignal _ret)
 
 void AEvConnUnit::_start_read()
 {
-    std::cout << "accept" << std::endl;
-    auto ppp = shared_from_this();
     _read_buf.release(40);
+    std::cout << "accept, free data: "<< _read_buf.free_sz() << std::endl;
+
     _socket.async_read_some(asio::buffer(_read_buf.data_top(), _read_buf.free_sz()),
                            _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){
 
         if (ec) {
             return;
         }
-        std::cout << "read" << std::endl;
+        // std::cout << "read" << std::endl;
         if (_read_buf.parse(bytes_transferred)) {
-            std::cout << _read_buf.get();
 
-            _read_buf.reset();
+            for (auto & str_ : aev::get_buff_dala_list(_read_buf))
+                 std::cout << str_ << ";" << std::endl;
+
+            // std::cout << _read_buf.get() << ", Overdata: " << _read_buf.redundant_data_size() << std::endl;
+
+            // _read_buf.reset();
         }
         reset_and_start_timer();
 
@@ -64,6 +68,6 @@ void AEvConnUnit::_start_read()
 }
 
 
-} //namespace#include "AEvConnUnit.hpp"
+} //namespace
 
 

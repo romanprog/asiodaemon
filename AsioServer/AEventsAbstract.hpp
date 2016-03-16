@@ -9,7 +9,7 @@ class AEventsAbstract : public std::enable_shared_from_this<AEventsAbstract>
 {
 public:
     AEventsAbstract(AEvRootConf & config);
-    AEventsAbstract(const AEvChildConf config);
+    AEventsAbstract(const AEvChildConf & config);
     virtual ~AEventsAbstract();
     void stop();
     void run();

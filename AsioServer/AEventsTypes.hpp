@@ -7,7 +7,7 @@
 #include <asio.hpp>
 #include <asio/steady_timer.hpp>
 
-// Asyncronus Events chain namespase
+// Asyncronus Events namespase
 namespace aev {
 
 class AEventsAbstract;
@@ -34,8 +34,8 @@ enum class AEvExitSignal
     sys_sig_reload_config
 
 };
-
-enum AEvStatus
+// Event status: tp event (have no parent) - evroot. Every event, which was created by function "create_chid" has status evchild.
+enum class AEvStatus
 {
     evroot,
     evchild
@@ -46,7 +46,6 @@ using AEvPtrBaseConst = std::shared_ptr<const AEventsAbstract>;
 
 using AEvFinishCallback = std::function<int (AEvPtrBase, AEvExitSignal)>;
 using AEvStrandPtr = std::shared_ptr<asio::strand>;
-//using AEvTimer = asio::basic_deadline_timer<std::chrono::system_clock, asio::detail::chrono_time_traits<std::chrono::system_clock, asio::wait_traits<std::chrono::system_clock>>>;
 using AEvTimer = asio::steady_timer;
 using AEvSet = std::set<AEvPtrBase>;
 using AEvIoPtr = std::shared_ptr<asio::io_service>;

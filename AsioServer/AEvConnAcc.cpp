@@ -13,7 +13,7 @@ AEvConnAcc::AEvConnAcc(AEvRootConf &config, const std::string &ip, const unsigne
       _conn_ip(ip),
       _conn_port(port)
 {
-    std::cout << "AEvConnAcc CONSTRUCTOR! " << std::endl;
+    // std::cout << "AEvConnAcc CONSTRUCTOR! " << std::endl;
 }
 
 AEvConnAcc::AEvConnAcc(const AEvChildConf config, const std::string &ip, const unsigned port)
@@ -23,7 +23,7 @@ AEvConnAcc::AEvConnAcc(const AEvChildConf config, const std::string &ip, const u
      _conn_ip(ip),
      _conn_port(port)
 {
-    std::cout << "AEvConnAcc CONSTRUCTOR! " << std::endl;
+    // std::cout << "AEvConnAcc CONSTRUCTOR! " << std::endl;
 }
 
 void AEvConnAcc::_ev_begin()
@@ -82,7 +82,7 @@ void AEvConnAcc::_start_acceept()
                                     return;
 
                                std::cout << "conn" << std::endl;
-                                _create_child<AEvConnUnit>(5, std::move(_socket));
+                                _create_child<AEvConnUnit>(10, std::move(_socket));
                                _start_acceept();
                            })
             );

@@ -11,7 +11,8 @@ class AEvConnUnit : public AEventsAbstract
 public:
 
     explicit AEvConnUnit(const AEvChildConf config, asio::ip::tcp::socket _soc);
-    virtual ~AEvConnUnit() {
+    virtual ~AEvConnUnit() override
+    {
         // std::cout << "AEvConnUnit DESTRUCTOR! " << std::endl;
     }
 
@@ -22,11 +23,11 @@ private:
     AEvBuffer _read_buf;
 
 protected:
-    virtual void _ev_begin();
-    virtual void _ev_finish();
-    virtual void _ev_stop();
-    virtual void _ev_timeout();
-    virtual void _ev_child_callback(AEvExitSignal _ret);
+    virtual void _ev_begin() override;
+    virtual void _ev_finish() override;
+    virtual void _ev_stop() override;
+    virtual void _ev_timeout() override;
+    virtual void _ev_child_callback(AEvExitSignal _ret) override;
 
     void _start_read();
 
