@@ -51,6 +51,8 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsioServer/AEventsAbstract.cpp \
              AsioServer/AEvBuffer.cpp \
              HelpfulCodes/HDaemon.cpp \
+             AsioServer/AEvBuffer/ParsingBuffAbstract.cpp \
+             AsioServer/AEvBuffer/BuffAbstract.cpp
 
 TESTING_LDLIBS = -lstdc++ -pthread
 
@@ -66,6 +68,8 @@ TESTING_SOURCES = testing.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
              HelpfulCodes/HDaemon.cpp \
+             AsioServer/AEvBuffer/ParsingBuffAbstract.cpp \
+             AsioServer/AEvBuffer/BuffAbstract.cpp \
              AsioServer/AEvBuffer.cpp
 
 
