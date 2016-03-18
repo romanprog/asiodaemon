@@ -1,27 +1,21 @@
-#ifndef AEVCONNUNIT_HPP
-#define AEVCONNUNIT_HPP
+#ifndef AEVTEMPLATE_HPP
+#define AEVTEMPLATE_HPP
 
 #include "AEventsAbstract.hpp"
 #include "AEvBuffer.hpp"
 
 namespace aev {
 
-class AEvConnUnit : public AEventsAbstract
+class AEvTemplate : public AEventsAbstract
 {
 public:
-
-    explicit AEvConnUnit(const AEvChildConf config, asio::ip::tcp::socket _soc);
-    virtual ~AEvConnUnit() override
-    {
-        // std::cout << "AEvConnUnit DESTRUCTOR! " << std::endl;
-    }
-    std::string test = "sdgsdfg";
+    explicit AEvTemplate(const AEvChildConf config, asio::ip::tcp::socket _soc);
 
 private:
 
     asio::ip::tcp::socket _socket;
+    std::array<char, 8192> _buffer;
     AEvBuffer _read_buf;
-
 
 protected:
     virtual void _ev_begin() override;
@@ -31,10 +25,8 @@ protected:
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) override;
 
     void _start_read();
-    void _start_send();
 
 };
 
 } //namespace
-
-#endif // AEVCONNUNIT_HPP
+#endif // AEVTEMPLATE_HPP

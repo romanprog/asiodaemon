@@ -25,6 +25,7 @@ int ParsingBuffAbstract::parse()
             _data_parts.push_back({_unparsed_offset, part_size});
             _unparsed_offset += part_size;
             ++new_parts_count;
+            when_have_new_part(_unparsed_offset-part_size, part_size);
 
         } else {
             ++d_tmp;

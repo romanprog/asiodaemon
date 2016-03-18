@@ -34,7 +34,7 @@ void AEvSysSig::_ev_timeout()
 
 }
 
-void AEvSysSig::_ev_child_callback(AEvExitSignal _ret)
+void AEvSysSig::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
 
 }

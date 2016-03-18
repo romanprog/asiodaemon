@@ -65,12 +65,12 @@ void AEvConnAcc::_ev_timeout()
 
 }
 
-void AEvConnAcc::_ev_child_callback(AEvExitSignal _ret)
+void AEvConnAcc::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
-//    std::cout << "AEvConnUnit _ev_child_callback: " << _ret << std::endl;
-    if (_ret == AEvExitSignal::abort)
-        stop();
+        if (_ret == AEvExitSignal::abort)
+            stop();
 }
+
 
 void AEvConnAcc::_start_acceept()
 {
@@ -82,7 +82,7 @@ void AEvConnAcc::_start_acceept()
                                     return;
 
                                std::cout << "conn" << std::endl;
-                                _create_child<AEvConnUnit>(10, std::move(_socket));
+                                _create_child<AEvConnUnit>(0, std::move(_socket));
                                _start_acceept();
                            })
             );

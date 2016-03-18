@@ -28,7 +28,7 @@ private:
     virtual void _ev_finish() override;
     virtual void _ev_stop() override;
     virtual void _ev_timeout() override;
-    virtual void _ev_child_callback(AEvExitSignal _ret) override;
+    virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) override;
 
     void _start_acceept();
 

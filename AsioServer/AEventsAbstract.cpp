@@ -56,6 +56,7 @@ void AEventsAbstract::reset_and_start_timer()
 
         if (!_timeout)
         {
+            int todo; // Add call virtul timecheck method in case of 0 timeout.
             _timer.expires_from_now(std::chrono::seconds(ev_default_timecheck));
             reset_and_start_timer();
         } else {
@@ -90,7 +91,7 @@ AEvChildConf AEventsAbstract::_gen_conf_for_child(int timeout)
 int AEventsAbstract::_child_callback(AEvPtrBase _child, AEvExitSignal _ret)
 {
     _child_ev_list.erase(_child);
-    _ev_child_callback(_ret);
+    _ev_child_callback(_child, _ret);
 
     return 0;
 }

@@ -10,8 +10,8 @@ class AEventsAbstract : public std::enable_shared_from_this<AEventsAbstract>
 public:
     // Derived class must have 1 constructor with const AEvChildConf (in case it could not be root) or
     // 2 constructors with const AEvChildConf and AEvRootConf args. Conf args must be translated to base class.
-    AEventsAbstract(AEvRootConf & config);
-    AEventsAbstract(const AEvChildConf & config);
+    explicit AEventsAbstract(AEvRootConf & config);
+    explicit AEventsAbstract(const AEvChildConf & config);
     virtual ~AEventsAbstract();
     // Init stop event event. Call _ev_stop() in derived class.
     void stop();
@@ -23,7 +23,7 @@ public:
 private:
     // Base IO service. Createing in root event for generate AEvRootConf.
     AEvIoPtr _asio_io;
-    // Delete copy and move constructors.
+    // Delete copy and move constructors and assignment operator.
     AEventsAbstract(AEventsAbstract &&) = delete;
     AEventsAbstract & operator= (AEventsAbstract &&) = delete;
 
@@ -33,7 +33,7 @@ protected:
     virtual void _ev_finish() = 0;
     virtual void _ev_stop() = 0;
     virtual void _ev_timeout() = 0;
-    virtual void _ev_child_callback(AEvExitSignal _ret) = 0;
+    virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) = 0;
 
     // Create child event of any derived type.
     // Args: timeout seconds or 0 (without timeout), !addinional! arguments of derived type.
