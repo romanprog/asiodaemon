@@ -1,17 +1,17 @@
 #ifndef AEVBUFFER_HPP
 #define AEVBUFFER_HPP
 
-#include "AEvBuffer/ParsingBuffAbstract.hpp"
+#include "Abstract/ParsingBuffAbstract.hpp"
 
 #include <string>
 #include <vector>
 
 namespace aev {
 
-class AEvBuffer : public ParsingBuffAbstract
+class SmtpBuffer : public ParsingBuffAbstract
 {
 public:
-    AEvBuffer();
+    SmtpBuffer();
     const std::string & answer();
     const std::string get_answer();
     bool smtp_error {false};

@@ -1,32 +1,32 @@
-#include "AEvConnAcc.hpp"
-#include "AEvConnUnit.hpp"
-#include "AEvSysSig.hpp"
+#include "AEvAcceptor.hpp"
+#include "AEvConnection.hpp"
+#include "../System/AEvSysSig.hpp"
 
 #include "iostream"
 
 namespace aev {
 
-AEvConnAcc::AEvConnAcc(AEvRootConf &config, const std::string &ip, const unsigned port)
-     :AEventsAbstract::AEventsAbstract(config),
+AEvAcceptor::AEvAcceptor(AEvRootConf &config, const std::string &ip, const unsigned port)
+     :AEventAbstract::AEventAbstract(config),
       _acceptor(_ev_loop->get_io_service()),
       _socket(_ev_loop->get_io_service()),
       _conn_ip(ip),
       _conn_port(port)
 {
-    // std::cout << "AEvConnAcc CONSTRUCTOR! " << std::endl;
+    // std::cout << "AEvAcceptor CONSTRUCTOR! " << std::endl;
 }
 
-AEvConnAcc::AEvConnAcc(const AEvChildConf config, const std::string &ip, const unsigned port)
-    :AEventsAbstract::AEventsAbstract(config),
+AEvAcceptor::AEvAcceptor(const AEvChildConf config, const std::string &ip, const unsigned port)
+    :AEventAbstract::AEventAbstract(config),
      _acceptor(_ev_loop->get_io_service()),
      _socket(_ev_loop->get_io_service()),
      _conn_ip(ip),
      _conn_port(port)
 {
-    // std::cout << "AEvConnAcc CONSTRUCTOR! " << std::endl;
+    // std::cout << "AEvAcceptor CONSTRUCTOR! " << std::endl;
 }
 
-void AEvConnAcc::_ev_begin()
+void AEvAcceptor::_ev_begin()
 {
     asio::error_code ec;
     asio::ip::address_v4 ip_check {asio::ip::address_v4::from_string(_conn_ip, ec)};
@@ -49,30 +49,30 @@ void AEvConnAcc::_ev_begin()
 
 }
 
-void AEvConnAcc::_ev_finish()
+void AEvAcceptor::_ev_finish()
 {
 
 }
 
-void AEvConnAcc::_ev_stop()
+void AEvAcceptor::_ev_stop()
 {
     _acceptor.cancel();
-    std::cout << "AEvConnUnit _ev_stop: "  << std::endl;
+    std::cout << "AEvConnection _ev_stop: "  << std::endl;
 }
 
-void AEvConnAcc::_ev_timeout()
+void AEvAcceptor::_ev_timeout()
 {
 
 }
 
-void AEvConnAcc::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
+void AEvAcceptor::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
         if (_ret == AEvExitSignal::abort)
             stop();
 }
 
 
-void AEvConnAcc::_start_acceept()
+void AEvAcceptor::_start_acceept()
 {
     using namespace std::placeholders;
     _acceptor.async_accept(_socket, _ev_loop->wrap(
@@ -82,7 +82,7 @@ void AEvConnAcc::_start_acceept()
                                     return;
 
                                std::cout << "conn" << std::endl;
-                                _create_child<AEvConnUnit>(0, std::move(_socket));
+                                _create_child<AEvConnection>(0, std::move(_socket));
                                _start_acceept();
                            })
             );

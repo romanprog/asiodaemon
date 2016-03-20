@@ -1,40 +1,40 @@
-#include "AEvConnUnit.hpp"
+#include "AEvDnsClient.hpp"
 
 #include "iostream"
 
 namespace aev {
 
-AEvTemplate::AEvTemplate(const AEvChildConf config, asio::ip::tcp::socket _soc)
-    :AEventsAbstract::AEventsAbstract(config),
-     _socket(std::move(_soc))
+AEvDnsClient::AEvDnsClient(const AEvChildConf config)
+    :AEventAbstract::AEventAbstract(config),
+     _socket(config.evloop->get_io_service())
 {
-    // std::cout << "AEvConnUnit CONSTRUCTOR! " << std::endl;
+    // std::cout << "AEvConnection CONSTRUCTOR! " << std::endl;
 }
 
-void AEvTemplate::_ev_begin()
+void AEvDnsClient::_ev_begin()
 {
     _start_read();
 }
 
-void AEvTemplate::_ev_finish()
+void AEvDnsClient::_ev_finish()
 {
 
 }
 
-void AEvTemplate::_ev_stop()
+void AEvDnsClient::_ev_stop()
 {
     _ev_exit_signal = AEvExitSignal::close_connection;
     _socket.cancel();
     _socket.close();
 }
 
-void AEvTemplate::_ev_timeout()
+void AEvDnsClient::_ev_timeout()
 {
 
 }
 
 
-void AEvTemplate::_start_read()
+void AEvDnsClient::_start_read()
 {
     _read_buf.release(40);
     std::cout << "accept, free data: "<< _read_buf.size_avail() << std::endl;
@@ -62,7 +62,7 @@ void AEvTemplate::_start_read()
 
 }
 
-void aev::AEvTemplate::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
+void aev::AEvDnsClient::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
 
 }

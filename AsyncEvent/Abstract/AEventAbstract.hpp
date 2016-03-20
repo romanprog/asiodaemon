@@ -1,18 +1,18 @@
 #ifndef AEVENTSABSTRACT_HPP
 #define AEVENTSABSTRACT_HPP
 
-#include "AEventsTypes.hpp"
+#include "AEventTypes.hpp"
 
 namespace aev {
 
-class AEventsAbstract : public std::enable_shared_from_this<AEventsAbstract>
+class AEventAbstract : public std::enable_shared_from_this<AEventAbstract>
 {
 public:
     // Derived class must have 1 constructor with const AEvChildConf (in case it could not be root) or
     // 2 constructors with const AEvChildConf and AEvRootConf args. Conf args must be translated to base class.
-    explicit AEventsAbstract(AEvRootConf & config);
-    explicit AEventsAbstract(const AEvChildConf & config);
-    virtual ~AEventsAbstract();
+    explicit AEventAbstract(AEvRootConf & config);
+    explicit AEventAbstract(const AEvChildConf & config);
+    virtual ~AEventAbstract();
     // Init stop event event. Call _ev_stop() in derived class.
     void stop();
     // Run event loop. Call only from root object.
@@ -24,8 +24,8 @@ private:
     // Base IO service. Createing in root event for generate AEvRootConf.
     AEvIoPtr _asio_io;
     // Delete copy and move constructors and assignment operator.
-    AEventsAbstract(AEventsAbstract &&) = delete;
-    AEventsAbstract & operator= (AEventsAbstract &&) = delete;
+    AEventAbstract(AEventAbstract &&) = delete;
+    AEventAbstract & operator= (AEventAbstract &&) = delete;
 
 protected:
     // Virtual methods.

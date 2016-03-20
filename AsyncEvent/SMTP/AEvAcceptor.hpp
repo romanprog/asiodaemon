@@ -1,20 +1,19 @@
-#ifndef AEVCONNACC_HPP
-#define AEVCONNACC_HPP
-#include "AEventsAbstract.hpp"
-#include "AEvBuffer.hpp"
+#ifndef AEvAcceptor_HPP
+#define AEvAcceptor_HPP
+#include "../Abstract/AEventAbstract.hpp"
 
 namespace aev {
 
-class AEvConnAcc : public AEventsAbstract
+class AEvAcceptor : public AEventAbstract
 {
 public:
 
-    AEvConnAcc(AEvRootConf & config, const std::string &ip, const unsigned port);
-    AEvConnAcc(const AEvChildConf config, const std::string &ip, const unsigned port);
+    AEvAcceptor(AEvRootConf & config, const std::string &ip, const unsigned port);
+    AEvAcceptor(const AEvChildConf config, const std::string &ip, const unsigned port);
 
-    virtual ~AEvConnAcc() override
+    virtual ~AEvAcceptor() override
     {
-       // std::cout << "AEvConnAcc DESTRUCTOR! " << std::endl;
+       // std::cout << "AEvAcceptor DESTRUCTOR! " << std::endl;
     }
 
 private:
@@ -36,4 +35,4 @@ private:
 
 } //namespace
 
-#endif // AEVCONNACC_HPP
+#endif // AEvAcceptor_HPP

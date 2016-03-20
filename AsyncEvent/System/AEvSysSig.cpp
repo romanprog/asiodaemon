@@ -3,7 +3,7 @@
 namespace aev {
 
 AEvSysSig::AEvSysSig(const AEvChildConf config)
-    :AEventsAbstract::AEventsAbstract(config),
+    :AEventAbstract::AEventAbstract(config),
      _sig_set(_ev_loop->get_io_service())
 {
 
@@ -51,4 +51,4 @@ void AEvSysSig::_sig_listen()
 }
 
 
-} //namespace#include "AEvConnUnit.hpp"
+} //namespace#include "AEvConnection.hpp"

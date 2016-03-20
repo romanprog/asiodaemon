@@ -10,7 +10,7 @@
 // Asyncronus Events namespase
 namespace aev {
 
-class AEventsAbstract;
+class AEventAbstract;
 
 enum class AEvExitSignal
 {
@@ -41,8 +41,8 @@ enum class AEvStatus
     evchild
 };
 
-using AEvPtrBase = std::shared_ptr<AEventsAbstract>;
-using AEvPtrBaseConst = std::shared_ptr<const AEventsAbstract>;
+using AEvPtrBase = std::shared_ptr<AEventAbstract>;
+using AEvPtrBaseConst = std::shared_ptr<const AEventAbstract>;
 
 using AEvFinishCallback = std::function<int (AEvPtrBase, AEvExitSignal)>;
 using AEvStrandPtr = std::shared_ptr<asio::strand>;

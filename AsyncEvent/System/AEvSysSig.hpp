@@ -1,11 +1,11 @@
 #ifndef AEVSYSSIG_HPP
 #define AEVSYSSIG_HPP
 
-#include "AEventsAbstract.hpp"
+#include "../Abstract/AEventAbstract.hpp"
 
 namespace aev {
 
-class AEvSysSig : public AEventsAbstract
+class AEvSysSig : public AEventAbstract
 {
 public:
 

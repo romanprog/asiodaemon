@@ -45,14 +45,14 @@ ASYNCD_SOURCES = async_daemon.cpp \
              HelpfulCodes/MLocker.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
-             AsioServer/AEvConnAcc.cpp \
-             AsioServer/AEvConnUnit.cpp \
-             AsioServer/AEvSysSig.cpp \
-             AsioServer/AEventsAbstract.cpp \
-             AsioServer/AEvBuffer.cpp \
+             AsyncEvent/SMTP/AEvConnection.cpp \
+             AsyncEvent/SMTP/AEvAcceptor.cpp \
+             AsyncEvent/System/AEvSysSig.cpp \
+             AsyncEvent/Abstract/AEventAbstract.cpp \
+             Buffers/SmtpBuffer.cpp \
              HelpfulCodes/HDaemon.cpp \
-             AsioServer/AEvBuffer/ParsingBuffAbstract.cpp \
-             AsioServer/AEvBuffer/BuffAbstract.cpp
+             Buffers/Abstract/ParsingBuffAbstract.cpp \
+             Buffers/Abstract/BuffAbstract.cpp
 
 TESTING_LDLIBS = -lstdc++ -pthread
 
@@ -68,10 +68,7 @@ TESTING_SOURCES = testing.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
              HelpfulCodes/HDaemon.cpp \
-             AsioServer/AEvBuffer/ParsingBuffAbstract.cpp \
-             AsioServer/AEvBuffer/BuffAbstract.cpp \
-             AsioServer/AEvBuffer.cpp
-
+             HelpfulCodes/HFiles.cpp \
 
 all : $(TESTING_NAME) $(ASYNCD_NAME)
 

@@ -1,46 +1,46 @@
-#include "AEvConnUnit.hpp"
+#include "AEvConnection.hpp"
 
 #include "iostream"
 
 namespace aev {
 
-AEvConnUnit::AEvConnUnit(const AEvChildConf config, asio::ip::tcp::socket _soc)
-    :AEventsAbstract::AEventsAbstract(config),
+AEvConnection::AEvConnection(const AEvChildConf config, asio::ip::tcp::socket _soc)
+    :AEventAbstract::AEventAbstract(config),
      _socket(std::move(_soc))
 {
-    // std::cout << "AEvConnUnit CONSTRUCTOR! " << std::endl;
+    // std::cout << "AEvConnection CONSTRUCTOR! " << std::endl;
 }
 
-void AEvConnUnit::_ev_begin()
+void AEvConnection::_ev_begin()
 {
     _start_send();
 }
 
-void AEvConnUnit::_ev_finish()
+void AEvConnection::_ev_finish()
 {
 
 }
 
-void AEvConnUnit::_ev_stop()
+void AEvConnection::_ev_stop()
 {
     _ev_exit_signal = AEvExitSignal::close_connection;
     _socket.cancel();
     _socket.close();
 }
 
-void AEvConnUnit::_ev_timeout()
+void AEvConnection::_ev_timeout()
 {
 
 }
 
-void AEvConnUnit::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
+void AEvConnection::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
 
 }
 
 
 
-void AEvConnUnit::_start_read()
+void AEvConnection::_start_read()
 {
     _read_buf.release(80);
 
@@ -75,7 +75,7 @@ void AEvConnUnit::_start_read()
 
 }
 
-void AEvConnUnit::_start_send()
+void AEvConnection::_start_send()
 {
 
     if (!_read_buf.have_answer || _read_buf.abort)
