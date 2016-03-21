@@ -1,19 +1,21 @@
 #include "AEvDnsClient.hpp"
+#include "../../Buffers/DnsBuffer.hpp"
 
 #include "iostream"
 
 namespace aev {
 
-AEvDnsClient::AEvDnsClient(const AEvChildConf config)
+AEvDnsClient::AEvDnsClient(const AEvChildConf config, std::string dom)
     :AEventAbstract::AEventAbstract(config),
-     _socket(config.evloop->get_io_service())
+     _socket(config.evloop->get_io_service(), asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
+     _domain(dom)
 {
     // std::cout << "AEvConnection CONSTRUCTOR! " << std::endl;
 }
 
 void AEvDnsClient::_ev_begin()
 {
-    _start_read();
+    _resolve();
 }
 
 void AEvDnsClient::_ev_finish()
@@ -24,7 +26,7 @@ void AEvDnsClient::_ev_finish()
 void AEvDnsClient::_ev_stop()
 {
     _ev_exit_signal = AEvExitSignal::close_connection;
-    _socket.cancel();
+//    _socket.cancel();
     _socket.close();
 }
 
@@ -34,31 +36,23 @@ void AEvDnsClient::_ev_timeout()
 }
 
 
-void AEvDnsClient::_start_read()
+void AEvDnsClient::_resolve()
 {
-    _read_buf.release(40);
-    std::cout << "accept, free data: "<< _read_buf.size_avail() << std::endl;
 
-    _socket.async_read_some(asio::buffer(_read_buf.data_top(), _read_buf.size_avail()),
-                           _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){
+    asio::ip::udp::resolver resolver(_ev_loop->get_io_service());
+    asio::ip::udp::endpoint endpoint = *resolver.resolve({asio::ip::udp::v4(), "127.0.1.1", "53"});
+    DnsBuffer buff;
+    buff.set_domain(_domain);
+    _socket.async_send_to(asio::buffer(buff.data(), buff.size_filled()), endpoint,
+                          [this](std::error_code ec, std::size_t bytes_sent)
+                                  {
+                                        if (ec)
+                                            std::cout << ec.message() << std::endl;
+                                        std::cout << "sended DNS" << std::endl;
+                                        stop();
+                                  }
 
-        if (ec) {
-            return;
-        }
-        // std::cout << "read" << std::endl;
-        if (_read_buf.accept(bytes_transferred)) {
-
-            for (auto & str_ : aev::get_buff_dala_list(_read_buf))
-                 std::cout << str_ << ";" << std::endl;
-
-            // std::cout << _read_buf.get() << ", Overdata: " << _read_buf.redundant_data_size() << std::endl;
-
-            // _read_buf.reset();
-        }
-        reset_and_start_timer();
-
-        _start_read();
-    }));
+                );
 
 }
 

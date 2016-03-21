@@ -1,9 +1,6 @@
 #include "ParsingBuffAbstract.hpp"
 
 #include <cstring>
-#include <iostream>
-
-namespace aev {
 
 ParsingBuffAbstract::ParsingBuffAbstract(std::string separator, size_t e_pt_sz)
     :_separator(separator),
@@ -57,7 +54,7 @@ size_t ParsingBuffAbstract::calculate_mem()
     return ((_top_offset + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
 }
 
-void ParsingBuffAbstract::when_new_data_acc()
+void ParsingBuffAbstract::when_new_data_acc(size_t bytes_readed)
 {
     parse();
 }
@@ -76,6 +73,4 @@ BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_
         _temp_data_list.push_back(std::string(_buffer.data() + pair_.first, (trim_separator ? pair_.second - _buffer.get_separator().length() : pair_.second)));
 
     return std::move(_temp_data_list);
-}
-
 }

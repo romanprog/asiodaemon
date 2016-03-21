@@ -1,8 +1,5 @@
 #include "BuffAbstract.hpp"
 #include <cstring>
-#include <iostream>
-
-namespace aev {
 
 BuffAbstract::BuffAbstract()
     : _reserved(calculate_mem())
@@ -41,7 +38,7 @@ bool BuffAbstract::accept(size_t bytes_readed)
 
     _top_offset += bytes_readed;
 
-    when_new_data_acc();
+    when_new_data_acc(bytes_readed);
     return true;
 }
 
@@ -92,7 +89,4 @@ size_t BuffAbstract::calculate_mem()
 
     // Base mem reserv calculate. 1 block for data needeng + 1 free block.
     return ((_top_offset + size_filled()) / block_size + reserve_bl_count) * block_size;
-}
-
-
 }

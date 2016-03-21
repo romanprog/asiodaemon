@@ -1,21 +1,21 @@
-#ifndef AEVTEMPLATE_HPP
-#define AEVTEMPLATE_HPP
+#ifndef AEVEXAMPLE_HPP
+#define AEVEXAMPLE_HPP
 
-#include "AEventsAbstract.hpp"
-#include "AEvBuffer.hpp"
+#include "Abstract/AEventAbstract.hpp"
+#include "../Buffers/SmtpBuffer.hpp"
 
 namespace aev {
 
-class AEvTemplate : public AEventsAbstract
+class AEvExample : public AEventsAbstract
 {
 public:
-    explicit AEvTemplate(const AEvChildConf config, asio::ip::tcp::socket _soc);
+    explicit AEvExample(const AEvChildConf config, asio::ip::tcp::socket _soc);
 
 private:
 
     asio::ip::tcp::socket _socket;
     std::array<char, 8192> _buffer;
-    AEvBuffer _read_buf;
+    SmtpBuffer _read_buf;
 
 protected:
     virtual void _ev_begin() override;
@@ -29,4 +29,4 @@ protected:
 };
 
 } //namespace
-#endif // AEVTEMPLATE_HPP
+#endif // AEVEXAMPLE_HPP

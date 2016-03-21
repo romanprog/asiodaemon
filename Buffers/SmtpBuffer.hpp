@@ -6,14 +6,14 @@
 #include <string>
 #include <vector>
 
-namespace aev {
-
 class SmtpBuffer : public ParsingBuffAbstract
 {
 public:
     SmtpBuffer();
     const std::string & answer();
     const std::string get_answer();
+    const std::string get_last_cmd();
+
     bool smtp_error {false};
     bool abort{false};
     bool have_answer {true};
@@ -26,7 +26,8 @@ private:
 
     std::string primary_domain {"my-home.com"};
     std::string smtp_answer;
+    std::string parsed_cmd;
 };
 
-}
+
 #endif // AEVBUFFER_HPP

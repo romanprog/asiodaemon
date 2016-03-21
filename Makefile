@@ -47,9 +47,11 @@ ASYNCD_SOURCES = async_daemon.cpp \
              HelpfulCodes/HFiles.cpp \
              AsyncEvent/SMTP/AEvConnection.cpp \
              AsyncEvent/SMTP/AEvAcceptor.cpp \
+             AsyncEvent/DNS/AEvDnsClient.cpp \
              AsyncEvent/System/AEvSysSig.cpp \
              AsyncEvent/Abstract/AEventAbstract.cpp \
              Buffers/SmtpBuffer.cpp \
+             Buffers/DnsBuffer.cpp \
              HelpfulCodes/HDaemon.cpp \
              Buffers/Abstract/ParsingBuffAbstract.cpp \
              Buffers/Abstract/BuffAbstract.cpp

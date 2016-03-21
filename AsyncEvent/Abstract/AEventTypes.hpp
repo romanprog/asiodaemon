@@ -34,6 +34,7 @@ enum class AEvExitSignal
     sys_sig_reload_config
 
 };
+
 // Event status: tp event (have no parent) - evroot. Every event, which was created by function "create_chid" has status evchild.
 enum class AEvStatus
 {

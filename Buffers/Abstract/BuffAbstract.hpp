@@ -4,8 +4,6 @@
 #include <string>
 #include <vector>
 
-namespace aev {
-
 class BuffAbstract
 {
 public:
@@ -34,7 +32,7 @@ public:
 
 protected:
     virtual size_t calculate_mem();
-    virtual void when_new_data_acc() = 0;
+    virtual void when_new_data_acc(size_t bytes_readed) = 0;
     virtual void when_reseted() = 0;
 
     size_t _reserved;
@@ -45,5 +43,4 @@ protected:
 
 };
 
-}
 #endif // BUFFABSTRACT_HPP

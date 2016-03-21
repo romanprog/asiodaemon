@@ -6,9 +6,6 @@
 #include <string>
 #include <vector>
 
-namespace aev {
-
-
 using DataOffset = std::pair<size_t, size_t>;
 using DataOffsetList = std::vector<DataOffset>;
 using BufferDataList = std::vector<std::string>;
@@ -30,7 +27,7 @@ public:
 
 protected:
     virtual size_t calculate_mem() override;
-    virtual void when_new_data_acc() override;
+    virtual void when_new_data_acc(size_t bytes_readed) override;
     virtual void when_have_new_part(const size_t begin_offset, const size_t size) = 0;
     virtual void when_parsed(unsigned new_parts_count) = 0;
     virtual void when_reseted() override;
@@ -48,8 +45,6 @@ private:
 
 };
 
-    BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_separator = true);
-
-}
+BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_separator = true);
 
 #endif // PARSINGBUFFABSTRACT_HPP

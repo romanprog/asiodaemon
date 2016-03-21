@@ -1,4 +1,6 @@
 #include "AEvConnection.hpp"
+#include "../DNS/AEvDnsClient.hpp"
+
 
 #include "iostream"
 
@@ -38,8 +40,6 @@ void AEvConnection::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret
 
 }
 
-
-
 void AEvConnection::_start_read()
 {
     _read_buf.release(80);
@@ -63,7 +63,8 @@ void AEvConnection::_start_read()
 
                                 if (_read_buf.have_answer)
                                 {
-                                    test =   _read_buf.get_answer();
+                                    test = _read_buf.get_last_cmd();
+                                    _create_child<AEvDnsClient>(0, test);
                                     _start_send();
                                     return;
                                 }

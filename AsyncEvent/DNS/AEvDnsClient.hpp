@@ -2,19 +2,19 @@
 #define AEVDNSCLIENT_HPP
 
 #include "../Abstract/AEventAbstract.hpp"
-#include "AEvBuffer.hpp"
+#include "../../Buffers/DnsBuffer.hpp"
 
 namespace aev {
 
 class AEvDnsClient : public AEventAbstract
 {
 public:
-    explicit AEvDnsClient(const AEvChildConf config);
+    explicit AEvDnsClient(const AEvChildConf config, std::string dom);
 
 private:
 
     asio::ip::udp::socket _socket;
-    AEvBuffer _read_buf;
+    std::string _domain;
 
 protected:
     virtual void _ev_begin() override;
@@ -23,7 +23,7 @@ protected:
     virtual void _ev_timeout() override;
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) override;
 
-    void _start_read();
+    void _resolve();
 
 };
 
