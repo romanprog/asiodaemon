@@ -40,19 +40,33 @@ void AEvDnsClient::_resolve()
 {
 
     asio::ip::udp::resolver resolver(_ev_loop->get_io_service());
-    asio::ip::udp::endpoint endpoint = *resolver.resolve({asio::ip::udp::v4(), "127.0.1.1", "53"});
-    DnsBuffer buff;
-    buff.set_domain(_domain);
-    _socket.async_send_to(asio::buffer(buff.data(), buff.size_filled()), endpoint,
+    endpoint = *resolver.resolve({asio::ip::udp::v4(), "127.0.1.1", "53"});
+    buff.create_dns_request(_domain, DnsQType::MX);
+    _socket.async_send_to(asio::buffer(buff.reqest_data_str()), endpoint,
                           [this](std::error_code ec, std::size_t bytes_sent)
                                   {
                                         if (ec)
                                             std::cout << ec.message() << std::endl;
                                         std::cout << "sended DNS" << std::endl;
-                                        stop();
+                                        _get_respond();
                                   }
-
                 );
+}
+
+void AEvDnsClient::_get_respond()
+{
+        buff.reset();
+        buff.release(max_DNS_pkg_size);
+        _socket.async_receive_from(asio::buffer(buff.data_top(), buff.size_avail()), endpoint,
+                                   [this](std::error_code ec, std::size_t bytes_sent)
+                                           {
+                                                 if (ec)
+                                                     std::cout << ec.message() << std::endl;
+                                                 std::cout << "receive DNS" << std::endl;
+                                                 stop();
+                                           }
+
+                         );
 
 }
 

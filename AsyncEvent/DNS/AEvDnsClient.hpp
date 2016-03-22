@@ -15,6 +15,8 @@ private:
 
     asio::ip::udp::socket _socket;
     std::string _domain;
+    asio::ip::udp::endpoint endpoint;
+    DnsBuffer buff;
 
 protected:
     virtual void _ev_begin() override;
@@ -24,6 +26,7 @@ protected:
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) override;
 
     void _resolve();
+    void _get_respond();
 
 };
 

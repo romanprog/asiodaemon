@@ -54,7 +54,8 @@ ASYNCD_SOURCES = async_daemon.cpp \
              Buffers/DnsBuffer.cpp \
              HelpfulCodes/HDaemon.cpp \
              Buffers/Abstract/ParsingBuffAbstract.cpp \
-             Buffers/Abstract/BuffAbstract.cpp
+             Buffers/Abstract/BuffAbstract.cpp \
+             Buffers/DnsDataTypes.cpp
 
 TESTING_LDLIBS = -lstdc++ -pthread
 
@@ -71,6 +72,10 @@ TESTING_SOURCES = testing.cpp \
              HelpfulCodes/HFiles.cpp \
              HelpfulCodes/HDaemon.cpp \
              HelpfulCodes/HFiles.cpp \
+             Buffers/DnsBuffer.cpp \
+             Buffers/Abstract/ParsingBuffAbstract.cpp \
+             Buffers/Abstract/BuffAbstract.cpp \
+             Buffers/DnsDataTypes.cpp
 
 all : $(TESTING_NAME) $(ASYNCD_NAME)
 

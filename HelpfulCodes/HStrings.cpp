@@ -1,5 +1,6 @@
 #include "HStrings.hpp"
 
+#include <sstream>
 #include <algorithm>
 
 namespace {
@@ -38,5 +39,20 @@ bool is_digit_only(const std::string &s)
     return !s.empty() && std::find_if(s.begin(),
         s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
 }
+
+
+std::vector<std::string> split(const std::string &str, char delim)
+{
+    std::string str_buf;
+    std::stringstream sstr(str);
+    std::vector<std::string> res;
+
+    while (std::getline(sstr, str_buf, delim))
+            res.push_back(str_buf);
+
+    return std::move(res);
+
+}
+
 
 } // namespase hstrings

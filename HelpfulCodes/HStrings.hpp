@@ -2,6 +2,7 @@
 #define HSTRINGS_HPP
 
 #include <string>
+#include <vector>
 
 namespace hstrings {
 
@@ -13,6 +14,8 @@ std::string & rand_str(std::string & str, size_t lenth);
 std::string rand_str(size_t lenth);
 
 bool is_digit_only(const std::string & s);
+
+std::vector<std::string> split(const std::string & str, char delim);
 
 }
 #endif // HSTRINGS_HPP
