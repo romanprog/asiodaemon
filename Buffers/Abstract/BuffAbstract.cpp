@@ -1,5 +1,4 @@
 #include "BuffAbstract.hpp"
-#include <cstring>
 
 BuffAbstract::BuffAbstract()
     : _reserved(calculate_mem())
@@ -29,6 +28,11 @@ void *BuffAbstract::data_top()
 
     // Pointer to begin of free space.
     return _cdata + _top_offset;
+}
+
+void *BuffAbstract::vdata() const
+{
+    return _cdata;
 }
 
 bool BuffAbstract::accept(size_t bytes_readed)
@@ -80,6 +84,13 @@ size_t BuffAbstract::size() const
 size_t BuffAbstract::size_avail() const
 {
     return _size - _top_offset;
+}
+
+void BuffAbstract::operator <<(const std::string &str)
+{
+    release(str.size());
+    memcpy(data_top(), str.data(), str.size());
+    accept(str.size());
 }
 
 size_t BuffAbstract::calculate_mem()

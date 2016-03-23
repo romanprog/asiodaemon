@@ -8,26 +8,7 @@
 #include <asio.hpp>
 
 #include "HelpfulCodes/HStrings.hpp"
-// #include "Buffers/DnsBuffer.hpp"
 
-//std::string reverse_ip(std::string ip)
-//{
-//    size_t pos{0};
-//    size_t prev_pos{0};
-//    std::vector<std::string> octets;
-
-//    while ((pos = ip.find('.', pos+1)) != std::string::npos)
-//    {
-//        octets[] (_res, dname.c_str() + prev_pos, pos - prev_pos);
-//        prev_pos = pos + 1;
-//    }
-//    if (prev_pos < dname.size()) {
-//        add_dpart(_res, dname.c_str() + prev_pos, dname.size() - prev_pos);
-//    }
-//    _res += '\0';
-//}
-// I don't recommend using the std namespace in production code.
-// For ease of reading here.
 using namespace std;
 
 // You could also take an existing vector as a parameter.
@@ -43,8 +24,29 @@ std::string _ip_to_Addr_arpa(const std::string &ip)
 
 }
 
+void uint32_to_DNSchar(unsigned char *ch, const uint32_t fr)
+{
+    ch[0] = static_cast<unsigned char>(fr / (256 * 256 * 256));
+    ch[1] = static_cast<unsigned char>(fr / (256 * 256));
+    ch[2] = static_cast<unsigned char>(fr / 256);
+    ch[2] = static_cast<unsigned char>(fr % 256);
+}
 
+uint32_t DNSchar_to_uint32(const unsigned char * const ch)
+{
+
+    uint32_t res = static_cast<unsigned>(ch[0])*256*256*256;
+    res += static_cast<unsigned>(ch[1])*256*256;
+    res += static_cast<unsigned>(ch[2])*256;
+    res += static_cast<unsigned>(ch[3]);
+    return res;
+}
 int main(int argc, char **argv) {
 
     cout << _ip_to_Addr_arpa("212.42.67.73") << endl;
+    cout << sizeof(unsigned int) << endl;
+    unsigned char u32[4];
+    uint32_t val = 65536;
+    uint32_to_DNSchar(u32, val);
+    cout << DNSchar_to_uint32(u32) << endl;
 }

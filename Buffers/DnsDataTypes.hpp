@@ -2,7 +2,9 @@
 #define DNSDATATYPES_HPP
 
 #include <string>
+#include <cstring>
 #include <stdint.h>
+#include <vector>
 
 // Max size of UDP DNS package.
 const size_t max_DNS_pkg_size = 512;
@@ -76,16 +78,16 @@ struct DnsPkgSufix
  * 9-11 - Reserved. Set to zero.
  * 12-16 - Error code. 0 - no error. > 0 - error.
  */
-enum class Dnsflag
+enum class DnsFlag
 {
     QR = 0,
     AA = 5,
     TC = 6,
     RD = 7,
     RA = 8,
-
 };
 
+// Type of DNS request.
 enum class DnsQType
 {
     A = 1,
@@ -105,44 +107,96 @@ struct DnsRequest
     DnsQType type;
     DnsPkgHeader header;
     DnsPkgSufix sufix;
+
+    size_t size {0};
+};
+
+struct DnsAnswerEntryInfo
+{
+    // Entry type: see DnsQType.
+    unsigned char type[2] {0, 0};
+    // Entry class. 1 by default.
+    unsigned char cl[2] {0, 1};
+
+    // Entry time to live.
+    unsigned char ttl[4] {0, 0, 0, 0};
+    // Entry data length.
+    unsigned char data_lenth[2] {0, 1};
+
+};
+
+struct DnsAnswerEntryInfoMX
+{
+      DnsAnswerEntryInfo base_info;
+      unsigned char preference[2] {0, 1};
+};
+
+struct DnsAnswerEntry
+{
+    uint16_t preference {0};
+    std::string entry;
+    size_t data_lenth;
+
 };
 
 struct DnsRespond
 {
     // Name for resolve.
     std::string name;
-    // Domain in DNS pkg format.
-    std::string DNS_name;
+
     // String IP.
     std::string ip;
+
     // IP in 4 bytes dns pkg format;
     unsigned char DNS_ip[4] {0, 0, 0, 0};
+
     // Query ID
     uint16_t id;
+
+    size_t answers_count;
+
+    std::vector<DnsAnswerEntry> ansvers;
 
     DnsQType type;
     DnsPkgHeader header;
     DnsPkgSufix sufix;
 };
 
-// Convert uitn value to 2bytes format for DNS package.
-void uint_to_DNSchar(unsigned char * ch, const uint16_t fr);
+struct DnsUtils
+{
+    // Convert uitn value to 2bytes format for DNS package.
+    static void uint16_to_DNSchar(unsigned char * ch, const uint16_t fr);
 
-//
-bool get_DNS_flag(unsigned char * const ch, const Dnsflag flag_num);
+    // Convert 2 bytes from DNS package to uint format.
+    static uint16_t DNSchar_to_uint16(const unsigned char * const ch);
 
-//
-void set_DNS_flag(unsigned char * ch, const Dnsflag flag_num, const bool flag_value);
+    // Convert uitn32 value to 4bytes format for DNS package (dns ttl).
+    static void uint32_to_DNSchar(unsigned char * ch, const uint32_t fr);
 
-// Convert 2 bytes from DNS package to uint format.
-uint16_t DNSchar_to_uint(unsigned char ch[2]);
+    // Convert 4 bytes from DNS package to uint32 format (dns ttl).
+    static uint32_t DNSchar_to_uint32(const unsigned char * const ch);
 
-// Convert domain to package format.
-void domain_to_DNSstr(const std::string &dname, std::string & _res);
+    // Return
+    static bool get_DNS_flag(unsigned char * const ch, const DnsFlag flag_num);
 
-bool ip_to_Addr_arpa(const std::string &ip, std::string & res);
+    //
+    static void set_DNS_flag(unsigned char * ch, const DnsFlag flag_num, const bool flag_value);
 
-uint16_t rand_DNS_qid();
+    // Get string domain from DNS data set. Return offset first byte after reading name.
+
+    static size_t read_domain(const void * dns_pkg, size_t start_pos, std::string & result);
+
+    // Convert domain to package format.
+    static void domain_to_DNSstr(const std::string &dname, std::string & _res);
+    static std::string domain_to_DNSstr_r(const std::string &dname);
+
+    static bool ip_to_Addr_arpa(const std::string &ip, std::string & res);
+    static std::string ip_to_Addr_arpa_r(const std::string &ip);
+
+    static uint16_t rand_DNS_qid();
+};
+
+
 
 
 #endif // DNSDATATYPES_HPP

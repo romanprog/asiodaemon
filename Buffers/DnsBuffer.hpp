@@ -13,6 +13,7 @@ public:
     DnsBuffer();
     bool create_dns_request(const std::string & name, DnsQType qtype);
     std::string reqest_data_str();
+    bool parse_dns_respond();
 
 private:
 
@@ -20,7 +21,10 @@ private:
     virtual void when_new_data_acc(size_t bytes_readed) override;
     virtual void when_reseted() override;
 
+
+
     DnsRequest _request;
+    DnsRespond _respond;
 };
 
 

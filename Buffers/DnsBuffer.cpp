@@ -13,41 +13,38 @@ bool DnsBuffer::create_dns_request(const std::string &name, DnsQType qtype)
     // Resrt buffer before request creating.
     reset();
     // Generate random number for ident DNS request.
-    uint_to_DNSchar(_request.header.ident, rand_DNS_qid());
+    DnsUtils::uint16_to_DNSchar(_request.header.ident, DnsUtils::rand_DNS_qid());
     // Set questions count to 1;
-    uint_to_DNSchar(_request.header.QDcount, 1);
+    DnsUtils::uint16_to_DNSchar(_request.header.QDcount, 1);
     // Set type of request.
-    uint_to_DNSchar(_request.sufix.QType, static_cast<unsigned> (qtype));
+    DnsUtils::uint16_to_DNSchar(_request.sufix.QType, static_cast<unsigned> (qtype));
     // Ask server to pursue the query recursively.
-    set_DNS_flag(_request.header.flags, Dnsflag::RD, true );
+    DnsUtils::set_DNS_flag(_request.header.flags, DnsFlag::RD, true );
+
 
     switch (qtype) {
     case DnsQType::A:
-        domain_to_DNSstr(name, _request.DNS_name);
-
+        DnsUtils::domain_to_DNSstr(name, _request.DNS_name);
         break;
     case DnsQType::MX:
-        domain_to_DNSstr(name, _request.DNS_name);
-
+        DnsUtils::domain_to_DNSstr(name, _request.DNS_name);
         break;
     case DnsQType::PTR:
-        ip_to_Addr_arpa(name, _request.DNS_name);
-
+        DnsUtils::domain_to_DNSstr(DnsUtils::ip_to_Addr_arpa_r(name) , _request.DNS_name);
         break;
     default:
-
+        return false;
         break;
     }
 
-    release(sizeof(_request.header) + _request.DNS_name.size() + sizeof (_request.sufix));
-    memcpy(data_top(), &_request.header, sizeof(_request.header));
-    accept(sizeof(_request.header));
+    _request.type = qtype;
 
-    memcpy(data_top(), _request.DNS_name.data(), _request.DNS_name.size());
-    accept(_request.DNS_name.size());
+    // Fill buffer.
+    *this << _request.header;
+    *this << _request.DNS_name;
+    *this << _request.sufix;
 
-    memcpy(data_top(), &_request.sufix, sizeof(_request.sufix));
-    accept(sizeof(_request.sufix));
+    _request.size = size_filled();
 
     return true;
 }
@@ -58,9 +55,62 @@ std::string DnsBuffer::reqest_data_str()
     return std::move(res);
 }
 
+bool DnsBuffer::parse_dns_respond()
+{
+    memcpy(&_respond.header, data(), sizeof(DnsPkgHeader));
+    _data_cursor += sizeof(DnsPkgHeader);
+
+    // This package is respond.
+    if (!DnsUtils::get_DNS_flag(_respond.header.flags, DnsFlag::QR ))
+        return false;
+    // This is expected respond (ident num).
+    if (DnsUtils::DNSchar_to_uint16(_respond.header.ident) != DnsUtils::DNSchar_to_uint16(_request.header.ident))
+        return false;
+
+    _respond.answers_count = DnsUtils::DNSchar_to_uint16(_respond.header.ANcount);
+    std::string domain_name;
+
+    _data_cursor += DnsUtils::read_domain(vdata(), _data_cursor, _respond.name);
+
+    memcpy(&_respond.sufix, data() + _data_cursor, sizeof(DnsPkgSufix));
+    _data_cursor += sizeof(DnsPkgSufix);
+
+    for (int i = 0; i < _respond.answers_count; ++i)
+    {
+        if (_request.type == DnsQType::MX) {
+            _data_cursor += DnsUtils::read_domain(vdata(), _data_cursor, domain_name);
+            DnsAnswerEntryInfoMX _info_tmp;
+            memcpy(&_info_tmp, data() + _data_cursor, sizeof(DnsAnswerEntryInfoMX));
+
+            DnsAnswerEntry answer_tmp;
+
+            _data_cursor += sizeof(DnsAnswerEntryInfoMX);
+            answer_tmp.data_lenth = DnsUtils::DNSchar_to_uint16(_info_tmp.base_info.data_lenth);
+            answer_tmp.preference = DnsUtils::DNSchar_to_uint16(_info_tmp.preference);
+            _data_cursor += DnsUtils::read_domain(vdata(), _data_cursor, answer_tmp.entry);
+            _respond.ansvers.push_back(answer_tmp);
+        }
+        if (_request.type == DnsQType::PTR) {
+            _data_cursor += DnsUtils::read_domain(vdata(), _data_cursor, domain_name);
+            DnsAnswerEntryInfo _info_tmp;
+            DnsAnswerEntry answer_tmp;
+
+            memcpy(&_info_tmp, data() + _data_cursor, sizeof(DnsAnswerEntryInfo));
+            _data_cursor += sizeof(DnsAnswerEntryInfo);
+
+            answer_tmp.data_lenth = DnsUtils::DNSchar_to_uint16(_info_tmp.data_lenth);
+
+            _data_cursor += DnsUtils::read_domain(vdata(), _data_cursor, answer_tmp.entry);
+            _respond.ansvers.push_back(answer_tmp);
+        }
+    }
+
+    return true;
+}
+
 size_t DnsBuffer::calculate_mem()
 {
-    size_t block_size {max_DNS_pkg_size};
+    size_t block_size {max_DNS_pkg_size ? max_DNS_pkg_size : 1};
     size_t reserve_bl_count {1};
 
     return ((_top_offset + size_filled()) / block_size + reserve_bl_count) * block_size;
@@ -73,7 +123,7 @@ void DnsBuffer::when_new_data_acc(size_t bytes_readed)
 
 void DnsBuffer::when_reseted()
 {
-
+    // _request = DnsRequest();
 }
 
 

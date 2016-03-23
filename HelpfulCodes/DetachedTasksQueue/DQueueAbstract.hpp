@@ -15,7 +15,7 @@ class _type_GN;
 //////////////////////////////////////////////////////////////////////////////////////
 /// Abstract class for create detached (in own thread) queue worker. Create interface
 /// for add task and stop worker loop. Contain virtual method _do_job() wich must be
-/// overrided by derived class. Actual use if you want to perform a blocking action
+/// overrided in derived class. Actual use if you want to perform a blocking action
 /// as asynchronous event.
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -37,6 +37,7 @@ public:
     virtual ~DQueueBase() { }
 
     // Base method for create new job. Do not override!
+    // Return immediately.
     void push_task(T _t, F _f)
     {
         // If working loop is user stoped - dont accept new task.
