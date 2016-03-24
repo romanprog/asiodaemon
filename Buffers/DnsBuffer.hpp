@@ -21,8 +21,6 @@ private:
     virtual void when_new_data_acc(size_t bytes_readed) override;
     virtual void when_reseted() override;
 
-
-
     DnsRequest _request;
     DnsRespond _respond;
 };

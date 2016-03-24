@@ -71,11 +71,8 @@ TESTING_SOURCES = testing.cpp \
              HelpfulCodes/AsyncQueue.cpp \
              HelpfulCodes/HFiles.cpp \
              HelpfulCodes/HDaemon.cpp \
-             HelpfulCodes/HFiles.cpp \
-             Buffers/DnsBuffer.cpp \
-             Buffers/Abstract/ParsingBuffAbstract.cpp \
-             Buffers/Abstract/BuffAbstract.cpp \
-             Buffers/DnsDataTypes.cpp
+             HelpfulCodes/HFiles.cpp
+
 
 all : $(TESTING_NAME) $(ASYNCD_NAME)
 

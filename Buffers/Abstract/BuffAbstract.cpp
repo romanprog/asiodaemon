@@ -30,7 +30,7 @@ void *BuffAbstract::data_top()
     return _cdata + _top_offset;
 }
 
-void *BuffAbstract::vdata() const
+void *BuffAbstract::vdata()
 {
     return _cdata;
 }

@@ -6,7 +6,7 @@
 SmtpBuffer::SmtpBuffer()
     :ParsingBuffAbstract::ParsingBuffAbstract("\r\n", 2048)
 {
-    smtp_answer = "220 " + primary_domain + " ESMTP experimental server. Email: <roman.progonnyj@gmail.com>" + "\r\n";
+    smtp_answer = "220 Welcome my son, welcome to the machine. ESMTP experimental server. My Email: <roman.progonnyj@gmail.com>\r\n";
 }
 
 const std::string &SmtpBuffer::answer()

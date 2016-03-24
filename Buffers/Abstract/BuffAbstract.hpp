@@ -16,7 +16,9 @@ public:
 
     // Return pointer to first byte of free space.
     void * data_top();
-    void * vdata() const;
+
+    // Return pointer to first byte of read-write buffer data.
+    void * vdata();
 
     bool accept(size_t bytes_readed);
     void release(size_t size__);
