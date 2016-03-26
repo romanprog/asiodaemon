@@ -7,6 +7,8 @@ namespace aev {
 
 class AEventAbstract : public std::enable_shared_from_this<AEventAbstract>
 {
+    friend class AEventUtilBase;
+
 public:
 
     // Derived class must have 1 constructor with const AEvChildConf (in case it could not be root) or
@@ -15,7 +17,7 @@ public:
     explicit AEventAbstract(const AEvChildConf & config);
     virtual ~AEventAbstract();
 
-    // Init stop event event. Call _ev_stop() in derived class.
+    // Init stop event. Call _ev_stop() in derived class.
     void stop();
 
     // Run event loop. Call only from root object.
@@ -42,6 +44,7 @@ protected:
     virtual void _ev_timeout() = 0;
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) = 0;
 
+
     // Create child event of any derived type.
     // Args: timeout seconds or 0 (without timeout), !addinional! arguments of derived type.
     template <typename EvType, typename... _Args>
@@ -49,7 +52,7 @@ protected:
     {
          AEvPtrBase child_ev = std::make_shared<EvType>(_gen_conf_for_child(timeout), std::forward<_Args>(__args)...);
          child_ev->begin();
-         _child_ev_list.insert(child_ev);
+         _child_ev_list.insert(std::move(child_ev));
     }
 
     // Last step of event before destruct.
@@ -63,6 +66,9 @@ protected:
 
     // Generate AEvChildConf for creating child event.
     AEvChildConf _gen_conf_for_child(int timeout);
+
+    // Generate AEvChildConf for creating child event.
+    AEvUtilConf _gen_conf_for_util();
 
     // Main asio IO service (event loop) pointer.
     AEvStrandPtr _ev_loop;

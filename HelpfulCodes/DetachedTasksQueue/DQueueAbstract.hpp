@@ -9,9 +9,6 @@
 #include <memory>
 #include <functional>
 
-template <typename GETNAME>
-class _type_GN;
-
 //////////////////////////////////////////////////////////////////////////////////////
 /// Abstract class for create detached (in own thread) queue worker. Create interface
 /// for add task and stop worker loop. Contain virtual method _do_job() wich must be

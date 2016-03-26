@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <vector>
 #include <cmath>
+namespace dns {
 
 // Max size of UDP DNS package.
 const size_t max_DNS_pkg_size = 512;
@@ -49,14 +50,6 @@ struct DnsPkgHeaderMap
      * Specifies the number of resource records in the Additional section of the message.
      */
     char ARcount[2] {0, 0};
-};
-
-struct DnsPkgSufix
-{
-    // Query type: see DnsQType.
-    char QType[2] {0, 0};
-    // Query class. 1 by default.
-    char QClass[2] {0, 1};
 };
 
 /*
@@ -164,6 +157,12 @@ struct DnsUtils
 
     // Read 4 bytes ip to string. Move cursor.
     static std::string ip_step_read(const char *&cursor);
+
+    // Validate IP v4 address.
+    static bool is_ip_v4(const std::string & ip);
+
+    // Validate IP v4 address.
+    static bool is_fqdn(const std::string & name);
 };
 
 struct DnsPkgHeader
@@ -223,7 +222,6 @@ struct DnsPkgAnswer
 class DnsRequest
 {
 public:
-    DnsRequest();
     // Write DNS request package to buffer (direct write).
     // Buffer must have enough free space (512 bytes recomended).
     size_t buff_fill(void * buffer);
@@ -245,9 +243,12 @@ public:
     // Parse DNS respond in buffer. Size is determined automatically.
     // req_id used to compare respont and request. 0 - don't check (not recomended).
     bool parse_respond(const void * buffer, uint16_t req_id);
+
+    std::vector<DnsPkgAnswer> get_answers_list();
+
 private:
-    // Answer error. 0 - no error.
-    uint16_t error{0};
+    // Answer error. 0 - no error. 1 - no respond.
+    uint16_t error{1};
 
     DnsPkgHeader header;
     // Queries list in respond.
@@ -256,4 +257,5 @@ private:
     std::vector<DnsPkgAnswer> alist;
 };
 
+}
 #endif // DNSDATATYPES_HPP

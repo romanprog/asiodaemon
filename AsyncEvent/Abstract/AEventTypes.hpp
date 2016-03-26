@@ -5,12 +5,14 @@
 #include <map>
 #include <chrono>
 #include <asio.hpp>
+#include <unordered_map>
 #include <asio/steady_timer.hpp>
 
 // Asyncronus Events namespase
 namespace aev {
 
 class AEventAbstract;
+class AEventUtilBase;
 
 enum class AEvExitSignal
 {
@@ -39,17 +41,21 @@ enum class AEvExitSignal
 enum class AEvStatus
 {
     evroot,
-    evchild
+    evchild,
+    evutil,
+    evmodule
 };
 
 using AEvPtrBase = std::shared_ptr<AEventAbstract>;
 using AEvPtrBaseConst = std::shared_ptr<const AEventAbstract>;
+using AEvUtilPtr = std::shared_ptr<AEventUtilBase>;
 
 using AEvFinishCallback = std::function<int (AEvPtrBase, AEvExitSignal)>;
 using AEvStrandPtr = std::shared_ptr<asio::strand>;
 using AEvTimer = asio::steady_timer;
 using AEvSet = std::set<AEvPtrBase>;
 using AEvIoPtr = std::shared_ptr<asio::io_service>;
+using AEvUtilsSet = std::set<AEvUtilPtr>;
 
 // Config for base AEv type child (wich was created by "create_child").
 struct AEvChildConf
@@ -78,6 +84,16 @@ struct AEvRootConf
     AEvStrandPtr evloop = nullptr;
     AEvFinishCallback onFinishCallback;
     unsigned timeout = 0;
+};
+
+// Config for AEv utils.
+struct AEvUtilConf
+{
+    explicit AEvUtilConf(AEvPtrBase el)
+        :ev_manager(el)
+
+    { }
+    const AEvPtrBase ev_manager;
 };
 
 // Default time in seconds for run timer event. (If event config created with 0 timeout).

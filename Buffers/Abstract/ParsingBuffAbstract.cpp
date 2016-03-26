@@ -72,5 +72,5 @@ BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_
     for (auto pair_ : _buffer.get_offsets_list())
         _temp_data_list.push_back(std::string(_buffer.data() + pair_.first, (trim_separator ? pair_.second - _buffer.get_separator().length() : pair_.second)));
 
-    return std::move(_temp_data_list);
+    return _temp_data_list;
 }

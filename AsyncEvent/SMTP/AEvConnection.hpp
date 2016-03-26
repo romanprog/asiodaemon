@@ -21,7 +21,7 @@ private:
 
     asio::ip::tcp::socket _socket;
     SmtpBuffer _read_buf;
-
+    AEvUtilPtr _test_util;
 
 protected:
     virtual void _ev_begin() override;

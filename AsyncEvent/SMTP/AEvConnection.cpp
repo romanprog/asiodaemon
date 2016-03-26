@@ -15,6 +15,7 @@ AEvConnection::AEvConnection(const AEvChildConf config, asio::ip::tcp::socket _s
 
 void AEvConnection::_ev_begin()
 {
+    _read_buf.init_async(_gen_conf_for_util());
     _start_send();
 }
 
@@ -50,40 +51,16 @@ void AEvConnection::_start_read()
                                 if (ec) {
                                     return;
                                 }
-                                if (!_read_buf.accept(bytes_transferred)) {
-                                    // imposible but...
-                                    stop();
-                                    return;
-                                }
+                                _read_buf.parse_smtp(bytes_transferred, std::bind(&AEvConnection::_start_send, this));
 
-                                if (_read_buf.smtp_error || _read_buf.abort) {
-                                    stop();
-                                    return;
-                                }
-
-                                if (_read_buf.have_answer)
-                                {
-                                    test = _read_buf.get_last_cmd();
-                                    _create_child<AEvDnsClient>(0, test);
-                                    _start_send();
-                                    return;
-                                }
-
-                                reset_and_start_timer();
-
-                                _start_read();
                             }));
 
 }
 
 void AEvConnection::_start_send()
 {
-
-    if (!_read_buf.have_answer || _read_buf.abort)
-    {
+    if (_read_buf.abort)
         stop();
-        return;
-    }
 
     _socket.async_send(asio::buffer(_read_buf.answer()),
                        _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){
@@ -101,7 +78,6 @@ void AEvConnection::_start_send()
                            _start_read();
                        }));
 }
-
 
 } //namespace
 

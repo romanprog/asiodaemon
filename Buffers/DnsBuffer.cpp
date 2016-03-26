@@ -8,7 +8,7 @@ DnsBuffer::DnsBuffer()
 
 }
 
-bool DnsBuffer::create_dns_request(const std::string &name, DnsQType qtype)
+bool DnsBuffer::create_dns_request(const std::string &name, dns::DnsQType qtype)
 {
     // Resrt buffer before request creating.
     reset();
@@ -17,7 +17,7 @@ bool DnsBuffer::create_dns_request(const std::string &name, DnsQType qtype)
         return false;
 
     // Release buffer.
-    release(max_DNS_pkg_size);
+    release(dns::max_DNS_pkg_size);
     // Write DNS reqest to buffer.
     size_t req_size =_request.buff_fill(vdata());
 
@@ -32,19 +32,33 @@ bool DnsBuffer::create_dns_request(const std::string &name, DnsQType qtype)
 std::string DnsBuffer::reqest_data_str()
 {
     std::string res(data(), _top_offset);
-    return std::move(res);
+    return res;
 }
 
 bool DnsBuffer::parse_dns_respond()
 {
 
-    _respond.parse_respond(vdata(), _request.get_id());
+    if (!_respond.parse_respond(vdata(), _request.get_id())) {
+        error = 1;
+        return false;
+    }
+
     return true;
+}
+
+int DnsBuffer::get_error() const
+{
+    return error;
+}
+
+dns::DnsRespond DnsBuffer::get_respond()
+{
+    return _respond;
 }
 
 size_t DnsBuffer::calculate_mem()
 {
-    size_t block_size {max_DNS_pkg_size ? max_DNS_pkg_size : 1};
+    size_t block_size {dns::max_DNS_pkg_size ? dns::max_DNS_pkg_size : 1};
     size_t reserve_bl_count {1};
 
     return ((_top_offset + size_filled()) / block_size + reserve_bl_count) * block_size;

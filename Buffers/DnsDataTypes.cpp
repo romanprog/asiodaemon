@@ -1,11 +1,13 @@
 #include "DnsDataTypes.hpp"
 #include "../HelpfulCodes/HStrings.hpp"
 
+#include <arpa/inet.h>
+#include <algorithm>
 #include <time.h>
 
 namespace {
 
-// Return length of domain section or 0 if it's pointer ()
+// Return length of domain section or 0 if it's pointer to it in DNS package.
 uint8_t d_section_lenth(const char * &cursor)
 {
     // Check 7th and 8th bit.
@@ -24,18 +26,20 @@ uint16_t d_section_offset(const char * &cursor)
     char offset[2];
     memcpy(offset, cursor, sizeof(uint16_t));
 
-    // Clear 7th and 8th bits.
+    // Set 7th and 8th bits to 0.
     offset[0] = offset[0] & 63;
     cursor += sizeof(uint16_t);
-    return DnsUtils::buff_read<uint16_t>(offset);
+    return dns::DnsUtils::buff_read<uint16_t>(offset);
 }
 
+
 } // namespase
+namespace dns {
 
 
 void DnsUtils::write_step_qdn_to_buff(const std::string &dname, char *&_res)
 {
-    for (auto & part : hstrings::split(dname, '.'))
+    for (auto & part : hstrings::splited(dname, '.'))
     {
         *_res = static_cast<char>(part.size());
         ++_res;
@@ -103,7 +107,8 @@ bool DnsUtils::get_flag(const char * ch , const DnsFlag flag_num)
 
 std::string DnsUtils::ip_to_arpa(const std::string &ip)
 {
-    std::vector<std::string> octets(hstrings::split(ip, '.'));
+    std::vector<std::string> octets;
+    hstrings::split(ip, octets, '.');
     if (octets.size() != 4)
         return std::string();
 
@@ -115,7 +120,7 @@ std::string DnsUtils::ip_to_arpa(const std::string &ip)
 
     res += "in-addr.arpa";
 
-    return std::move(res);
+    return res;
 }
 
 uint16_t DnsUtils::rand_qid()
@@ -132,13 +137,43 @@ std::string DnsUtils::ip_step_read(const char *&cursor)
         res += std::to_string(DnsUtils::buff_step_read<uint8_t>(cursor)) + ".";
 
     res.pop_back();
-    return std::move(res);
+    return res;
+}
+
+bool DnsUtils::is_ip_v4(const std::string &ip)
+{
+    struct sockaddr_in sa;
+    return inet_pton(AF_INET, ip.c_str(), &(sa.sin_addr))!=0;
+}
+
+bool DnsUtils::is_fqdn(const std::string &name)
+{
+    if (name.empty())
+        return false;
+
+    if (std::find_if(name.begin(), name.end(), [](char c) { return (!std::isalnum(c) && c != '-' && c != '.' ) ; }) != name.end())
+        return false;
+
+    std::vector<std::string> vec_tmp;
+    hstrings::split(name, vec_tmp, '.');
+
+    if (vec_tmp.size() < 2)
+        return false;
+
+    for (std::string & s : vec_tmp)
+        if (s.empty())
+            return false;
+
+    return true;
 }
 
 bool DnsRequest::gen_request(const std::string &name, DnsQType t)
 {
-    // Todo: check name (QDN or IP)
-    int todo;
+    // Validate @name.
+    if (t == DnsQType::PTR && !DnsUtils::is_ip_v4(name))
+        return false;
+    else if (!DnsUtils::is_fqdn(name))
+        return false;
 
     header.id = DnsUtils::rand_qid();
     // Set to false (request).
@@ -159,11 +194,6 @@ size_t DnsRequest::get_id() const
     return header.id;
 }
 
-DnsRequest::DnsRequest()
-{
-
-}
-
 size_t DnsRequest::buff_fill(void *buffer)
 {
     if (!header.q_count)
@@ -174,21 +204,21 @@ size_t DnsRequest::buff_fill(void *buffer)
 
     // ==== 1) Fill package header ====
     // Create matrix of header and asociate it with buffer begin.
-    DnsPkgHeaderMap * hfiller = reinterpret_cast<DnsPkgHeaderMap *> (buffer);
+    DnsPkgHeaderMap * dns_header_map = reinterpret_cast<DnsPkgHeaderMap *> (buffer);
     // Write data directly into buffer.
-    DnsUtils::buff_write<uint16_t>(hfiller->ident, header.id);
-    DnsUtils::buff_write<uint16_t>(hfiller->QDcount, header.q_count);
+    DnsUtils::buff_write<uint16_t>(dns_header_map->ident, header.id);
+    DnsUtils::buff_write<uint16_t>(dns_header_map->QDcount, header.q_count);
 
     // Set to 0.
-    DnsUtils::buff_write<uint16_t>(hfiller->ANcount, 0);
-    DnsUtils::buff_write<uint16_t>(hfiller->ARcount, 0);
-    DnsUtils::buff_write<uint16_t>(hfiller->NScount, 0);
+    DnsUtils::buff_write<uint16_t>(dns_header_map->ANcount, 0);
+    DnsUtils::buff_write<uint16_t>(dns_header_map->ARcount, 0);
+    DnsUtils::buff_write<uint16_t>(dns_header_map->NScount, 0);
 
     // Fill flags with 0.
-    DnsUtils::buff_write<uint16_t>(hfiller->flags, 0);
+    DnsUtils::buff_write<uint16_t>(dns_header_map->flags, 0);
 
     // Set flags.
-    DnsUtils::set_flag(hfiller->flags, DnsFlag::RD);
+    DnsUtils::set_flag(dns_header_map->flags, DnsFlag::RD);
 
     cursor += sizeof(DnsPkgHeaderMap);
 
@@ -211,22 +241,23 @@ bool DnsRespond::parse_respond(const void *buffer, uint16_t req_id)
 {
     const char * cursor = static_cast<const char *>(buffer);
     const char * const buff_begin = static_cast<const char * const>(buffer);
-    const DnsPkgHeaderMap * hfiller = reinterpret_cast<const DnsPkgHeaderMap *> (buffer);
 
-    header.id = DnsUtils::buff_read<uint16_t>(hfiller->ident);
+    const DnsPkgHeaderMap * dns_header_map = reinterpret_cast<const DnsPkgHeaderMap *> (buffer);
+
+    header.id = DnsUtils::buff_read<uint16_t>(dns_header_map->ident);
 
     // Is this respond to appropriate request?
     if (req_id && (req_id != header.id))
         return false;
     // Get error status from DNS flag.
-    error = DnsUtils::get_error(hfiller->flags);
+    error = DnsUtils::get_error(dns_header_map->flags);
 
     // Server return error.
     if (error)
         return false;
 
-    header.q_count = DnsUtils::buff_read<uint16_t>(hfiller->QDcount);
-    header.a_count = DnsUtils::buff_read<uint16_t>(hfiller->ANcount);
+    header.q_count = DnsUtils::buff_read<uint16_t>(dns_header_map->QDcount);
+    header.a_count = DnsUtils::buff_read<uint16_t>(dns_header_map->ANcount);
 
     cursor += sizeof(DnsPkgHeaderMap);
 
@@ -260,8 +291,12 @@ bool DnsRespond::parse_respond(const void *buffer, uint16_t req_id)
         }
         alist.push_back(a_tmp);
     }
-    return static_cast<size_t>(cursor - buff_begin);
-
+    return true;
 }
 
+std::vector<DnsPkgAnswer> DnsRespond::get_answers_list()
+{
+    return alist;
+}
 
+}

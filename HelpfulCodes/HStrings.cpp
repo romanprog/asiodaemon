@@ -3,6 +3,7 @@
 #include <sstream>
 #include <algorithm>
 
+
 namespace {
 
 static const char alphanum[] =
@@ -40,19 +41,27 @@ bool is_digit_only(const std::string &s)
         s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
 }
 
-
-std::vector<std::string> split(const std::string &str, char delim)
+void split(const std::string &str, std::vector<std::string> &res, char delim)
 {
-    std::string str_buf;
-    std::stringstream sstr(str);
-    std::vector<std::string> res;
+    std::string::size_type i = 0;
+    std::string::size_type j = str.find(delim);
 
-    while (std::getline(sstr, str_buf, delim))
-            res.push_back(str_buf);
-
-    return std::move(res);
-
+    while (j != std::string::npos) {
+        res.push_back(str.substr(i, j-i));
+        i = ++j;
+        j = str.find(delim, j);
+    }
+    res.push_back(str.substr(i, str.length()));
 }
+
+std::vector<std::string> splited(const std::string &str, char delim)
+{
+    std::vector<std::string> res;
+    split(str, res, delim);
+    return res;
+}
+
+
 
 
 } // namespase hstrings

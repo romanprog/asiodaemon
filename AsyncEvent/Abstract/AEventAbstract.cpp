@@ -18,13 +18,13 @@ AEventAbstract::AEventAbstract(aev::AEvRootConf & config)
 }
 
 AEventAbstract::AEventAbstract(const AEvChildConf & config)
-    :_ev_loop(std::make_shared<asio::strand>(config.evloop->get_io_service())),
+    :_ev_loop(config.evloop),
       _status(AEvStatus::evchild),
       _finish_callback(config.onFinishCallback),
       _timeout(config.timeout),
       _timer(_ev_loop->get_io_service())
 {
-//    std::cout << "AEventsAbstract CONSTRUCTOR! " << std::endl;
+    //    std::cout << "AEventsAbstract CONSTRUCTOR! " << std::endl;
 }
 
 AEventAbstract::~AEventAbstract()
@@ -56,7 +56,7 @@ void AEventAbstract::reset_and_start_timer()
 
         if (!_timeout)
         {
-            int todo; // Add call virtul timecheck method in case of 0 timeout.
+            int todo; // Add call virtual timecheck method in case of 0 timeout.
             _timer.expires_from_now(std::chrono::seconds(ev_default_timecheck));
             reset_and_start_timer();
         } else {
@@ -87,6 +87,12 @@ AEvChildConf AEventAbstract::_gen_conf_for_child(int timeout)
     auto cb = std::bind(&AEventAbstract::_child_callback, this, std::placeholders::_1, std::placeholders::_2);
     return AEvChildConf(_ev_loop, cb, timeout);
 }
+
+AEvUtilConf AEventAbstract::_gen_conf_for_util()
+{
+    return AEvUtilConf(_my_ptr);
+}
+
 
 int AEventAbstract::_child_callback(AEvPtrBase _child, AEvExitSignal _ret)
 {

@@ -13,7 +13,7 @@ namespace btreeCpp {
 class Node;
 
 // Node pointer manager.
-using Node_ptr = std::shared_ptr<Node>;
+using Node_ptr = std::unique_ptr<Node>;
 
 // Node class (leafs) for binary tree.
 class Node

@@ -50,6 +50,7 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsyncEvent/DNS/AEvDnsClient.cpp \
              AsyncEvent/System/AEvSysSig.cpp \
              AsyncEvent/Abstract/AEventAbstract.cpp \
+             AsyncEvent/Abstract/AEventUtilBase.cpp \
              Buffers/SmtpBuffer.cpp \
              Buffers/DnsBuffer.cpp \
              HelpfulCodes/HDaemon.cpp \
