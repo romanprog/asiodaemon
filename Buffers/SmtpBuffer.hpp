@@ -8,11 +8,12 @@
 #include <vector>
 
 
-class SmtpBuffer : public ParsingBuffAbstract, public aev::AEventUtilBase
+class SmtpBuffer : public aev::AEventUtilBase, public ParsingBuffAbstract
 {
 public:
     using SmtpCmdCallback = std::function<void ()>;
     SmtpBuffer();
+    ~SmtpBuffer();
     void parse_smtp(size_t size, SmtpCmdCallback cb);
     const std::string & answer();
     const std::string get_answer();

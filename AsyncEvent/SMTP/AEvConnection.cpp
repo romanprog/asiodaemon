@@ -38,7 +38,7 @@ void AEvConnection::_ev_timeout()
 
 void AEvConnection::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
-
+    AEvExitSignal ct= _ret;
 }
 
 void AEvConnection::_start_read()
@@ -59,8 +59,10 @@ void AEvConnection::_start_read()
 
 void AEvConnection::_start_send()
 {
-    if (_read_buf.abort)
+    if (_read_buf.abort) {
         stop();
+        return;
+    }
 
     _socket.async_send(asio::buffer(_read_buf.answer()),
                        _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){

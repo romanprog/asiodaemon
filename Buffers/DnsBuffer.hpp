@@ -22,7 +22,7 @@ private:
     virtual size_t calculate_mem() override;
     virtual void when_new_data_acc(size_t bytes_readed) override;
     virtual void when_reseted() override;
-    int error {0};
+    int error {100};
 
     dns::DnsRequest _request;
     dns::DnsRespond _respond;

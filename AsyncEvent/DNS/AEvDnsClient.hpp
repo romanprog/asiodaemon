@@ -5,12 +5,12 @@
 #include "../../Buffers/DnsBuffer.hpp"
 
 namespace aev {
-    using RetFunc = std::function<void (int err, dns::DnsRespond && result)>;
+    using RetFunc = std::function<void (int err, dns::DnsRespond result)>;
 class AEvDnsClient : public AEventAbstract
 {
 public:
     explicit AEvDnsClient(const AEvChildConf config, std::string name, dns::DnsQType tp, RetFunc ret_func);
-
+    ~AEvDnsClient();
 private:
 
     asio::ip::udp::socket _socket;

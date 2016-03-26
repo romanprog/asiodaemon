@@ -51,8 +51,8 @@ protected:
     void _create_child(int timeout, _Args&&... __args)
     {
          AEvPtrBase child_ev = std::make_shared<EvType>(_gen_conf_for_child(timeout), std::forward<_Args>(__args)...);
+         _child_ev_list.insert(child_ev);
          child_ev->begin();
-         _child_ev_list.insert(std::move(child_ev));
     }
 
     // Last step of event before destruct.

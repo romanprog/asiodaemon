@@ -10,6 +10,12 @@ SmtpBuffer::SmtpBuffer()
     smtp_answer = "220 Welcome my son, welcome to the machine. ESMTP experimental server. My Email: <roman.progonnyj@gmail.com>\r\n";
 }
 
+SmtpBuffer::~SmtpBuffer()
+{
+    int q = 100;
+    return;
+}
+
 void SmtpBuffer::parse_smtp(size_t size, SmtpBuffer::SmtpCmdCallback cb)
 {
     _when_have_ansver_cb = cb;
@@ -36,6 +42,7 @@ const std::string SmtpBuffer::get_last_cmd()
 void SmtpBuffer::when_have_new_part(const size_t begin_offset, const size_t size)
 {
     std::string answ(data()+begin_offset, size - get_separator().size());
+    smtp_answer.clear();
     parsed_cmd = answ;
     if (answ == "quit") {
         waiting_for_command = false;
@@ -45,13 +52,11 @@ void SmtpBuffer::when_have_new_part(const size_t begin_offset, const size_t size
         return;
     }
 
-    _create_child<aev::AEvDnsClient>(3, answ, dns::DnsQType::A,
+    _create_child<aev::AEvDnsClient>(0, answ, dns::DnsQType::A,
                                      [this](int err, dns::DnsRespond result)
     {
-        smtp_answer.clear();
-
         if (err) {
-            smtp_answer += "Can't resolve.\r\n";
+            smtp_answer = "Can't resolve.\r\n";
         } else {
             for (auto & r : result.get_answers_list())
                 smtp_answer += r.answer + "\r\n";

@@ -42,6 +42,7 @@ bool DnsBuffer::parse_dns_respond()
         error = 1;
         return false;
     }
+    error = 0;
 
     return true;
 }
@@ -72,6 +73,9 @@ void DnsBuffer::when_new_data_acc(size_t bytes_readed)
 
 void DnsBuffer::when_reseted()
 {
+//    _request = dns::DnsRequest();
+//    _respond = dns::DnsRespond();
+//    error = 100;
     // _request = DnsRequest();
 }
 
