@@ -39,24 +39,27 @@ ASYNCD_INCLUDES =
 ASYNCD_NAME = async_daemon
 
 ASYNCD_SOURCES = async_daemon.cpp \
-             HelpfulCodes/HStrings.cpp \
-             HelpfulCodes/BTreeStore.cpp \
-             HelpfulCodes/BTreeStoreCPP.cpp \
-             HelpfulCodes/MLocker.cpp \
-             HelpfulCodes/AsyncQueue.cpp \
-             HelpfulCodes/HFiles.cpp \
+             HUtils/HStrings.cpp \
+             HUtils/BTreeStore.cpp \
+             HUtils/BTreeStoreCPP.cpp \
+             HUtils/MLocker.cpp \
+             HUtils/AsyncQueue.cpp \
+             HUtils/HFiles.cpp \
+             HUtils/HDaemon.cpp \
              AsyncEvent/SMTP/AEvConnection.cpp \
              AsyncEvent/SMTP/AEvAcceptor.cpp \
+             AsyncEvent/SMTP/SmtpBuffer.cpp \
+             AsyncEvent/SMTP/SmtpTypes.cpp \
+             AsyncEvent/SMTP/SmtpSession.cpp \
+             AsyncEvent/DNS/DnsBuffer.cpp \
              AsyncEvent/DNS/AEvDnsClient.cpp \
-             AsyncEvent/System/AEvSysSig.cpp \
-             AsyncEvent/Abstract/AEventAbstract.cpp \
-             AsyncEvent/Abstract/AEventUtilBase.cpp \
-             Buffers/SmtpBuffer.cpp \
-             Buffers/DnsBuffer.cpp \
-             HelpfulCodes/HDaemon.cpp \
-             Buffers/Abstract/ParsingBuffAbstract.cpp \
-             Buffers/Abstract/BuffAbstract.cpp \
-             Buffers/DnsDataTypes.cpp
+             AsyncEvent/DNS/DnsDataTypes.cpp \
+             AsyncEvent/SysSig/AEvSysSig.cpp \
+             AsyncEvent/AEvBase/AEventAbstract.cpp \
+             AsyncEvent/AEvBase/AEventUtilBase.cpp \
+             AsyncEvent/BufferBase/ParsingBuffAbstract.cpp \
+             AsyncEvent/BufferBase/BuffAbstract.cpp \
+
 
 TESTING_LDLIBS = -lstdc++ -pthread
 
@@ -65,14 +68,14 @@ TESTING_INCLUDES =
 TESTING_NAME = testing
 
 TESTING_SOURCES = testing.cpp \
-             HelpfulCodes/HStrings.cpp \
-             HelpfulCodes/BTreeStore.cpp \
-             HelpfulCodes/BTreeStoreCPP.cpp \
-             HelpfulCodes/MLocker.cpp \
-             HelpfulCodes/AsyncQueue.cpp \
-             HelpfulCodes/HFiles.cpp \
-             HelpfulCodes/HDaemon.cpp \
-             HelpfulCodes/HFiles.cpp
+             HUtils/HStrings.cpp \
+             HUtils/BTreeStore.cpp \
+             HUtils/BTreeStoreCPP.cpp \
+             HUtils/MLocker.cpp \
+             HUtils/AsyncQueue.cpp \
+             HUtils/HFiles.cpp \
+             HUtils/HDaemon.cpp \
+             HUtils/HFiles.cpp
 
 
 all : $(TESTING_NAME) $(ASYNCD_NAME)

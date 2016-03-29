@@ -1,5 +1,6 @@
 #include "AEvConnection.hpp"
 #include "../DNS/AEvDnsClient.hpp"
+#include <functional>
 
 
 #include "iostream"
@@ -8,15 +9,17 @@ namespace aev {
 
 AEvConnection::AEvConnection(const AEvChildConf config, asio::ip::tcp::socket _soc)
     :AEventAbstract::AEventAbstract(config),
-     _socket(std::move(_soc))
+     _socket(std::move(_soc)),
+     session(std::bind(&AEvConnection::_respond_handler, this, std::placeholders::_1))
 {
     // std::cout << "AEvConnection CONSTRUCTOR! " << std::endl;
 }
 
 void AEvConnection::_ev_begin()
 {
-    _read_buf.init_async(_gen_conf_for_util());
-    _start_send();
+    session.init_async(_gen_conf_for_util());
+    session.begin();
+    _start_read();
 }
 
 void AEvConnection::_ev_finish()
@@ -38,46 +41,46 @@ void AEvConnection::_ev_timeout()
 
 void AEvConnection::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
-    AEvExitSignal ct= _ret;
+
 }
 
 void AEvConnection::_start_read()
 {
-    _read_buf.release(80);
+    read_buffer.release(80);
 
-    _socket.async_read_some(asio::buffer(_read_buf.data_top(), _read_buf.size_avail()),
+    _socket.async_read_some(asio::buffer(read_buffer.data_top(), read_buffer.size_avail()),
                             _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){
 
                                 if (ec) {
                                     return;
                                 }
-                                _read_buf.parse_smtp(bytes_transferred, std::bind(&AEvConnection::_start_send, this));
+                                read_buffer.accept(bytes_transferred);
+                                while (read_buffer.have_new_line())
+                                {
+                                    session.processing(read_buffer.get_line());
+                                }
+                                _start_read();
 
                             }));
 
 }
 
-void AEvConnection::_start_send()
+void AEvConnection::_respond_handler(std::string data)
 {
-    if (_read_buf.abort) {
-        stop();
-        return;
-    }
 
-    _socket.async_send(asio::buffer(_read_buf.answer()),
+    _socket.async_send(asio::buffer(data),
                        _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){
 
                            if (ec) {
+                               stop();
+                               return;
+                           }
+                           if (session.close_demand()) {
+                               stop();
                                return;
                            }
 
-                           if (_read_buf.waiting_for_command) {
-                               _start_read();
-                               return;
-
-                           }
                            reset_and_start_timer();
-                           _start_read();
                        }));
 }
 

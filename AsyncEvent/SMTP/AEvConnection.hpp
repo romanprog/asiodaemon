@@ -1,8 +1,9 @@
 #ifndef AEvConnection_HPP
 #define AEvConnection_HPP
 
-#include "../Abstract/AEventAbstract.hpp"
-#include "../../Buffers/SmtpBuffer.hpp"
+#include "../AEvBase/AEventAbstract.hpp"
+#include "SmtpBuffer.hpp"
+#include "SmtpSession.hpp"
 
 namespace aev {
 
@@ -20,8 +21,8 @@ public:
 private:
 
     asio::ip::tcp::socket _socket;
-    SmtpBuffer _read_buf;
-    AEvUtilPtr _test_util;
+    SmtpBuffer read_buffer;
+    SmtpSession session;
 
 protected:
     virtual void _ev_begin() override;
@@ -31,7 +32,7 @@ protected:
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) override;
 
     void _start_read();
-    void _start_send();
+    void _respond_handler(std::string data);
 
 };
 

@@ -41,25 +41,45 @@ bool is_digit_only(const std::string &s)
         s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
 }
 
-void split(const std::string &str, std::vector<std::string> &res, char delim)
+bool is_alfa_only(const std::string &s)
 {
-    std::string::size_type i = 0;
-    std::string::size_type j = str.find(delim);
-
-    while (j != std::string::npos) {
-        res.push_back(str.substr(i, j-i));
-        i = ++j;
-        j = str.find(delim, j);
-    }
-    res.push_back(str.substr(i, str.length()));
+    return !s.empty() && std::find_if(s.begin(),
+        s.end(), [](char c) { return !std::isalpha(c); }) == s.end();
 }
 
-std::vector<std::string> splited(const std::string &str, char delim)
+
+std::vector<std::string> &split(const std::string &str, std::vector<std::string> &res, char delim, bool remove_empty)
 {
-    std::vector<std::string> res;
-    split(str, res, delim);
+    std::string::size_type j{0}, i{0};
+
+    while (true) {
+        j = str.find(delim, j);
+
+        if (!remove_empty || i != j)
+            res.push_back(str.substr(i, j-i));
+
+        if (j == std::string::npos)
+            break;
+
+        i = ++j;
+
+    }
     return res;
 }
+
+std::vector<std::string> splitted(const std::string &str, char delim, bool remove_empty)
+{
+    std::vector<std::string> res;
+    split(str, res, delim, remove_empty);
+    return res;
+}
+
+std::string &to_lower(std::string &text)
+{
+    std::transform(text.begin(), text.end(), text.begin(), ::tolower);
+    return text;
+}
+
 
 
 

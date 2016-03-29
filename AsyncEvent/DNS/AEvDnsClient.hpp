@@ -1,8 +1,8 @@
 #ifndef AEVDNSCLIENT_HPP
 #define AEVDNSCLIENT_HPP
 
-#include "../Abstract/AEventAbstract.hpp"
-#include "../../Buffers/DnsBuffer.hpp"
+#include "../AEvBase/AEventAbstract.hpp"
+#include "DnsBuffer.hpp"
 
 namespace aev {
     using RetFunc = std::function<void (int err, dns::DnsRespond result)>;

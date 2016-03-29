@@ -14,9 +14,13 @@ std::string & rand_str(std::string & str, size_t lenth);
 std::string rand_str(size_t lenth);
 
 bool is_digit_only(const std::string & s);
+bool is_alfa_only(const std::string & s);
 
-std::vector<std::string> splited(const std::string & str, char delim);
-void split(const std::string & str, std::vector<std::string> &res, char delim);
+std::vector<std::string> splitted(const std::string & str, char delim, bool remove_empty = false);
+std::vector<std::string> & split(const std::string & str, std::vector<std::string> &res, char delim, bool remove_empty = false);
+
+// Convert string to lower case.
+std::string & to_lower(std::string & text);
 
 }
 #endif // HSTRINGS_HPP

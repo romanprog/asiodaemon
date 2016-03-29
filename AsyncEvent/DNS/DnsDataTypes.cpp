@@ -1,5 +1,5 @@
 #include "DnsDataTypes.hpp"
-#include "../HelpfulCodes/HStrings.hpp"
+#include "../../HUtils/HStrings.hpp"
 
 #include <arpa/inet.h>
 #include <algorithm>
@@ -39,7 +39,7 @@ namespace dns {
 
 void DnsUtils::write_step_qdn_to_buff(const std::string &dname, char *&_res)
 {
-    for (auto & part : hstrings::splited(dname, '.'))
+    for (auto & part : hstrings::splitted(dname, '.'))
     {
         *_res = static_cast<char>(part.size());
         ++_res;

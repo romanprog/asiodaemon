@@ -1,5 +1,5 @@
 #include "AEvDnsClient.hpp"
-#include "../../Buffers/DnsBuffer.hpp"
+#include "DnsBuffer.hpp"
 
 #include "iostream"
 

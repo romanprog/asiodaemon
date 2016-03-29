@@ -1,7 +1,7 @@
 #ifndef DNSBUFFER_HPP
 #define DNSBUFFER_HPP
 
-#include "Abstract/ParsingBuffAbstract.hpp"
+#include "../BufferBase/ParsingBuffAbstract.hpp"
 #include "DnsDataTypes.hpp"
 
 #include <string>
