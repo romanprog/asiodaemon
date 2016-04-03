@@ -32,4 +32,4 @@ bool readtostr(const std::string &filename, std::string &file_data)
     return true;
 }
 
-} // namespase
+} // namespace

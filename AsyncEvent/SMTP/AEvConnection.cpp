@@ -18,7 +18,7 @@ AEvConnection::AEvConnection(const AEvChildConf config, asio::ip::tcp::socket _s
 void AEvConnection::_ev_begin()
 {
     session.init_async(_gen_conf_for_util());
-    session.begin();
+    session.begin(_socket.remote_endpoint().address().to_string());
     _start_read();
 }
 
@@ -46,7 +46,7 @@ void AEvConnection::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret
 
 void AEvConnection::_start_read()
 {
-    read_buffer.release(80);
+    read_buffer.release(1024);
 
     _socket.async_read_some(asio::buffer(read_buffer.data_top(), read_buffer.size_avail()),
                             _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){
@@ -55,15 +55,16 @@ void AEvConnection::_start_read()
                                     return;
                                 }
                                 read_buffer.accept(bytes_transferred);
-                                while (read_buffer.have_new_line())
-                                {
-                                    session.processing(read_buffer.get_line());
+                                if (!read_buffer.is_empty()) {
+                                    session.transaction(read_buffer);
+                                    read_buffer.mem_reduce();
                                 }
-                                _start_read();
-
+                                 _start_read();
                             }));
 
 }
+
+
 
 void AEvConnection::_respond_handler(std::string data)
 {

@@ -90,6 +90,6 @@ private:
     void _create(const void * data, Node_ptr & _node);
 };
 
-} // namespase
+} // namespace
 
 #endif // BTREESTORE_HPP

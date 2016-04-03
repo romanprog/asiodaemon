@@ -20,13 +20,20 @@ public:
     // Return pointer to first byte of read-write buffer data.
     void * vdata();
 
+    // Public method to call after any data writed in buffer.
+    // Call virtual @when_new_data_acc.
     bool accept(size_t bytes_readed);
+
+    // Allocates a specified number of bytes of free space.
+    // Call virtual method @calculate_mem to reserve additional memory for next @release call.
+    // If reserved memory enough - new memory is not allocated.
     void release(size_t size__);
 
     // Reset buffer, clear data, and ser all counters to default.
-    void reset();
+    // If needed override this function - make sure to call @BuffAbstract::reset() in derived class!
+    virtual void reset();
 
-    // In base variant - return size_avail(). Can be overridden in derived classes.
+    // In base variant - return full size of buffer @_size (size_filled() + size_avail()). Can be overridden in derived classes.
     virtual size_t size() const;
 
     // Return actual data size, stored in buffer.
@@ -48,11 +55,13 @@ public:
 protected:
     virtual size_t calculate_mem();
     virtual void when_new_data_acc(size_t bytes_readed) = 0;
-    virtual void when_reseted() = 0;
+    virtual void when_reseted();
+    size_t top_offset() const;
 
-    size_t _reserved;
-    size_t _size {0};
+private:
     size_t _top_offset {0};
+    size_t _reserved {0};
+    size_t _size {0};
     size_t _data_cursor{0};
     char * _cdata;
 

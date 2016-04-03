@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <asio/steady_timer.hpp>
 
-// Asyncronus Events namespase
+// Asyncronus Events namespace
 namespace aev {
 
 class AEventAbstract;

@@ -22,5 +22,17 @@ std::vector<std::string> & split(const std::string & str, std::vector<std::strin
 // Convert string to lower case.
 std::string & to_lower(std::string & text);
 
+// Get part number @pindex of string separated by @delim.
+// Numbering is zero base.
+bool get_part(const std::string & text, std::string &result, char delim, size_t pindex = 0);
+
+
+bool cut_part(const std::string & text, std::string &result, char delim, size_t pindex = 0);
+
+std::string & trim_l(std::string & text);
+std::string & trim_r(std::string & text);
+std::string & trim(std::string & text);
+
+
 }
 #endif // HSTRINGS_HPP

@@ -75,10 +75,13 @@ TESTING_SOURCES = testing.cpp \
              HUtils/AsyncQueue.cpp \
              HUtils/HFiles.cpp \
              HUtils/HDaemon.cpp \
-             HUtils/HFiles.cpp
+             HUtils/HFiles.cpp \
+             AsyncEvent/BufferBase/ParsingBuffAbstract.cpp \
+             AsyncEvent/BufferBase/BuffAbstract.cpp
 
 
-all : $(TESTING_NAME) $(ASYNCD_NAME)
+all : $(TESTING_NAME)
+#$(ASYNCD_NAME)
 
 $(ASYNCD_NAME): $(ASYNCD_SOURCES)
 	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)

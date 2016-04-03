@@ -5,7 +5,9 @@
 #include "DnsBuffer.hpp"
 
 namespace aev {
-    using RetFunc = std::function<void (int err, dns::DnsRespond result)>;
+
+using RetFunc = std::function<void (int err, dns::DnsRespond result)>;
+
 class AEvDnsClient : public AEventAbstract
 {
 public:
@@ -17,11 +19,9 @@ private:
     std::string _domain;
     asio::ip::udp::endpoint endpoint;
     DnsBuffer buff;
-
     RetFunc ret_function_cb;
     dns::DnsQType query_type;
 
-protected:
     virtual void _ev_begin() override;
     virtual void _ev_finish() override;
     virtual void _ev_stop() override;

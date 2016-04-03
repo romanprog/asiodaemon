@@ -9,7 +9,7 @@
 namespace dns {
 
 // Max size of UDP DNS package.
-const size_t max_DNS_pkg_size = 512;
+const size_t max_pkg_size = 512;
 
 struct DnsPkgHeaderMap
 {
@@ -89,81 +89,80 @@ enum class DnsQType
     MX = 15
 };
 
-// Utils struct. Read/write/generate/parse/... DNS packages.
-struct DnsUtils
+// Utils. Read/write/generate/parse/... DNS packages.
+namespace utils {
+// Convert sizeof(ResT) bytes from bufer to unsigned integral type ResT.
+// Pointer remains at the same position.
+template <typename ResT>
+ResT buff_read(const char * pt)
 {
-    // Convert sizeof(ResT) bytes from bufer to unsigned integral type ResT.
-    // Pointer remains at the same position.
-    template <typename ResT>
-    static ResT buff_read(const char * pt)
+    ResT result = 0;
+    for (int i = 0; i < sizeof(ResT); ++i)
     {
-        ResT result = 0;
-        for (int i = 0; i < sizeof(ResT); ++i)
-        {
-            result += static_cast<ResT>(static_cast<unsigned char>(pt[i])) * pow(256, sizeof(ResT) - i - 1);
-        }
-        return result;
+        result += static_cast<ResT>(static_cast<unsigned char>(pt[i])) * pow(256, sizeof(ResT) - i - 1);
     }
-    // Convert sizeof(ResT) bytes from bufer to unsigned integral type ResT.
-    // Moves the pointer to sizeof(ResT) bytes forward.
-    template <typename ResT>
-    static ResT buff_step_read(const char *&cursor)
+    return result;
+}
+// Convert sizeof(ResT) bytes from bufer to unsigned integral type ResT.
+// Moves cursor pointer to sizeof(ResT) bytes forward.
+template <typename T>
+T buff_step_read(const char *&cursor)
+{
+    T result = buff_read<T>(cursor);
+    cursor += sizeof(T);
+    return result;
+}
+// Write sizeof(ResT) bytes from unsigned integral type ResT to buffer in dns format.
+// Pointer remains at the same position.
+template <typename T>
+static void buff_write(char * pt, T val)
+{
+    for (int i = 0; i < sizeof(T) - 1; ++i)
     {
-        ResT result = buff_read<ResT>(cursor);
-        cursor += sizeof(ResT);
-        return result;
+        pt[i] = static_cast<char>(val / pow(256, sizeof(T) - i - 1));
     }
-    // Write sizeof(ResT) bytes from unsigned integral type ResT to buffer in dns format.
-    // Pointer remains at the same position.
-    template <typename ResT>
-    static void buff_write(char * pt, ResT val)
-    {
-        for (int i = 0; i < sizeof(ResT) - 1; ++i)
-        {
-            pt[i] = static_cast<char>(val / pow(256, sizeof(ResT) - i - 1));
-        }
-        pt[sizeof(ResT) - 1] = static_cast<char>(val % 256);
-    }
-    // Write sizeof(ResT) bytes from unsigned integral type ResT to buffer in dns format.
-    // Moves the pointer to sizeof(ResT) bytes forward.
-    template <typename ResT>
-    static void buff_step_write(char *&cursor, ResT val)
-    {
-        buff_write(cursor, val);
-        cursor += sizeof(ResT);
-    }
+    pt[sizeof(T) - 1] = static_cast<char>(val % 256);
+}
+// Write sizeof(ResT) bytes from unsigned integral type ResT to buffer in dns format.
+// Moves cursor pointer to sizeof(ResT) bytes forward.
+template <typename T>
+void buff_step_write(char *&cursor, T val)
+{
+    buff_write(cursor, val);
+    cursor += sizeof(T);
+}
 
-    // Return DNS pkg bool flag.
-    static bool get_flag(const char * ch, const DnsFlag flag_num);
+// Return DNS pkg bool flag.
+bool get_flag(const char * ch, const DnsFlag flag_num);
 
-    // Set DNS pkg bool flag.
-    static void set_flag(char * ch, const DnsFlag flag_num);
+// Set DNS pkg bool flag.
+void set_flag(char * ch, const DnsFlag flag_num);
 
-    // Get DNS answer error from flags.
-    static uint16_t get_error(const char * flag);
+// Get DNS answer error from flags.
+uint16_t get_error(const char * flag);
 
-    // Get string domain from DNS data set. Return offset first byte after reading name.
-    static void buff_step_read_qdn(const char *dns_pkg, const char *&cursor, std::string & result);
+// Get string domain from DNS data set. Return offset first byte after reading name.
+void buff_step_read_qdn(const char *dns_pkg, const char *&cursor, std::string & result);
 
-    // Convert domain to package format and write result directly in buffer.
-    // Return size of the data, written to buffer.
-    static void write_step_qdn_to_buff(const std::string &dname, char *&_res);
+// Convert domain to package format and write result directly in buffer.
+// Return size of the data, written to buffer.
+void write_step_qdn_to_buff(const std::string &dname, char *&_res);
 
-    // Convert string IP to .in-addr.arpa QDN.
-    static std::string ip_to_arpa(const std::string &ip);
+// Convert string IP to .in-addr.arpa QDN.
+std::string ip_to_arpa(const std::string &ip);
 
-    // Generate random ID for DNS pkg ident.
-    static uint16_t rand_qid();
+// Generate random ID for DNS pkg ident.
+uint16_t rand_qid();
 
-    // Read 4 bytes ip to string. Move cursor.
-    static std::string ip_step_read(const char *&cursor);
+// Read 4 bytes ip to string. Move cursor.
+std::string ip_step_read(const char *&cursor);
 
-    // Validate IP v4 address.
-    static bool is_ip_v4(const std::string & ip);
+// Validate IP v4 address.
+bool is_ip_v4(const std::string & ip);
 
-    // Validate IP v4 address.
-    static bool is_fqdn(const std::string & name);
-};
+// Validate IP v4 address.
+bool is_fqdn(const std::string & name);
+} // namespace utils
 
 struct DnsPkgHeader
 {
@@ -222,6 +221,12 @@ struct DnsPkgAnswer
 class DnsRequest
 {
 public:
+    DnsRequest()
+    {
+
+    }
+
+protected:
     // Write DNS request package to buffer (direct write).
     // Buffer must have enough free space (512 bytes recomended).
     size_t buff_fill(void * buffer);
@@ -229,12 +234,18 @@ public:
     size_t get_id() const;
 
     bool gen_request(const std::string & name, DnsQType t);
-
-private:
     // Request header.
     DnsPkgHeader header;
     // Queries list.
     std::vector<DnsPkgQuery> qlist;
+};
+
+class DnsARequest : public DnsRequest
+{
+    DnsARequest()
+    {
+
+    }
 };
 
 class DnsRespond
@@ -247,9 +258,8 @@ public:
     std::vector<DnsPkgAnswer> get_answers_list();
 
 private:
-    // Answer error. 0 - no error. 1 - no respond.
-    uint16_t error{1};
 
+    // Respond header.
     DnsPkgHeader header;
     // Queries list in respond.
     std::vector<DnsPkgQuery> qlist;

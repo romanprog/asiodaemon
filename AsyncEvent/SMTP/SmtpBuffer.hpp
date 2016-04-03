@@ -16,17 +16,17 @@ public:
     using SmtpCmdCallback = std::function<void ()>;
     SmtpBuffer();
 
+    void clear();
     std::string get_line();
-    bool have_new_line();
+    bool is_empty();
+    size_t list_size() const;
 
 
 private:
 
     virtual void when_have_new_part(const size_t begin_offset, const size_t size) override;
-    virtual void when_parsed(unsigned new_parts_count) override;
 
     std::string parsed_cmd;
-    bool have_line {false};
     std::queue<std::string> lines_list;
 };
 

@@ -36,5 +36,5 @@ protected:
 
 };
 
-} // namespase aev
+} // namespace aev
 #endif // AEVENTUTILBASE_HPP

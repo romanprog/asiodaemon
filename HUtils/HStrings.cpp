@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <algorithm>
+#include <utility>
 
 
 namespace {
@@ -80,8 +81,70 @@ std::string &to_lower(std::string &text)
     return text;
 }
 
+std::string &trim_l(std::string &text)
+{
+    text.erase(text.begin(), std::find_if_not(text.begin(), text.end(), isspace));
+    return text;
+}
 
+std::string &trim_r(std::string &text)
+{
+    text.erase(std::find_if_not(text.rbegin(), text.rend(), isspace).base() , text.end());
+    return text;
+}
 
+std::string &trim(std::string &text)
+{
+    return trim_l(trim_r(text));
+}
 
+namespace  {
 
-} // namespase hstrings
+std::pair<size_t, size_t> pcoord(const std::string &text, char delim, size_t pindex)
+{
+   size_t pos_beg {0}, pos_end {0};
+
+    for (size_t i = 0; i <= pindex; ++i)
+    {
+        pos_beg = text.find_first_not_of(delim, pos_end);
+        if (pos_beg == std::string::npos)
+            return {std::string::npos, std::string::npos};
+
+        pos_end = text.find(delim, pos_beg);
+    }
+    if (pos_end == std::string::npos)
+        pos_end = text.size();
+
+    return {pos_beg, pos_end};
+}
+
+}
+
+bool get_part(const std::string &text, std::string &result, char delim, size_t pindex)
+{
+    std::pair<size_t, size_t> substr_coords = pcoord(text, delim, pindex);
+    if (substr_coords.first == std::string::npos)
+        return false;
+
+    result = text.substr(substr_coords.first, substr_coords.second - substr_coords.first);
+    return true;
+}
+
+bool cut_part(const std::string & text, std::string &result, char delim, size_t pindex)
+{
+    std::pair<size_t, size_t> substr_coords = pcoord(text, delim, pindex);
+
+    if (substr_coords.first == std::string::npos)
+        return false;
+
+    if (substr_coords.second < text.size())
+        ++substr_coords.second;
+    if (substr_coords.first > 0)
+        -- substr_coords.first;
+
+    result = text;
+    result.erase(substr_coords.first, substr_coords.second - substr_coords.first);
+    return true;
+}
+
+} // namespace hstrings
