@@ -1,8 +1,7 @@
 #include "SmtpTypes.hpp"
-#include "../DNS/DnsDataTypes.hpp"
+#include "../DNS/DnsTypes.hpp"
+#include "../DNS/DnsUtils.hpp"
 #include "../../HUtils/HStrings.hpp"
-
-
 
 namespace smtp {
 

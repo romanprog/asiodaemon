@@ -6,12 +6,14 @@
 
 namespace aev {
 
-using RetFunc = std::function<void (int err, dns::DnsRespond result)>;
+
+
+using RetFunc = std::function<void (int err, dns::DnsRespond & result)>;
 
 class AEvDnsClient : public AEventAbstract
 {
 public:
-    explicit AEvDnsClient(const AEvChildConf config, std::string name, dns::DnsQType tp, RetFunc ret_func);
+    explicit AEvDnsClient(const AEvChildConf config, std::string name, dns::DnsQType qt, RetFunc ret_func);
     ~AEvDnsClient();
 private:
 
@@ -21,6 +23,7 @@ private:
     DnsBuffer buff;
     RetFunc ret_function_cb;
     dns::DnsQType query_type;
+    dns::DnsError err {dns::DnsError::noerror};
 
     virtual void _ev_begin() override;
     virtual void _ev_finish() override;

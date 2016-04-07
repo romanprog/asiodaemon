@@ -39,7 +39,7 @@ size_t ParsingBuffAbstract::redundant_data_size() const
     return top_offset() - _unparsed_offset;
 }
 
-std::string ParsingBuffAbstract::get_separator() const
+std::string ParsingBuffAbstract::get_delimiter() const
 {
     return _delimiter;
 }
@@ -73,7 +73,6 @@ const DataOffsetList &ParsingBuffAbstract::get_offsets_list() const
 size_t ParsingBuffAbstract::calculate_mem()
 {
     size_t reserve_bl_count {2};
-
     return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
 }
 
@@ -83,12 +82,12 @@ void ParsingBuffAbstract::when_new_data_acc(size_t bytes_readed)
 }
 
 
-BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_separator)
+BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_delimiter)
 {
     BufferDataList _temp_data_list;
 
     for (auto pair_ : _buffer.get_offsets_list())
-        _temp_data_list.push_back(std::string(_buffer.data() + pair_.first, (trim_separator ? pair_.second - _buffer.get_separator().length() : pair_.second)));
+        _temp_data_list.push_back(std::string(_buffer.data() + pair_.first, (trim_delimiter ? pair_.second - _buffer.get_delimiter().length() : pair_.second)));
 
     return _temp_data_list;
 }

@@ -47,13 +47,21 @@ protected:
 
     // Create child event of any derived type.
     // Args: timeout seconds or 0 (without timeout), !addinional! arguments of derived type.
-    template <typename EvType, typename... _Args>
+    template <typename AEvDescT, typename... _Args>
     void _create_child(int timeout, _Args&&... __args)
     {
-         AEvPtrBase child_ev = std::make_shared<EvType>(_gen_conf_for_child(timeout), std::forward<_Args>(__args)...);
-         _child_ev_list.insert(child_ev);
-         child_ev->begin();
+        static_assert(std::is_base_of<AEventAbstract, AEvDescT>::value,
+                      "AEvDescT must be a descendant of AEventAbstract");
+
+        static_assert(std::is_constructible<AEvDescT, AEvChildConf, _Args...>::value,
+                      "Can't construct child object with given params. The "
+                      "first must be AEvChildConf! Please, check parameters of AEvDescT constructor.");
+
+        AEvPtrBase child_ev = std::make_shared<AEvDescT>(_gen_conf_for_child(timeout), std::forward<_Args>(__args)...);
+        _child_ev_list.insert(child_ev);
+        child_ev->begin();
     }
+
 
     // Last step of event before destruct.
     void finish();
@@ -70,7 +78,7 @@ protected:
     // Generate AEvChildConf for creating child event.
     AEvUtilConf _gen_conf_for_util();
 
-    // Main asio IO service (event loop) pointer.
+    // Main asio IO service (event loop) pointer in a strand wrapper.
     AEvStrandPtr _ev_loop;
 
     // When event is finished - run parent callback function with this sinnal.

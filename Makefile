@@ -6,6 +6,9 @@ INSTALL = install
 MYSQL_CPP_INCLUDES ?= -I/usr/local/include/cppconn -I/usr/local/include
 MYSQL_CPP_LIBS ?= -lmysqlcppconn
 
+MYSQL_C_INC ?= $(shell mysql_config --cflags)
+MYSQL_C_LIBS ?= $(shell mysql_config --libs)
+
 GMIME_INCLUDES ?=  $(shell pkg-config gmime-2.6 --cflags)
 GMIME_LIBS ?=  $(shell pkg-config gmime-2.6 --libs)
 
@@ -53,7 +56,7 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsyncEvent/SMTP/SmtpSession.cpp \
              AsyncEvent/DNS/DnsBuffer.cpp \
              AsyncEvent/DNS/AEvDnsClient.cpp \
-             AsyncEvent/DNS/DnsDataTypes.cpp \
+             AsyncEvent/DNS/DnsUtils.cpp \
              AsyncEvent/SysSig/AEvSysSig.cpp \
              AsyncEvent/AEvBase/AEventAbstract.cpp \
              AsyncEvent/AEvBase/AEventUtilBase.cpp \
@@ -61,9 +64,9 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
 
 
-TESTING_LDLIBS = -lstdc++ -pthread
+TESTING_LDLIBS = -lstdc++ $(MYSQL_C_LIBS)
 
-TESTING_INCLUDES =
+TESTING_INCLUDES = $(MYSQL_C_INC)
 
 TESTING_NAME = testing
 
@@ -80,8 +83,7 @@ TESTING_SOURCES = testing.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp
 
 
-all : $(TESTING_NAME)
-#$(ASYNCD_NAME)
+all : $(TESTING_NAME) $(ASYNCD_NAME)
 
 $(ASYNCD_NAME): $(ASYNCD_SOURCES)
 	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)

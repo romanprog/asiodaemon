@@ -6,7 +6,21 @@
 #include <stdint.h>
 #include <vector>
 #include <cmath>
+#include <memory>
+
 namespace dns {
+
+enum class DnsError
+{
+    noerror = 0,
+    req_str_err,
+    connection_err,
+    no_respond,
+    resolv_err,
+    id_match_err,
+    req_create_err,
+    timeout_err
+};
 
 // Max size of UDP DNS package.
 const size_t max_pkg_size = 512;
@@ -89,80 +103,6 @@ enum class DnsQType
     MX = 15
 };
 
-// Utils. Read/write/generate/parse/... DNS packages.
-namespace utils {
-// Convert sizeof(ResT) bytes from bufer to unsigned integral type ResT.
-// Pointer remains at the same position.
-template <typename ResT>
-ResT buff_read(const char * pt)
-{
-    ResT result = 0;
-    for (int i = 0; i < sizeof(ResT); ++i)
-    {
-        result += static_cast<ResT>(static_cast<unsigned char>(pt[i])) * pow(256, sizeof(ResT) - i - 1);
-    }
-    return result;
-}
-// Convert sizeof(ResT) bytes from bufer to unsigned integral type ResT.
-// Moves cursor pointer to sizeof(ResT) bytes forward.
-template <typename T>
-T buff_step_read(const char *&cursor)
-{
-    T result = buff_read<T>(cursor);
-    cursor += sizeof(T);
-    return result;
-}
-// Write sizeof(ResT) bytes from unsigned integral type ResT to buffer in dns format.
-// Pointer remains at the same position.
-template <typename T>
-static void buff_write(char * pt, T val)
-{
-    for (int i = 0; i < sizeof(T) - 1; ++i)
-    {
-        pt[i] = static_cast<char>(val / pow(256, sizeof(T) - i - 1));
-    }
-    pt[sizeof(T) - 1] = static_cast<char>(val % 256);
-}
-// Write sizeof(ResT) bytes from unsigned integral type ResT to buffer in dns format.
-// Moves cursor pointer to sizeof(ResT) bytes forward.
-template <typename T>
-void buff_step_write(char *&cursor, T val)
-{
-    buff_write(cursor, val);
-    cursor += sizeof(T);
-}
-
-// Return DNS pkg bool flag.
-bool get_flag(const char * ch, const DnsFlag flag_num);
-
-// Set DNS pkg bool flag.
-void set_flag(char * ch, const DnsFlag flag_num);
-
-// Get DNS answer error from flags.
-uint16_t get_error(const char * flag);
-
-// Get string domain from DNS data set. Return offset first byte after reading name.
-void buff_step_read_qdn(const char *dns_pkg, const char *&cursor, std::string & result);
-
-// Convert domain to package format and write result directly in buffer.
-// Return size of the data, written to buffer.
-void write_step_qdn_to_buff(const std::string &dname, char *&_res);
-
-// Convert string IP to .in-addr.arpa QDN.
-std::string ip_to_arpa(const std::string &ip);
-
-// Generate random ID for DNS pkg ident.
-uint16_t rand_qid();
-
-// Read 4 bytes ip to string. Move cursor.
-std::string ip_step_read(const char *&cursor);
-
-// Validate IP v4 address.
-bool is_ip_v4(const std::string & ip);
-
-// Validate IP v4 address.
-bool is_fqdn(const std::string & name);
-} // namespace utils
 
 struct DnsPkgHeader
 {
@@ -191,12 +131,18 @@ struct DnsPkgHeader
 
 struct DnsPkgQuery
 {
+    DnsPkgQuery(const std::string & n, DnsQType t, uint16_t c = 1)
+        :name(n),
+         type(t),
+         cls(c)
+    {    }
+
     // Domain name or ip.
     std::string name;
     // Query type (A,MX,PTR).
     DnsQType type;
     // Query class (default - IN (1)).
-    uint16_t cls {1};
+    uint16_t cls;
 };
 
 struct DnsPkgAnswer
@@ -218,47 +164,16 @@ struct DnsPkgAnswer
 
 };
 
-class DnsRequest
+struct DnsRequest
 {
-public:
-    DnsRequest()
-    {
-
-    }
-
-protected:
-    // Write DNS request package to buffer (direct write).
-    // Buffer must have enough free space (512 bytes recomended).
-    size_t buff_fill(void * buffer);
-    // Generate request data for @name and @t.
-    size_t get_id() const;
-
-    bool gen_request(const std::string & name, DnsQType t);
-    // Request header.
+    // Request header
     DnsPkgHeader header;
     // Queries list.
     std::vector<DnsPkgQuery> qlist;
 };
 
-class DnsARequest : public DnsRequest
+struct DnsRespond
 {
-    DnsARequest()
-    {
-
-    }
-};
-
-class DnsRespond
-{
-public:
-    // Parse DNS respond in buffer. Size is determined automatically.
-    // req_id used to compare respont and request. 0 - don't check (not recomended).
-    bool parse_respond(const void * buffer, uint16_t req_id);
-
-    std::vector<DnsPkgAnswer> get_answers_list();
-
-private:
-
     // Respond header.
     DnsPkgHeader header;
     // Queries list in respond.
@@ -267,5 +182,8 @@ private:
     std::vector<DnsPkgAnswer> alist;
 };
 
+class DnsUIBase;
+
+using DnsUIPtr = std::unique_ptr<DnsUIBase>;
 }
 #endif // DNSDATATYPES_HPP

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <functional>
 #include <memory>
+#include <map>
 #include <algorithm>
 
 // friend class
@@ -9,136 +10,79 @@
 #include "AsyncEvent/BufferBase/BuffAbstract.hpp"
 #include "AsyncEvent/BufferBase/ParsingBuffAbstract.hpp"
 #include "HUtils/HStrings.hpp"
+#include <mysql.h>
+#include <asio.hpp>
 
-class TestBufer : public ParsingBuffAbstract
+int i = 0;
+asio::io_service io;
+asio::ip::tcp::socket _socket(io);
+MYSQL *conn;
+
+void reader()
 {
-public:
-    TestBufer()
-        :ParsingBuffAbstract::ParsingBuffAbstract(" ", 2048)
-    {}
-protected:
+    if (i > 1)
+        return;
 
-    int tr = 100;
+    ++i;
+    std::vector<char> result_test;
+    result_test.resize(100);
+    result_test.resize(1000);
 
-private:
-
-    virtual void when_have_new_part(const size_t begin_offset, const size_t size) override
+    _socket.async_read_some(asio::buffer(result_test.data(), 0),
+                            [&](asio::error_code ec, size_t sz)
     {
+        if (!mysql_read_query_result(conn))
+        {
+            MYSQL_RES *res = mysql_store_result(conn);
+            MYSQL_ROW row;
 
+            printf("MySQL Tables in mysql database:\n");
+            while ((row = mysql_fetch_row(res)) != NULL)
+               printf("%s \n", row[0]);
+            mysql_free_result(res);
+            reader();
+
+        } else
+        {
+            printf("mysql_read_query_result() failed for fd = %d: %s (%d)\n",
+                            conn->net.fd,
+                            mysql_error(conn),
+                            mysql_errno(conn));
+        }
     }
-
-};
-
-
-class Base
-{
-public:
-    Base(int t)
-        :data(t)
-    { }
-    void set_data(int d)
-    {
-        data = d;
-    }
-
-protected:
-
-    int data;
-
-};
-class Der1 : public Base
-{
-public:
-    Der1()
-        :Base::Base(0)
-    { }
-    void print()
-    {
-        std::cout << data << " Derived 1" << std::endl;
-    }
-};
-
-class Der2 : public Base
-{
-public:
-    Der2()
-        :Base::Base(0)
-    { }
-    void print()
-    {
-        std::cout << data << " Derived 2" << std::endl;
-    }
-    void print2()
-    {
-        std::cout << data << " Print 2 Derived 2" << std::endl;
-    }
-
-};
-
-template <typename T, int qtp = T::classVar>
-class TestBuffDer : public TestBufer
-{
-public:
-    explicit TestBuffDer(typename T::funcType cb, std::string s)
-        :callback(cb),
-         bcl(std::make_unique<typename T::baseType>())
-    {   }
-
-    void cb()
-    {
-        bcl->set_data(qtp);
-        callback(std::move(bcl));
-    }
-
-    typename T::funcType callback;
-    std::unique_ptr<typename T::baseType> bcl;
-
-};
-struct MXrec
-{
-    using baseType = Der2;
-    using retType = std::unique_ptr<Der2>&&;
-    using funcType = std::function<void (retType)>;
-    static const int classVar {100};
-};
-
-struct Arec
-{
-    using baseType = Der1;
-    using retType = std::unique_ptr<Der1>&&;
-    using funcType = std::function<void (retType)>;
-    static constexpr int classVar {90};
-};
+                            );
+}
 
 int main () {
 
+    char *server = "localhost";
+    char *user = "root";
+    char *password = "kor011sg8"; /* set me first */
+    char *database = "mysql";
 
-    auto fcb2 = [](auto&& i)
-    {
-        i->print2();
-    };
+    conn = mysql_init(NULL);
+    /* Connect to database */
+    if (!mysql_real_connect(conn, server,
+          user, password, database, 0, NULL, 0)) {
+       fprintf(stderr, "%s\n", mysql_error(conn));
+       exit(1);
+    }
+    _socket.assign(asio::ip::tcp::v4(), conn->net.fd);
 
-    auto fcb1 = [](auto&& i)
-    {
-       i->print();
-    };
+    std::string query("select sleep(1)");
+    /* send SQL query */
+    if (mysql_send_query(conn, query.c_str(), query.length())) {
+       fprintf(stderr, "%s\n", mysql_error(conn));
+       exit(1);
+    }
 
 
-    std::string str("The following three command are defined to support the sending "
-                    "options.  These are used in the mail transaction instead of the "
-                    "MAIL command and inform the receiver-SMTP of the special semantics"
-                    "of this transaction:");
+    reader();
 
-    TestBuffDer<Arec> _buf_derived(fcb1, str);
+    std::cout << "Waiting mysql..." << std::endl;
+    io.run();
 
-    _buf_derived.cb();
 
-    TestBufer _buffer;
-    _buffer << str;
-    _buffer.reset();
-    _buffer << str;
-
-    return 0;
-
+    mysql_close(conn);
 }
 

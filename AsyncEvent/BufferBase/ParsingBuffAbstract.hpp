@@ -17,17 +17,17 @@ class ParsingBuffAbstract : public BuffAbstract
 public:
     ParsingBuffAbstract(std::string delimiter, size_t e_pt_sz);
 
-    // Return vector of parsed parts in buffer. Format:
+    // Return reference to vector of parsed parts in buffer. Format:
     // std::pair
-    // 1) first byte offset from the beginning of the buffer;
+    // 1) offset from the buffer beginning ;
     // 2) part size (including delimiter);
     const DataOffsetList & get_offsets_list() const;
 
-    // Return bytes count, wich not have separator at end (after parsing).
+    // Return bytes count, wich not have delimiter at end (after parsing).
     // This bytes will be parsed next time. New data will be added at end.
     size_t redundant_data_size() const;
-    // Return separator.
-    std::string get_separator() const;
+    // Return delimiter.
+    std::string get_delimiter() const;
 
     // Full buffer reset. One more override not allowed. Use virtual method when_reseted().
     void reset() override final;
@@ -50,6 +50,6 @@ private:
 
 };
 
-BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_separator = true);
+BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_delimiter = true);
 
 #endif // PARSINGBUFFABSTRACT_HPP

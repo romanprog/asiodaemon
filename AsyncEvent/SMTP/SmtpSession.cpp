@@ -65,7 +65,7 @@ void SmtpSession::begin(std::string &&ip)
                                      [this](int err, dns::DnsRespond result)
     {
         if (!err)
-            for (auto & r : result.get_answers_list())
+            for (auto & r : result.alist)
                 dest_ip_ptr = r.answer;
 
 
@@ -87,10 +87,22 @@ std::string SmtpSession::_helo_cmd(const std::string & args)
         _create_child<aev::AEvDnsClient>(1, helo.text, dns::DnsQType::A,
                                          [this](int err, dns::DnsRespond result)
         {
-            if (!err)
-                for (auto & r : result.get_answers_list())
-                    helo.ip = r.answer;
+            std::string test;
+            if (!err) {
+//                for (auto & r : result.alist)
+//                    helo.ip = r.answer;
 
+
+                test += dns::utils::get_rand_rec_value(result) + "\r\n";
+
+            } else {
+                if (err == static_cast<int>(dns::DnsError::timeout_err))
+                    test = "Resolve timeout\r\n";
+                else
+                    test = "Some error\r\n";
+
+            }
+            send_line(test);
         });
 
     }

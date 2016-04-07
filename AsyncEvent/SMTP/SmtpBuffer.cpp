@@ -41,7 +41,7 @@ size_t SmtpBuffer::list_size() const
 
 void SmtpBuffer::when_have_new_part(const size_t begin_offset, const size_t size)
 {
-    lines_list.emplace(data()+begin_offset, size - get_separator().size());
+    lines_list.emplace(data()+begin_offset, size - get_delimiter().size());
     return;
 }
 

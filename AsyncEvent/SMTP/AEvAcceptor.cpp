@@ -1,6 +1,7 @@
 #include "AEvAcceptor.hpp"
 #include "AEvConnection.hpp"
 #include "../SysSig/AEvSysSig.hpp"
+#include "../DNS/DnsBuffer.hpp"
 
 #include "iostream"
 
@@ -44,6 +45,7 @@ void AEvAcceptor::_ev_begin()
     _acceptor.listen();
 
     _create_child<AEvSysSig>(0);
+//    _create_child<DnsBuffer>(0);
 
     _start_acceept();
 

@@ -5,12 +5,12 @@
 
 namespace aev {
 
-AEvDnsClient::AEvDnsClient(const AEvChildConf config, std::string name, dns::DnsQType tp, RetFunc ret_func)
+AEvDnsClient::AEvDnsClient(const AEvChildConf config, std::string name, dns::DnsQType qt, RetFunc ret_func)
     :AEventAbstract::AEventAbstract(config),
      _socket(config.evloop->get_io_service(), asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
      _domain(name),
      ret_function_cb(ret_func),
-     query_type(tp)
+     query_type(qt)
 {
     // std::cout << "AEvConnection CONSTRUCTOR! " << std::endl;
 }
@@ -32,15 +32,14 @@ void AEvDnsClient::_ev_finish()
 
 void AEvDnsClient::_ev_stop()
 {
-    _ev_exit_signal = AEvExitSignal::close_connection;
     // close() will cancelled immediately all scync operations.
     _socket.close();
-    ret_function_cb(buff.get_error(), buff.get_respond());
+    ret_function_cb(static_cast<int>(err), buff.get_respond());
 }
 
 void AEvDnsClient::_ev_timeout()
 {
-
+    err = dns::DnsError::timeout_err;
 }
 
 
@@ -85,6 +84,7 @@ void AEvDnsClient::_get_respond()
                                                  }
                                                  std::cout << "receive DNS" << std::endl;
                                                  buff.read_respond(bytes_sent);
+                                                 err = buff.get_error();
                                                  stop();
                                            }
                          );
