@@ -147,4 +147,59 @@ bool cut_part(const std::string & text, std::string &result, char delim, size_t 
     return true;
 }
 
+bool get_part_reverse(const std::string &text, std::string &result, char delim, size_t pindex)
+{
+    auto is_delim = [delim] (char d) -> bool
+    {
+        return (d == delim);
+    };
+
+    auto beg_iter = text.rbegin();
+    auto e_iter = text.rbegin();
+
+    for (size_t i = 0; i <= pindex; ++i)
+    {
+        beg_iter = std::find_if_not(e_iter, text.rend(), is_delim);
+        if (beg_iter == text.rend())
+            return false;
+
+        e_iter = std::find_if(beg_iter, text.rend(), is_delim);
+    }
+
+    result.assign(e_iter.base(), beg_iter.base());
+    return true;
+
+}
+
+bool cut_part_reverse(const std::string &text, std::string &result, char delim, size_t pindex)
+{
+    auto is_delim = [delim] (char d) -> bool
+    {
+        return (d == delim);
+    };
+
+    result = text;
+
+    auto beg_iter = result.rbegin();
+    auto e_iter = result.rbegin();
+
+    for (size_t i = 0; i <= pindex; ++i)
+    {
+        beg_iter = std::find_if_not(e_iter, result.rend(), is_delim);
+
+        if (beg_iter == result.rend())
+            return false;
+
+        e_iter = std::find_if(beg_iter, result.rend(), is_delim);
+    }
+    if (e_iter != result.rend())
+        ++e_iter;
+
+    if (beg_iter != result.rbegin())
+        --beg_iter;
+
+    result.erase(e_iter.base(), beg_iter.base());
+    return true;
+}
+
 } // namespace hstrings

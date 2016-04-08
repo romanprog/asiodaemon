@@ -9,32 +9,35 @@
 #include <vector>
 #include <queue>
 
+using ConfirmHendler = std::function<void (bool err)>;
 using SendHendler = std::function<void (std::string answer)>;
+using SendWithConfirmHendler = std::function<void (std::string answer, ConfirmHendler confirm)>;
 
 class SmtpSession: public aev::AEventUtilBase
 {
 public:
-    SmtpSession(SendHendler cb);
+    SmtpSession(SendHendler cb, SendWithConfirmHendler cbc);
 
-    void transaction(SmtpBuffer &data);
+    void transaction(SmtpCmdBuffer &data);
+    void accept_data(SmtpDataBuffer &data);
     void begin(std::string && ip);
     bool close_demand();
+    bool read_data_demand();
 
 private:
 
     SendHendler send_line;
+    SendWithConfirmHendler send_and_confirm_line;
     std::string welcome;
     std::string prim_hostname {"examlpe.my.home"};
-    std::vector<smtp::EmailAddr> rcpt_list;
-    smtp::EmailAddr mailform;
-    smtp::HeloArg helo;
+    smtp::SmtpState _state;
     bool abrt {false};
-    std::string dest_ip;
-    std::string dest_ip_ptr;
 
-    std::string _helo_cmd(const std::string &args);
-    std::string _mail_cmd(std::string cmd_line);
-    std::string _rcpt_cmd(std::string cmd_line);
+
+    void _helo_cmd(const std::string &args);
+    void _mail_cmd(smtp::EmailAddr &&email);
+    void _rcpt_cmd(smtp::EmailAddr &&email);
+    void _data_cmd();
 
 
 

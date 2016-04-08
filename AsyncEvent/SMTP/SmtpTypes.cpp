@@ -69,6 +69,8 @@ SmtpErr parse_mail_from(const std::string &mf_line, EmailAddr &result)
     // "MAIL FROM" part
     hstrings::get_part(mf_line, str_tmp, ':', 0);
 
+    hstrings::to_lower(str_tmp);
+
     if (str_tmp != "mail from")
         return SmtpErr::unrecognized;
 
@@ -99,7 +101,46 @@ std::string err_to_str(SmtpErr err)
     return err_iter->second + "\r\n";
 }
 
+SmtpErr parse_rcpt_to(const std::string &mf_line, EmailAddr &result)
+{
+    std::string str_tmp;
 
+    // "RCPT TO" part
+    hstrings::get_part(mf_line, str_tmp, ':', 0);
+
+    hstrings::to_lower(str_tmp);
+
+    if (str_tmp != "rcpt to")
+        return SmtpErr::unrecognized;
+
+    // Param part.
+    hstrings::cut_part(mf_line, str_tmp, ':', 0);
+    hstrings::trim(str_tmp);
+
+    // E-mail addres must have syntax '<localpart@domain>'.
+    if (*str_tmp.begin() != '<' || *(str_tmp.end()-1) != '>')
+        return SmtpErr::syntax;
+
+    std::string forward_path(str_tmp.begin()+1, str_tmp.end() - 1);
+
+    std::string eml_addr;
+    hstrings::get_part_reverse(forward_path, eml_addr, ':', 0);
+
+    if (!result.set(eml_addr))
+        return SmtpErr::emlformat;
+
+    return SmtpErr::noerror;
+}
+
+SmtpErr parse_data(const std::string &mf_line)
+{
+    std::string str_tmp (mf_line);
+    hstrings::to_lower(hstrings::trim(str_tmp));
+    if (str_tmp != "data")
+        return SmtpErr::unrecognized;
+
+    return SmtpErr::noerror;
+}
 
 }
 
@@ -117,6 +158,11 @@ bool EmailAddr::set(std::string email)
 
     inited = true;
     return true;
+}
+
+bool operator ==(const EmailAddr &one, const EmailAddr &other)
+{
+    return one.text == other.text;
 }
 
 // namespace utils

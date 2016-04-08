@@ -10,11 +10,11 @@
 #include <queue>
 
 
-class SmtpBuffer : public ParsingBuffAbstract
+class SmtpCmdBuffer : public ParsingBuffAbstract
 {
 public:
     using SmtpCmdCallback = std::function<void ()>;
-    SmtpBuffer();
+    SmtpCmdBuffer();
 
     void clear();
     std::string get_line();
@@ -28,6 +28,22 @@ private:
 
     std::string parsed_cmd;
     std::queue<std::string> lines_list;
+};
+
+class SmtpDataBuffer : public ParsingBuffAbstract
+{
+public:
+    using SmtpDataCallback = std::function<void ()>;
+    SmtpDataBuffer();
+
+    void clear();
+    std::string get_data();
+    bool is_redy();
+
+private:
+
+    virtual void when_have_new_part(const size_t begin_offset, const size_t size) override;
+    size_t data_end_offset {0};
 };
 
 

@@ -21,7 +21,8 @@ public:
 private:
 
     asio::ip::tcp::socket _socket;
-    SmtpBuffer read_buffer;
+    SmtpCmdBuffer read_cmd_buffer;
+    SmtpDataBuffer read_data_buffer;
     SmtpSession session;
 
 protected:
@@ -31,8 +32,9 @@ protected:
     virtual void _ev_timeout() override;
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) override;
 
-    void _start_read();
-    void _respond_handler(std::string data);
+    void _read_command();
+    void _read_data();
+    void _respond_handler(std::string data, ConfirmHendler confirm = nullptr);
 
 };
 

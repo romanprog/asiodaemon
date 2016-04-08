@@ -4,20 +4,20 @@
 #include <iostream>
 
 
-SmtpBuffer::SmtpBuffer()
+SmtpCmdBuffer::SmtpCmdBuffer()
     :ParsingBuffAbstract::ParsingBuffAbstract("\r\n", 2048)
 {
-    //    smtp_answer = "220 Welcome my son, welcome to the machine. ESMTP experimental server. My Email: <roman.progonnyj@gmail.com>\r\n";
+
 }
 
-void SmtpBuffer::clear()
+void SmtpCmdBuffer::clear()
 {
     reset();
     lines_list = std::queue<std::string>();
     parsed_cmd.clear();
 }
 
-std::string SmtpBuffer::get_line()
+std::string SmtpCmdBuffer::get_line()
 {
     std::string res;
 
@@ -29,19 +29,52 @@ std::string SmtpBuffer::get_line()
     return res;
 }
 
-bool SmtpBuffer::is_empty()
+bool SmtpCmdBuffer::is_empty()
 {
     return lines_list.empty();
 }
 
-size_t SmtpBuffer::list_size() const
+size_t SmtpCmdBuffer::list_size() const
 {
     return lines_list.size();
 }
 
-void SmtpBuffer::when_have_new_part(const size_t begin_offset, const size_t size)
+void SmtpCmdBuffer::when_have_new_part(const size_t begin_offset, const size_t size)
 {
     lines_list.emplace(data()+begin_offset, size - get_delimiter().size());
     return;
 }
 
+// ======================= Data buffer =========================
+
+SmtpDataBuffer::SmtpDataBuffer()
+    :ParsingBuffAbstract::ParsingBuffAbstract("\r\n.\r\n", 70000)
+{
+
+}
+
+void SmtpDataBuffer::clear()
+{
+    reset();
+    data_end_offset = 0;
+}
+
+std::string SmtpDataBuffer::get_data()
+{
+    std::string res(data(), data_end_offset);
+    return res;
+}
+
+bool SmtpDataBuffer::is_redy()
+{
+    return (data_end_offset > 0);
+}
+
+
+void SmtpDataBuffer::when_have_new_part(const size_t begin_offset, const size_t size)
+{
+    if (is_redy())
+        return;
+
+    data_end_offset = size - get_delimiter().size();
+}

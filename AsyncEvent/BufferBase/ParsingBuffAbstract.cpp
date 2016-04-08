@@ -11,7 +11,7 @@ ParsingBuffAbstract::ParsingBuffAbstract(std::string delimiter, size_t e_pt_sz)
 int ParsingBuffAbstract::parse()
 {
 
-    const char * d_tmp = data() + _unparsed_offset;
+    const char * d_tmp = data() + _unsearched_offset;
     const char * const ds_end = data() + top_offset();
     int new_parts_count {0};
 
@@ -23,9 +23,13 @@ int ParsingBuffAbstract::parse()
             size_t part_size = d_tmp - data() - _unparsed_offset;
             _data_parts.push_back({_unparsed_offset, part_size});
             _unparsed_offset += part_size;
+            _unsearched_offset = _unparsed_offset;
             ++new_parts_count;
             when_have_new_part(_unparsed_offset-part_size, part_size);
         } else {
+            // Search optimization. Prevents re-search.
+            if (top_offset() - _unparsed_offset > _delimiter.size())
+                _unsearched_offset = top_offset() - _delimiter.size();
             break;
         }
 
@@ -47,7 +51,7 @@ std::string ParsingBuffAbstract::get_delimiter() const
 void ParsingBuffAbstract::reset()
 {
     BuffAbstract::reset();
-    _unparsed_offset = 0;
+    _unparsed_offset = _unsearched_offset = 0;
     _data_parts.clear();
 }
 

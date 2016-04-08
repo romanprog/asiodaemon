@@ -45,6 +45,7 @@ private:
     int parse();
     const std::string _delimiter;
     const size_t _expected_part_size;
+    size_t _unsearched_offset{0};
     size_t _unparsed_offset{0};
     DataOffsetList _data_parts;
 
