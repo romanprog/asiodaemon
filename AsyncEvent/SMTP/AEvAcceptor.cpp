@@ -14,7 +14,7 @@ AEvAcceptor::AEvAcceptor(AEvRootConf &config, const std::string &ip, const unsig
       _conn_ip(ip),
       _conn_port(port)
 {
-    // std::cout << "AEvAcceptor CONSTRUCTOR! " << std::endl;
+     log_debug("AEvAcceptor CONSTRUCTOR! ");
 }
 
 AEvAcceptor::AEvAcceptor(const AEvChildConf config, const std::string &ip, const unsigned port)
@@ -24,7 +24,7 @@ AEvAcceptor::AEvAcceptor(const AEvChildConf config, const std::string &ip, const
      _conn_ip(ip),
      _conn_port(port)
 {
-    // std::cout << "AEvAcceptor CONSTRUCTOR! " << std::endl;
+     log_debug("AEvAcceptor CONSTRUCTOR! ");
 }
 
 void AEvAcceptor::_ev_begin()
@@ -43,10 +43,7 @@ void AEvAcceptor::_ev_begin()
     _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
     _acceptor.bind(endpoint);
     _acceptor.listen();
-
     _create_child<AEvSysSig>(0);
-//    _create_child<DnsBuffer>(0);
-
     _start_acceept();
 
 }
@@ -59,7 +56,7 @@ void AEvAcceptor::_ev_finish()
 void AEvAcceptor::_ev_stop()
 {
     _acceptor.cancel();
-    std::cout << "AEvConnection _ev_stop: "  << std::endl;
+    log_debug("AEvConnection _ev_stop: " );
 }
 
 void AEvAcceptor::_ev_timeout()
@@ -85,7 +82,7 @@ void AEvAcceptor::_start_acceept()
                                    return;
                                }
 
-                               std::cout << "conn" << std::endl;
+                               log_debug("conn");
                                 _create_child<AEvConnection>(0, std::move(_socket));
                                _start_acceept();
                            })

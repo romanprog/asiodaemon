@@ -20,13 +20,13 @@ struct PluginConfig
 
 };
 
-class GlobalConfig
+class Config
 {
 public:
 
-    GlobalConfig();
+    Config();
 
-    ~GlobalConfig();
+    ~Config();
 
     // chech for config error
     bool have_error();
@@ -43,9 +43,9 @@ public:
     // GlobalConfig conf = GlobalConfig::instance();
     // or PluginConfig conf = GlobalConfig::instance().get_config();
     // or GlobalConfig::instance().get_config();
-    void read_config(const std::string &conf_file_path);
+    bool read_config(const std::string &conf_file_path);
     bool set_opt(std::string opt_name, std::string opt_value);
-    static GlobalConfig & instance();
+    static Config & glob();
 
     PluginConfig & get_conf();
 

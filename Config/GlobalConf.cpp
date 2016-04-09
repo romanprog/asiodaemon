@@ -26,34 +26,34 @@ bool _set_opt(const std::string &str_opt, MySQLConf &option);
 
 
 
-GlobalConfig::GlobalConfig()
+Config::Config()
 {
 
 }
 
-GlobalConfig::~GlobalConfig()
+Config::~Config()
 {
 }
 
 
-bool GlobalConfig::have_error()
+bool Config::have_error()
 {
     return error_status;
 }
 
-bool GlobalConfig::is_inited()
+bool Config::is_inited()
 {
     return inited;
 }
 
 
-const std::string & GlobalConfig::error_text()
+const std::string & Config::error_text()
 {
     return error_message;
 }
 
 
-void GlobalConfig::read_config(const std::string & conf_file_path)
+bool Config::read_config(const std::string & conf_file_path)
 {
     // if not inited
     config = PluginConfig();
@@ -65,7 +65,7 @@ void GlobalConfig::read_config(const std::string & conf_file_path)
 
         error_message = "Can't read file.";
         error_status = true;
-        return;
+        return false;
 
     }
 
@@ -83,8 +83,6 @@ void GlobalConfig::read_config(const std::string & conf_file_path)
         if (conf_line.size() < 1)
             continue;
 
-
-
         // check option
         std::vector<std::string> name_val = hstrings::splitted(conf_line, '=');
 
@@ -97,10 +95,9 @@ void GlobalConfig::read_config(const std::string & conf_file_path)
             hstrings::trim(key_opt);
 
             if (!_set_conf_unit(key_str, key_opt))
-                return;
+                return false;
 
             continue;
-
         }
 
         std::string code_type;
@@ -135,32 +132,33 @@ void GlobalConfig::read_config(const std::string & conf_file_path)
         }
         error_message = "Error in config file. Line number: " + std::to_string(line_num) + ", Text: " + conf_line;
         error_status = true;
-        return;
+        return false;
     }
     config_path = conf_file_path;
     inited = true;
+    return true;
 }
 
-bool GlobalConfig::set_opt(std::string opt_name, std::string opt_value)
+bool Config::set_opt(std::string opt_name, std::string opt_value)
 {
-
+    return _set_conf_unit(opt_name, opt_value);
 }
 
 
-GlobalConfig &GlobalConfig::instance()
+Config &Config::glob()
 {
-    static GlobalConfig global_instance_of_config;
+    static Config global_instance_of_config;
     return  global_instance_of_config;
 }
 
 
-PluginConfig &GlobalConfig::get_conf()
+PluginConfig &Config::get_conf()
 {
     return config;
 }
 
 
-void GlobalConfig::_trim_comments(std::string & conf_line)
+void Config::_trim_comments(std::string & conf_line)
 {
     size_t pos = conf_line.find_first_of("#");
 
@@ -171,7 +169,7 @@ void GlobalConfig::_trim_comments(std::string & conf_line)
 
 }
 
-std::string GlobalConfig::_trim_first_part(std::string text)
+std::string Config::_trim_first_part(std::string text)
 {
 
     size_t pos = text.find(".") + 1;
@@ -185,7 +183,7 @@ std::string GlobalConfig::_trim_first_part(std::string text)
 
 }
 
-bool GlobalConfig::_is_code_begin(const std::string code_line, std::string & part_type)
+bool Config::_is_code_begin(const std::string code_line, std::string & part_type)
 {
 
     std::string command;
@@ -215,7 +213,7 @@ bool GlobalConfig::_is_code_begin(const std::string code_line, std::string & par
 
 
 
-bool GlobalConfig::_set_conf_unit(const std::string &Key, const std::string &Value)
+bool Config::_set_conf_unit(const std::string &Key, const std::string &Value)
 {
 
     // check and set all options

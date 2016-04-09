@@ -1,8 +1,7 @@
 #ifndef AEVEXAMPLE_HPP
 #define AEVEXAMPLE_HPP
 
-#include "Abstract/AEventAbstract.hpp"
-#include "../Buffers/SmtpBuffer.hpp"
+#include "../AEvBase/AEventAbstract.hpp"
 
 namespace aev {
 
@@ -15,7 +14,6 @@ private:
 
     asio::ip::tcp::socket _socket;
     std::array<char, 8192> _buffer;
-    SmtpBuffer _read_buf;
 
 protected:
     virtual void _ev_begin() override;

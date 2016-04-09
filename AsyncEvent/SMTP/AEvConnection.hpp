@@ -4,6 +4,7 @@
 #include "../AEvBase/AEventAbstract.hpp"
 #include "SmtpBuffer.hpp"
 #include "SmtpSession.hpp"
+
 #include <iostream>
 
 namespace aev {
@@ -13,11 +14,7 @@ class AEvConnection : public AEventAbstract
 public:
 
     explicit AEvConnection(const AEvChildConf config, asio::ip::tcp::socket _soc);
-    virtual ~AEvConnection() override
-    {
-         std::cout << "AEvConnection DESTRUCTOR! " << std::endl;
-    }
-    std::string test = "sdgsdfg";
+    virtual ~AEvConnection() override {}
 
 private:
 

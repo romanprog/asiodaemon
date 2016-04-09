@@ -1,5 +1,6 @@
 #include "AEventAbstract.hpp"
 
+
 #include <memory>
 #include <chrono>
 #include <iostream>
@@ -14,7 +15,7 @@ AEventAbstract::AEventAbstract(aev::AEvRootConf & config)
       _timeout(config.timeout),
       _timer(_ev_loop->get_io_service())
 {
-//    std::cout << "AEventsAbstract CONSTRUCTOR! " << std::endl;
+    log_debug("AEventsAbstract CONSTRUCTOR! ");
     config.evloop = std::make_shared<asio::strand>(_ev_loop->get_io_service());
 }
 
@@ -25,26 +26,26 @@ AEventAbstract::AEventAbstract(const AEvChildConf & config)
       _timeout(config.timeout),
       _timer(_ev_loop->get_io_service())
 {
-    //    std::cout << "AEventsAbstract CONSTRUCTOR! " << std::endl;
+    log_debug("AEventsAbstract CONSTRUCTOR!");
 }
 
 AEventAbstract::~AEventAbstract()
 {
-    std::cout << "AEventsAbstract DESTRUCTOR! " << std::endl;
+    log_debug("AEventsAbstract DESTRUCTOR!");
 }
 
 void AEventAbstract::begin()
 {
     _my_ptr = shared_from_this();
     reset_and_start_timer();
-    std::cout << "Try call _ev_begin " << std::endl;
+    log_debug( "Try call _ev_begin " );
     _ev_begin();
 }
 
 void AEventAbstract::finish()
 {
     _timer.cancel();
-    std::cout << "Try call _ev_finish " << std::endl;
+    log_debug("Try call _ev_finish ");
     _ev_finish();
     _finish_callback(std::move(_my_ptr), _ev_exit_signal);
 }
@@ -65,7 +66,7 @@ void AEventAbstract::reset_and_start_timer()
             reset_and_start_timer();
         } else {
             // timeout!
-            std::cout << "Try call _ev_timeout " << std::endl;
+            log_debug("Try call _ev_timeout ");
             _ev_timeout();
             stop();
         }
@@ -79,13 +80,13 @@ void AEventAbstract::stop()
         return;
     stop_inited = true;
 
-    size_t c_count = _child_ev_list.size();
     auto ch_list_copy_tmp = _child_ev_list;
 
     for (auto & child : ch_list_copy_tmp)
         child->stop();
 
-    std::cout << "Try call _ev_stop " << std::endl;
+    log_debug("Try call _ev_stop ");
+
     _ev_stop();
     finish();
     return;
@@ -111,7 +112,7 @@ AEvUtilConf AEventAbstract::_gen_conf_for_util()
 int AEventAbstract::_child_callback(AEvPtrBase _child, AEvExitSignal _ret)
 {
     _child_ev_list.erase(_child);
-    std::cout << "Try call _ev_child_callback " << std::endl;
+    log_debug("Try call _ev_child_callback ");
     _ev_child_callback(_child, _ret);
 
     return 0;

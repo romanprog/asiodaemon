@@ -1,32 +1,24 @@
-#include "LoggerBase.hpp"
+#include "Logger.hpp"
 #include "../Config/GlobalConf.hpp"
 
 #include <stdarg.h>
 #include <fstream>
 
-///=================== Log base ===================
-LoggerBase::LoggerBase()
-{
-
-}
-
-
-
-LoggerBase::~LoggerBase()
-{
-
-}
-
-
 
 /// =============== Console child ================
 
-LoggerConsole::LoggerConsole()
+CLog::CLog()
 {
 
 }
 
-void LoggerConsole::__write_log(const std::string &log_message)
+CLog &CLog::glob()
+{
+    static CLog global_console_log;
+    return global_console_log;
+}
+
+void CLog::__write_log(const std::string &log_message)
 {
     std::cout << log_message << std::endl;
 }
@@ -34,7 +26,7 @@ void LoggerConsole::__write_log(const std::string &log_message)
 
 /// =============  File logger child ================
 
-LoggerFile::LoggerFile(const std::string &&filename)
+FLog::FLog(const std::string &&filename)
     :log_file_name(filename)
 {
 
@@ -43,7 +35,7 @@ LoggerFile::LoggerFile(const std::string &&filename)
 
 }
 
-LoggerFile::~LoggerFile()
+FLog::~FLog()
 {
 
         if (log_file.is_open())
@@ -51,7 +43,7 @@ LoggerFile::~LoggerFile()
 
 }
 
-void LoggerFile::__write_log(const std::string &log_message)
+void FLog::__write_log(const std::string &log_message)
 {
     if (!log_file.is_open())
         return;

@@ -8,18 +8,14 @@
 #include <iostream>
 
 #include "HUtils/HStrings.hpp"
-
-#include "Logger/LoggerBase.hpp"
-
+#include "Logger/Logger.hpp"
 #include "Config/GlobalConf.hpp"
 
 int main () {
-
-    LoggerConsole log;
-    GlobalConfig config = GlobalConfig::instance();
+    Config config = Config::glob();
     config.read_config("main.conwf");
     if (config.have_error()) {
-        log.general_write("Error reading config. Error: %", config.error_text());
+        CLog::glob().write("Error reading config. Error: %", config.error_text());
         exit(0);
     }
 

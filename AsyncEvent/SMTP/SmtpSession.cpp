@@ -3,6 +3,7 @@
 
 #include "../DNS/AEvDnsClient.hpp"
 #include "../../HUtils/HStrings.hpp"
+#include "../../Logger/Logger.hpp"
 
 SmtpSession::SmtpSession(SendHendler cb, SendWithConfirmHendler cbc)
     :send_line(cb),
@@ -18,7 +19,8 @@ void SmtpSession::transaction(SmtpCmdBuffer &data)
 
         std::string cmd_args;
         std::string cmd_line(data.get_line());
-        std::cout << cmd_line << std::endl;
+        log_debug(cmd_line);
+        CLog::glob().debug_write(cmd_line);
 
         if (_state.waiting_for_data)
         {
@@ -99,7 +101,7 @@ void SmtpSession::transaction(SmtpCmdBuffer &data)
 
 void SmtpSession::accept_data(SmtpDataBuffer &data)
 {
-    std::cout << data.get_data() << std::endl;
+    log_debug(data.get_data());
     send_line("250 OK. 1460191710 b128si9046197lfb.\r\n");
     _state.waiting_for_data = false;
 }
@@ -184,7 +186,6 @@ void SmtpSession::_rcpt_cmd(smtp::EmailAddr &&email)
 void SmtpSession::_data_cmd()
 {
     _state.waiting_for_data = true;
-    // 354 Send message, ending in CRLF.CRLF.
     send_line("354 OK. Redy for accept data. \r\n");
 }
 

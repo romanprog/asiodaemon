@@ -13,7 +13,7 @@ public:
 
     virtual ~AEvAcceptor() override
     {
-       // std::cout << "AEvAcceptor DESTRUCTOR! " << std::endl;
+       log_debug("AEvAcceptor DESTRUCTOR! ");
     }
 
 private:

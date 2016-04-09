@@ -2,7 +2,6 @@
 #include "../DNS/AEvDnsClient.hpp"
 #include <functional>
 
-
 #include "iostream"
 
 namespace aev {
@@ -13,12 +12,12 @@ AEvConnection::AEvConnection(const AEvChildConf config, asio::ip::tcp::socket _s
      session(std::bind(&AEvConnection::_respond_handler, this, std::placeholders::_1, nullptr),
              std::bind(&AEvConnection::_respond_handler, this, std::placeholders::_1, std::placeholders::_2))
 {
-    // std::cout << "AEvConnection CONSTRUCTOR! " << std::endl;
+     log_debug("AEvConnection CONSTRUCTOR! ");
 }
 
 void AEvConnection::_ev_begin()
 {
-    std::cout << "AEvConnection START" << std::endl;
+    log_debug("AEvConnection START");
     session.init_async(_gen_conf_for_util());
     session.begin(_socket.remote_endpoint().address().to_string());
     _read_command();
@@ -26,20 +25,20 @@ void AEvConnection::_ev_begin()
 
 void AEvConnection::_ev_finish()
 {
-    std::cout << "AEvConnection FINISH" << std::endl;
+    log_debug("AEvConnection FINISH");
     session.stop_async();
 }
 
 void AEvConnection::_ev_stop()
 {
-    std::cout << "AEvConnection STOP" << std::endl;
+    log_debug("AEvConnection STOP");
     _ev_exit_signal = AEvExitSignal::close_connection;
     _socket.close();
 }
 
 void AEvConnection::_ev_timeout()
 {
-    std::cout << "AEvConnection TIMEOUT" << std::endl;
+    log_debug("AEvConnection TIMEOUT");
 }
 
 void AEvConnection::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)

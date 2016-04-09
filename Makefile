@@ -62,7 +62,8 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsyncEvent/AEvBase/AEventUtilBase.cpp \
              AsyncEvent/BufferBase/ParsingBuffAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
-             Logger/Logger.cpp
+             Logger/Logger.cpp \
+             Config/GlobalConf.cpp
 
 
 TESTING_LDLIBS = -lstdc++ $(MYSQL_C_LIBS)
@@ -82,12 +83,11 @@ TESTING_SOURCES = testing.cpp \
              HUtils/HFiles.cpp \
              AsyncEvent/BufferBase/ParsingBuffAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
-             Logger/LoggerBase.cpp \
+             Logger/Logger.cpp \
              Config/GlobalConf.cpp
 
 
-all : $(TESTING_NAME)
-# $(ASYNCD_NAME)
+all : $(TESTING_NAME) $(ASYNCD_NAME)
 
 $(ASYNCD_NAME): $(ASYNCD_SOURCES)
 	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)

@@ -12,36 +12,36 @@ AEvDnsClient::AEvDnsClient(const AEvChildConf config, std::string name, dns::Dns
      ret_function_cb(ret_func),
      query_type(qt)
 {
-    // std::cout << "AEvConnection CONSTRUCTOR! " << std::endl;
+    log_debug("AEvConnection CONSTRUCTOR! ");
 }
 
 AEvDnsClient::~AEvDnsClient()
 {
-    std::cout << "~AEvDnsClient()" << std::endl;
+    log_debug("~AEvDnsClient()");
 }
 
 void AEvDnsClient::_ev_begin()
 {
-    std::cout << "AEvDnsClient START" << std::endl;
+    log_debug("AEvDnsClient START");
     _send_request();
 }
 
 void AEvDnsClient::_ev_finish()
 {
-    std::cout << "AEvDnsClient FINISH" << std::endl;
+    log_debug("AEvDnsClient FINISH" );
 }
 
 void AEvDnsClient::_ev_stop()
 {
     // close() will cancelled immediately all scync operations.
-    std::cout << "AEvDnsClient STOP" << std::endl;
+    log_debug("AEvDnsClient STOP");
     _socket.close();
     ret_function_cb(static_cast<int>(err), buff.get_respond());
 }
 
 void AEvDnsClient::_ev_timeout()
 {
-    std::cout << "AEvDnsClient TIMEOUT" << std::endl;
+    log_debug("AEvDnsClient TIMEOUT");
     err = dns::DnsError::timeout_err;
 }
 
@@ -64,7 +64,7 @@ void AEvDnsClient::_send_request()
                                   stop();
                                   return;
                               }
-                              std::cout << "sended DNS" << std::endl;
+                              log_debug("sended DNS");
                               _get_respond();
                           })
             );
@@ -85,7 +85,7 @@ void AEvDnsClient::_get_respond()
                                            stop();
                                            return;
                                        }
-                                       std::cout << "receive DNS" << std::endl;
+                                       log_debug("receive DNS");
                                        buff.read_respond(bytes_sent);
                                        err = buff.get_error();
                                        stop();

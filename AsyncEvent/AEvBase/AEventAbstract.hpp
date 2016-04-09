@@ -1,5 +1,6 @@
 #ifndef AEVENTSABSTRACT_HPP
 #define AEVENTSABSTRACT_HPP
+#include "../../Logger/Logger.hpp"
 
 #include "AEventTypes.hpp"
 
