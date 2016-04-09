@@ -44,6 +44,6 @@ std::string & trim_l(std::string & text);
 std::string & trim_r(std::string & text);
 std::string & trim(std::string & text);
 
-
+// Delete
 }
 #endif // HSTRINGS_HPP

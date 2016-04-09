@@ -13,6 +13,7 @@ public:
     explicit AEventUtilBase();
     ~AEventUtilBase();
     void init_async(const AEvUtilConf config);
+    void stop_async();
 
 
 protected:

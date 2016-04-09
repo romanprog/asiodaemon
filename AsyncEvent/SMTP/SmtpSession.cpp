@@ -7,7 +7,7 @@
 SmtpSession::SmtpSession(SendHendler cb, SendWithConfirmHendler cbc)
     :send_line(cb),
      send_and_confirm_line(cbc),
-    welcome("220 Welcome my son, welcome to the machine. SMTP experimental. My Email: <roman.progonnyj@gmail.com>")
+    welcome("220 Welcome my son, welcome to the machine. SMTP experimental.")
 {
 
 }
@@ -18,6 +18,7 @@ void SmtpSession::transaction(SmtpCmdBuffer &data)
 
         std::string cmd_args;
         std::string cmd_line(data.get_line());
+        std::cout << cmd_line << std::endl;
 
         if (_state.waiting_for_data)
         {
@@ -99,14 +100,14 @@ void SmtpSession::transaction(SmtpCmdBuffer &data)
 void SmtpSession::accept_data(SmtpDataBuffer &data)
 {
     std::cout << data.get_data() << std::endl;
-    send_line("220 OK. Data accepted.\r\n");
+    send_line("250 OK. 1460191710 b128si9046197lfb.\r\n");
     _state.waiting_for_data = false;
 }
 
 void SmtpSession::begin(std::string &&ip)
 {
     _state.client_ip = ip;
-    _create_child<aev::AEvDnsClient>(1, _state.client_ip, dns::DnsQType::PTR,
+    _create_child<aev::AEvDnsClient>(0, _state.client_ip, dns::DnsQType::PTR,
                                      [this](int err, dns::DnsRespond result)
     {
         if (!err)
@@ -183,6 +184,7 @@ void SmtpSession::_rcpt_cmd(smtp::EmailAddr &&email)
 void SmtpSession::_data_cmd()
 {
     _state.waiting_for_data = true;
-    send_line("250 OK. Redy for accept data. \r\n");
+    // 354 Send message, ending in CRLF.CRLF.
+    send_line("354 OK. Redy for accept data. \r\n");
 }
 

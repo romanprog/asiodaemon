@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <chrono>
+#include <iostream>
 
 namespace aev {
 
@@ -29,19 +30,22 @@ AEventAbstract::AEventAbstract(const AEvChildConf & config)
 
 AEventAbstract::~AEventAbstract()
 {
-//    std::cout << "AEventsAbstract DESTRUCTOR! " << std::endl;
+    std::cout << "AEventsAbstract DESTRUCTOR! " << std::endl;
 }
 
 void AEventAbstract::begin()
 {
     _my_ptr = shared_from_this();
     reset_and_start_timer();
+    std::cout << "Try call _ev_begin " << std::endl;
     _ev_begin();
 }
 
 void AEventAbstract::finish()
 {
     _timer.cancel();
+    std::cout << "Try call _ev_finish " << std::endl;
+    _ev_finish();
     _finish_callback(std::move(_my_ptr), _ev_exit_signal);
 }
 
@@ -61,6 +65,7 @@ void AEventAbstract::reset_and_start_timer()
             reset_and_start_timer();
         } else {
             // timeout!
+            std::cout << "Try call _ev_timeout " << std::endl;
             _ev_timeout();
             stop();
         }
@@ -70,11 +75,20 @@ void AEventAbstract::reset_and_start_timer()
 
 void AEventAbstract::stop()
 {
-    for (auto child : _child_ev_list)
+    if (stop_inited)
+        return;
+    stop_inited = true;
+
+    size_t c_count = _child_ev_list.size();
+    auto ch_list_copy_tmp = _child_ev_list;
+
+    for (auto & child : ch_list_copy_tmp)
         child->stop();
 
+    std::cout << "Try call _ev_stop " << std::endl;
     _ev_stop();
     finish();
+    return;
 }
 
 void AEventAbstract::run()
@@ -97,6 +111,7 @@ AEvUtilConf AEventAbstract::_gen_conf_for_util()
 int AEventAbstract::_child_callback(AEvPtrBase _child, AEvExitSignal _ret)
 {
     _child_ev_list.erase(_child);
+    std::cout << "Try call _ev_child_callback " << std::endl;
     _ev_child_callback(_child, _ret);
 
     return 0;

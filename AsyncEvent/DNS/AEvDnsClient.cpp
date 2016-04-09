@@ -17,28 +17,31 @@ AEvDnsClient::AEvDnsClient(const AEvChildConf config, std::string name, dns::Dns
 
 AEvDnsClient::~AEvDnsClient()
 {
-
+    std::cout << "~AEvDnsClient()" << std::endl;
 }
 
 void AEvDnsClient::_ev_begin()
 {
+    std::cout << "AEvDnsClient START" << std::endl;
     _send_request();
 }
 
 void AEvDnsClient::_ev_finish()
 {
-
+    std::cout << "AEvDnsClient FINISH" << std::endl;
 }
 
 void AEvDnsClient::_ev_stop()
 {
     // close() will cancelled immediately all scync operations.
+    std::cout << "AEvDnsClient STOP" << std::endl;
     _socket.close();
     ret_function_cb(static_cast<int>(err), buff.get_respond());
 }
 
 void AEvDnsClient::_ev_timeout()
 {
+    std::cout << "AEvDnsClient TIMEOUT" << std::endl;
     err = dns::DnsError::timeout_err;
 }
 
@@ -55,17 +58,16 @@ void AEvDnsClient::_send_request()
         return;
     }
     _socket.async_send_to(asio::buffer(buff.data(), buff.size_filled()), endpoint,
-                          [this](std::error_code ec, std::size_t bytes_sent)
-                                  {
-                                        if (ec)
-                                            if (ec) {
-                                                stop();
-                                                return;
-                                            }
-                                        std::cout << "sended DNS" << std::endl;
-                                        _get_respond();
-                                  }
-                );
+                          _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_sent)
+    {
+                              if (ec) {
+                                  stop();
+                                  return;
+                              }
+                              std::cout << "sended DNS" << std::endl;
+                              _get_respond();
+                          })
+            );
 }
 
 void AEvDnsClient::_get_respond()
@@ -77,17 +79,18 @@ void AEvDnsClient::_get_respond()
             return;
         }
         _socket.async_receive_from(asio::buffer(buff.data_top(), buff.size_avail()), endpoint,
-                                   [this](std::error_code ec, std::size_t bytes_sent)
-                                           {
-                                                 if (ec) {
-                                                     return;
-                                                 }
-                                                 std::cout << "receive DNS" << std::endl;
-                                                 buff.read_respond(bytes_sent);
-                                                 err = buff.get_error();
-                                                 stop();
-                                           }
-                         );
+                                   _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_sent)
+        {
+                                       if (ec) {
+                                           stop();
+                                           return;
+                                       }
+                                       std::cout << "receive DNS" << std::endl;
+                                       buff.read_respond(bytes_sent);
+                                       err = buff.get_error();
+                                       stop();
+                                   })
+                );
 
 }
 

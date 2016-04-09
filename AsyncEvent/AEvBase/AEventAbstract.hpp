@@ -103,6 +103,9 @@ protected:
 
     // Base timer object.
     AEvTimer _timer;
+
+    // Stop process begined. Don't call again.
+    bool stop_inited {false};
 };
 
 } // namespace

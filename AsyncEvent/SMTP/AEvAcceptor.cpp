@@ -80,8 +80,10 @@ void AEvAcceptor::_start_acceept()
     _acceptor.async_accept(_socket, _ev_loop->wrap(
                                [this] (std::error_code ec)
     {
-                               if (ec)
-                                    return;
+                               if (ec) {
+                                   stop();
+                                   return;
+                               }
 
                                std::cout << "conn" << std::endl;
                                 _create_child<AEvConnection>(0, std::move(_socket));
