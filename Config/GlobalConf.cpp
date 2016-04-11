@@ -8,33 +8,20 @@
 #include <vector>
 
 #define CHECK_AND_SET_OPT(OPT) \
-    str_tmp = _trim_first_part(#OPT);\
-    if (Key == str_tmp) { \
-    if (!_set_opt(Value, OPT)) \
-{ \
-    error_message = "Error on option value. Key: " + Key + ", Value: " + Value; \
-    error_status = true; \
-    return false; \
+str_tmp = _parse_opt(#OPT);\
+if (Key == str_tmp) { \
+    if (!_set_opt(Value, OPT)) { \
+        error_message = "Error on option value. Key: " + Key + ", Value: " + Value; \
+        error_status = true; \
+        return false; \
     } \
     return true; \
-    } \
+} \
 
 bool _set_opt(const std::string &str_opt, bool & option);
 bool _set_opt(const std::string &str_opt, uint & option);
 bool _set_opt(const std::string &str_opt, std::string & option);
-bool _set_opt(const std::string &str_opt, MySQLConf &option);
-
-
-
-Config::Config()
-{
-
-}
-
-Config::~Config()
-{
-}
-
+bool _set_opt(std::string str_opt, MySQLConf &option);
 
 bool Config::have_error()
 {
@@ -45,7 +32,6 @@ bool Config::is_inited()
 {
     return inited;
 }
-
 
 const std::string & Config::error_text()
 {
@@ -76,7 +62,6 @@ bool Config::read_config(const std::string & conf_file_path)
     while (std::getline(config_file, conf_line))
     {
         ++line_num;
-
         _trim_comments(conf_line);
         hstrings::trim(conf_line);
 
@@ -90,10 +75,8 @@ bool Config::read_config(const std::string & conf_file_path)
         {
             std::string key_str = name_val[0];
             std::string key_opt = name_val[1];
-
             hstrings::trim(key_str);
             hstrings::trim(key_opt);
-
             if (!_set_conf_unit(key_str, key_opt))
                 return false;
 
@@ -125,21 +108,22 @@ bool Config::read_config(const std::string & conf_file_path)
 
                 cfpos = config_file.tellg();
             }
-
             _set_conf_unit(code_type, code);
             continue;
-
         }
         error_message = "Error in config file. Line number: " + std::to_string(line_num) + ", Text: " + conf_line;
         error_status = true;
         return false;
     }
+
+    config_file.close();
+
     config_path = conf_file_path;
     inited = true;
     return true;
 }
 
-bool Config::set_opt(std::string opt_name, std::string opt_value)
+bool Config::set_opt(const std::string & opt_name, const std::string & opt_value)
 {
     return _set_conf_unit(opt_name, opt_value);
 }
@@ -166,56 +150,37 @@ void Config::_trim_comments(std::string & conf_line)
         return;
 
     conf_line.resize(pos);
-
 }
 
-std::string Config::_trim_first_part(std::string text)
+std::string Config::_parse_opt(std::string text)
 {
-
-    size_t pos = text.find(".") + 1;
-
-
-    if (pos == std::string::npos)
-        return std::string();
-    text.erase(0, pos);
-
+    hstrings::cut_part(text, '.');
+    hstrings::trim(text);
     return text;
-
 }
 
-bool Config::_is_code_begin(const std::string code_line, std::string & part_type)
+bool Config::_is_code_begin(const std::string & code_line, std::string & part_type)
 {
-
     std::string command;
-
     for (int i = 0; i < code_line.size(); ++i)
     {
-
         if ((isalnum(code_line[i]) || code_line[i] == '_' || code_line[i] == ':'))
             command += code_line[i];
-
-
     }
 
     if (command[command.length() - 1] == ':')
     {
         part_type = command;
-
         // trim ':'
         part_type.resize(part_type.size() - 1);
         return true;
-
     }
 
     return false;
-
 }
-
-
 
 bool Config::_set_conf_unit(const std::string &Key, const std::string &Value)
 {
-
     // check and set all options
     std::string str_tmp;
 
@@ -228,8 +193,6 @@ bool Config::_set_conf_unit(const std::string &Key, const std::string &Value)
 
 bool _set_opt(const std::string &str_opt, bool & option)
 {
-
-
     if (str_opt == "true") {
         option = true;
         return true;
@@ -239,39 +202,36 @@ bool _set_opt(const std::string &str_opt, bool & option)
         option = false;
         return true;
     }
+
     return false;
 }
 
 bool _set_opt(const std::string & str_opt, uint &option)
 {
-
     if (hstrings::is_digit_only(str_opt)) {
         option = std::stoi(str_opt);
         return true;
     }
     return false;
-
 }
 
 bool _set_opt(const std::string & str_opt, std::string & option)
 {
-
     if (str_opt.length() > 0) {
         option = str_opt;
         return true;
     }
-    return false;
 
+    return false;
 }
 
-bool _set_opt(const std::string &str_opt, MySQLConf & option)
+bool _set_opt(std::string str_opt, MySQLConf & option)
 {
     std::vector<std::string> db_conf_arr;
-    std::string conf_line_cleared(str_opt);
     int todo = 1; // Verify mysql string (for special symbols).
 
 //    Spec_Clear(conf_line_cleared, " ");
-    db_conf_arr = hstrings::splitted(conf_line_cleared, '/', true);
+    hstrings::split(str_opt, db_conf_arr, '/', true);
 
     if ( db_conf_arr.size() == 3 ) {
         option.host = db_conf_arr[0];
@@ -280,9 +240,5 @@ bool _set_opt(const std::string &str_opt, MySQLConf & option)
         option.port = 0; // default
         return true;
     }
-
     return false;
-
 }
-
-

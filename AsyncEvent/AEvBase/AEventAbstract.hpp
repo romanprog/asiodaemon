@@ -15,7 +15,7 @@ public:
     // Derived class must have 1 constructor with const AEvChildConf (in case it could not be root) or
     // 2 constructors with const AEvChildConf and AEvRootConf args. Conf args must be translated to base class.
     explicit AEventAbstract(AEvRootConf & config);
-    explicit AEventAbstract(const AEvChildConf & config);
+    explicit AEventAbstract(AEvChildConf && config);
     virtual ~AEventAbstract();
 
     // Init stop event. Call _ev_stop() in derived class.

@@ -8,12 +8,12 @@ namespace aev {
 
 
 
-using RetFunc = std::function<void (int err, dns::DnsRespond & result)>;
+using RetFunc = std::function<void (int err, dns::DnsRespondPtr && result)>;
 
 class AEvDnsClient : public AEventAbstract
 {
 public:
-    explicit AEvDnsClient(const AEvChildConf config, std::string name, dns::DnsQType qt, RetFunc ret_func);
+    explicit AEvDnsClient(AEvChildConf &&config, std::string name, dns::DnsQType qt, RetFunc ret_func);
     ~AEvDnsClient();
 private:
 

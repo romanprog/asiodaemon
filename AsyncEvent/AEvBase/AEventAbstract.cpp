@@ -19,8 +19,8 @@ AEventAbstract::AEventAbstract(aev::AEvRootConf & config)
     config.evloop = std::make_shared<asio::strand>(_ev_loop->get_io_service());
 }
 
-AEventAbstract::AEventAbstract(const AEvChildConf & config)
-    :_ev_loop(config.evloop),
+AEventAbstract::AEventAbstract(AEvChildConf &&config)
+    :_ev_loop(std::move(config.evloop)),
       _status(AEvStatus::evchild),
       _finish_callback(config.onFinishCallback),
       _timeout(config.timeout),

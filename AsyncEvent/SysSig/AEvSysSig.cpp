@@ -2,8 +2,8 @@
 
 namespace aev {
 
-AEvSysSig::AEvSysSig(const AEvChildConf config)
-    :AEventAbstract::AEventAbstract(config),
+AEvSysSig::AEvSysSig(AEvChildConf &&config)
+    :AEventAbstract::AEventAbstract(std::move(config)),
      _sig_set(_ev_loop->get_io_service())
 {
 

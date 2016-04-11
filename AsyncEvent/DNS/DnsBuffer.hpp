@@ -24,7 +24,7 @@ public:
         return err;
     }
 
-    dns::DnsRespond & get_respond();
+    dns::DnsRespondPtr withdraw_respond();
 
     void clear();
 
@@ -36,7 +36,7 @@ private:
 
     bool redy_for_respond {false};
     dns::DnsRequest _request;
-    dns::DnsRespond _respond;
+    dns::DnsRespondPtr _respond_ptr;
 };
 
 

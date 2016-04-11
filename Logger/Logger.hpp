@@ -77,12 +77,11 @@ public:
 
         return result;
     }
-    template<typename ...Args>
+
     std::string log_format_to_str(const std::string & pattern)
     {
         return pattern;
     }
-
 
 private:
 

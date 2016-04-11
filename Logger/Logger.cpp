@@ -4,7 +4,6 @@
 #include <stdarg.h>
 #include <fstream>
 
-
 /// =============== Console child ================
 
 CLog::CLog()
@@ -23,24 +22,18 @@ void CLog::__write_log(const std::string &log_message)
     std::cout << log_message << std::endl;
 }
 
-
 /// =============  File logger child ================
 
 FLog::FLog(const std::string &&filename)
     :log_file_name(filename)
 {
-
     log_file.open( filename, std::ofstream::out | std::ofstream::app );
-
-
 }
 
 FLog::~FLog()
 {
-
         if (log_file.is_open())
             log_file.close();
-
 }
 
 void FLog::__write_log(const std::string &log_message)
@@ -49,6 +42,4 @@ void FLog::__write_log(const std::string &log_message)
         return;
 
     log_file << log_message << std::endl;
-
-
 }

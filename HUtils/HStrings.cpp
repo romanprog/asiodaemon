@@ -63,7 +63,6 @@ std::vector<std::string> &split(const std::string &str, std::vector<std::string>
             break;
 
         i = ++j;
-
     }
     return res;
 }
@@ -132,19 +131,8 @@ bool get_part(const std::string &text, std::string &result, char delim, size_t p
 
 bool cut_part(const std::string & text, std::string &result, char delim, size_t pindex)
 {
-    std::pair<size_t, size_t> substr_coords = pcoord(text, delim, pindex);
-
-    if (substr_coords.first == std::string::npos)
-        return false;
-
-    if (substr_coords.second < text.size())
-        ++substr_coords.second;
-    if (substr_coords.first > 0)
-        -- substr_coords.first;
-
     result = text;
-    result.erase(substr_coords.first, substr_coords.second - substr_coords.first);
-    return true;
+    return cut_part(result, delim, pindex);
 }
 
 bool get_part_reverse(const std::string &text, std::string &result, char delim, size_t pindex)
@@ -168,7 +156,6 @@ bool get_part_reverse(const std::string &text, std::string &result, char delim, 
 
     result.assign(e_iter.base(), beg_iter.base());
     return true;
-
 }
 
 bool cut_part_reverse(const std::string &text, std::string &result, char delim, size_t pindex)
@@ -199,6 +186,22 @@ bool cut_part_reverse(const std::string &text, std::string &result, char delim, 
         --beg_iter;
 
     result.erase(e_iter.base(), beg_iter.base());
+    return true;
+}
+
+bool cut_part(std::string &text, char delim, size_t pindex)
+{
+    std::pair<size_t, size_t> substr_coords = pcoord(text, delim, pindex);
+
+    if (substr_coords.first == std::string::npos)
+        return false;
+
+    if (substr_coords.second < text.size())
+        ++substr_coords.second;
+    if (substr_coords.first > 0)
+        -- substr_coords.first;
+
+    text.erase(substr_coords.first, substr_coords.second - substr_coords.first);
     return true;
 }
 

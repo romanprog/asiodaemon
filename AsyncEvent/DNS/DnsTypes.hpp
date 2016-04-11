@@ -182,6 +182,8 @@ struct DnsRespond
     std::vector<DnsPkgAnswer> alist;
 };
 
+using DnsRespondPtr = std::unique_ptr<DnsRespond>;
+
 class DnsUIBase;
 
 using DnsUIPtr = std::unique_ptr<DnsUIBase>;

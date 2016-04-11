@@ -13,7 +13,7 @@ class AEvConnection : public AEventAbstract
 {
 public:
 
-    explicit AEvConnection(const AEvChildConf config, asio::ip::tcp::socket _soc);
+    explicit AEvConnection(AEvChildConf && config, asio::ip::tcp::socket _soc);
     virtual ~AEvConnection() override {}
 
 private:

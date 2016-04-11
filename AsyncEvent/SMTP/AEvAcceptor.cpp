@@ -17,8 +17,8 @@ AEvAcceptor::AEvAcceptor(AEvRootConf &config, const std::string &ip, const unsig
      log_debug("AEvAcceptor CONSTRUCTOR! ");
 }
 
-AEvAcceptor::AEvAcceptor(const AEvChildConf config, const std::string &ip, const unsigned port)
-    :AEventAbstract::AEventAbstract(config),
+AEvAcceptor::AEvAcceptor(AEvChildConf && config, const std::string &ip, const unsigned port)
+    :AEventAbstract::AEventAbstract(std::move(config)),
      _acceptor(_ev_loop->get_io_service()),
      _socket(_ev_loop->get_io_service()),
      _conn_ip(ip),

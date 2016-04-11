@@ -15,7 +15,6 @@ public:
     void init_async(const AEvUtilConf config);
     void stop_async();
 
-
 protected:
     template <typename EvType, typename... _Args>
     bool _create_child(int timeout, _Args&&... __args)
@@ -29,7 +28,6 @@ protected:
     }
 
 private:
-
     AEvPtrBase _event_manager {nullptr};
 
 protected:

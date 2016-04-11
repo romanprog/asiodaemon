@@ -33,6 +33,7 @@ bool get_part(const std::string & text, std::string &result, char delim, size_t 
 // Erase part number @pindex separated by @delim from @text and return result in @result string.
 // Nearest delimiters will be deleted.
 bool cut_part(const std::string & text, std::string &result, char delim, size_t pindex = 0);
+bool cut_part(std::string & text, char delim, size_t pindex = 0);
 
 // Same as @get_part and @cut_part, but reverse version. Numeration begin from the end of @text
 bool get_part_reverse(const std::string & text, std::string &result, char delim, size_t pindex = 0);

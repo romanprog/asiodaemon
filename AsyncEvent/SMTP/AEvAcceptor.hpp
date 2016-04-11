@@ -9,7 +9,7 @@ class AEvAcceptor : public AEventAbstract
 public:
 
     AEvAcceptor(AEvRootConf & config, const std::string &ip, const unsigned port);
-    AEvAcceptor(const AEvChildConf config, const std::string &ip, const unsigned port);
+    AEvAcceptor(AEvChildConf &&config, const std::string &ip, const unsigned port);
 
     virtual ~AEvAcceptor() override
     {

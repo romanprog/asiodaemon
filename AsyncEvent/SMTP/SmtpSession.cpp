@@ -108,12 +108,12 @@ void SmtpSession::accept_data(SmtpDataBuffer &data)
 
 void SmtpSession::begin(std::string &&ip)
 {
-    _state.client_ip = ip;
+    _state.client_ip = std::move(ip);
     _create_child<aev::AEvDnsClient>(0, _state.client_ip, dns::DnsQType::PTR,
-                                     [this](int err, dns::DnsRespond result)
+                                     [this](int err, dns::DnsRespondPtr && result)
     {
         if (!err)
-            for (auto & r : result.alist)
+            for (auto & r : result->alist)
                 _state.client_ip_ptr = r.answer;
 
 
@@ -138,10 +138,10 @@ void SmtpSession::_helo_cmd(const std::string & args)
     if (dns::utils::is_fqdn(_state.client_hello.text)) {
         _state.client_hello.is_fqdn = true;
         _create_child<aev::AEvDnsClient>(1, _state.client_hello.text, dns::DnsQType::A,
-                                         [this](int err, dns::DnsRespond result)
+                                         [this](int err, dns::DnsRespondPtr && result)
         {
             if (!err)
-                _state.client_hello.ip = dns::utils::get_rand_rec_value(result);
+                _state.client_hello.ip = dns::utils::get_rand_rec_value(*result);
         });
 
     }

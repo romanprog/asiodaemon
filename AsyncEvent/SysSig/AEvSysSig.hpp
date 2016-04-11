@@ -9,7 +9,7 @@ class AEvSysSig : public AEventAbstract
 {
 public:
 
-    AEvSysSig(const AEvChildConf config);
+    AEvSysSig(AEvChildConf && config);
     virtual ~AEvSysSig() override
     {
 
