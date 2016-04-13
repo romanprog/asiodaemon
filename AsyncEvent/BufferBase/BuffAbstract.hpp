@@ -51,6 +51,7 @@ public:
     }
 
     void operator << (const std::string & str);
+    void operator << (const char * str);
 
 protected:
     virtual size_t calculate_mem();
@@ -62,7 +63,6 @@ private:
     size_t _top_offset {0};
     size_t _reserved {0};
     size_t _size {0};
-    size_t _data_cursor{0};
     char * _cdata;
 
 };

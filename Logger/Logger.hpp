@@ -45,6 +45,7 @@ public:
             return;
         __format_write (pattern.c_str(),  std::forward<Args>(args)...);
     }
+
     // Warn write = standart write + warning information.
     template<typename ...Args>
     void warn_write (const std::string & pattern, Args && ...args)
@@ -53,6 +54,7 @@ public:
             return;
         __format_write (pattern.c_str(),  std::forward<Args>(args)...);
     }
+
     // Full logging.
     template<typename ...Args>
     void debug_write (const std::string & pattern, Args && ...args)
@@ -61,13 +63,14 @@ public:
             return;
         __format_write (pattern.c_str(),  std::forward<Args>(args)...);
     }
+
     template<typename ...Args>
-    std::string log_format_to_str(const std::string & pattern, Args && ...args)
+    const std::string log_format_to_str(const std::string & pattern, Args && ...args)
     {
         std::string result;
         try
         {
-            _get_str(result, pattern,  std::forward<Args>(args)...);
+            _get_str(result, pattern.c_str(),  std::forward<Args>(args)...);
         }
         catch (...)
         {
@@ -78,7 +81,7 @@ public:
         return result;
     }
 
-    std::string log_format_to_str(const std::string & pattern)
+    const std::string &log_format_to_str(const std::string & pattern)
     {
         return pattern;
     }

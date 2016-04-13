@@ -1,58 +1,58 @@
-#include "AEvDnsClient.hpp"
+#include "AEvRedisCli.hpp"
 #include "DnsBuffer.hpp"
 
 #include "iostream"
 
 namespace aev {
 
-AEvDnsClient::AEvDnsClient(AEvChildConf && config, std::string name, dns::DnsQType qt, RetFunc ret_func)
+AEvRedisCli::AEvRedisCli(AEvChildConf && config, std::string query, RetFunc ret_func)
     :AEventAbstract::AEventAbstract(std::move(config)),
-     _socket(_ev_loop->get_io_service(), asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
-     _domain(name),
+     _socket(_ev_loop->get_io_service(), asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 0)),
+     _query(std::move(query)),
      ret_function_cb(ret_func),
-     query_type(qt)
+
 {
-    log_debug("AEvDnsClient CONSTRUCTOR! ");
+    log_debug("AEvRedisCli CONSTRUCTOR! ");
 }
 
-AEvDnsClient::~AEvDnsClient()
+AEvRedisCli::~AEvRedisCli()
 {
-    log_debug("~AEvDnsClient DESTRUCTOR");
+    log_debug("~AEvRedisCli DESTRUCTOR");
 }
 
-void AEvDnsClient::_ev_begin()
+void AEvRedisCli::_ev_begin()
 {
-    log_debug("AEvDnsClient START");
+    log_debug("AEvRedisCli START");
     _send_request();
 }
 
-void AEvDnsClient::_ev_finish()
+void AEvRedisCli::_ev_finish()
 {
-    log_debug("AEvDnsClient FINISH" );
+    log_debug("AEvRedisCli FINISH" );
     _socket.close();
     ret_function_cb(static_cast<int>(err), buff.withdraw_respond());
 }
 
-void AEvDnsClient::_ev_stop()
+void AEvRedisCli::_ev_stop()
 {
     // close() will cancelled immediately all scync operations.
-    log_debug("AEvDnsClient STOP");
+    log_debug("AEvRedisCli STOP");
 }
 
-void AEvDnsClient::_ev_timeout()
+void AEvRedisCli::_ev_timeout()
 {
-    log_debug("AEvDnsClient TIMEOUT");
+    log_debug("AEvRedisCli TIMEOUT");
     err = dns::DnsError::timeout_err;
 }
 
 
-void AEvDnsClient::_send_request()
+void AEvRedisCli::_send_request()
 {
 
     asio::ip::udp::resolver resolver(_ev_loop->get_io_service());
-    endpoint = *resolver.resolve({asio::ip::udp::v4(), "127.0.1.1", "53"});
+    endpoint = *resolver.resolve({asio::ip::tcp::v4(), "127.0.1.1", "53"});
 
-    if (!buff.prepare_for_request(_domain, query_type))
+    if (!buff.prepare_for_request(_query, query_type))
     {
         stop();
         return;
@@ -70,7 +70,7 @@ void AEvDnsClient::_send_request()
             );
 }
 
-void AEvDnsClient::_get_respond()
+void AEvRedisCli::_get_respond()
 {
 
         if (!buff.prepare_for_respond())
@@ -94,7 +94,7 @@ void AEvDnsClient::_get_respond()
 
 }
 
-void aev::AEvDnsClient::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
+void aev::AEvRedisCli::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
 
 }

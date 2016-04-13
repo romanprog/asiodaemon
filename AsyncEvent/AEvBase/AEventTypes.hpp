@@ -49,13 +49,15 @@ enum class AEvStatus
 using AEvPtrBase = std::shared_ptr<AEventAbstract>;
 using AEvPtrBaseConst = std::shared_ptr<const AEventAbstract>;
 using AEvUtilPtr = std::shared_ptr<AEventUtilBase>;
+using AEvUtilCloseFunc = std::function<void()>;
 
 using AEvFinishCallback = std::function<int (AEvPtrBase, AEvExitSignal)>;
 using AEvStrandPtr = std::shared_ptr<asio::strand>;
 using AEvTimer = asio::steady_timer;
 using AEvSet = std::set<AEvPtrBase>;
 using AEvIoPtr = std::shared_ptr<asio::io_service>;
-using AEvUtilsSet = std::set<AEvUtilPtr>;
+using AEvUtilsClosersList = std::vector<AEvUtilCloseFunc>;
+
 
 // Config for base AEv type child (wich was created by "create_child").
 struct AEvChildConf

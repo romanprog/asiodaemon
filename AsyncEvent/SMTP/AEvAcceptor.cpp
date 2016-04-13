@@ -43,7 +43,7 @@ void AEvAcceptor::_ev_begin()
     _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
     _acceptor.bind(endpoint);
     _acceptor.listen();
-    _create_child<AEvSysSig>(0);
+    create_child<AEvSysSig>(0);
     _start_acceept();
 
 }
@@ -83,7 +83,7 @@ void AEvAcceptor::_start_acceept()
                                }
 
                                log_debug("conn");
-                                _create_child<AEvConnection>(0, std::move(_socket));
+                                create_child<AEvConnection>(0, std::move(_socket));
                                _start_acceept();
                            })
             );

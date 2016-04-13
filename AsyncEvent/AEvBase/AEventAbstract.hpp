@@ -15,6 +15,8 @@ public:
     // Derived class must have 1 constructor with const AEvChildConf (in case it could not be root) or
     // 2 constructors with const AEvChildConf and AEvRootConf args. Conf args must be translated to base class.
     explicit AEventAbstract(AEvRootConf & config);
+    // Child event must be created by @create_child member method. AEvChildConf generate by _gen_conf_for_child method
+    // so it can be only rvalue.
     explicit AEventAbstract(AEvChildConf && config);
     virtual ~AEventAbstract();
 
@@ -28,7 +30,6 @@ public:
     void begin();
 
 private:
-
     // Base IO service. Createing in root event for generate AEvRootConf.
     AEvIoPtr _asio_io;
 
@@ -49,20 +50,22 @@ protected:
     // Create child event of any derived type.
     // Args: timeout seconds or 0 (without timeout), !addinional! arguments of derived type.
     template <typename AEvDescT, typename... _Args>
-    void _create_child(int timeout, _Args&&... __args)
+    void create_child(int timeout, _Args&&... __args)
     {
         static_assert(std::is_base_of<AEventAbstract, AEvDescT>::value,
                       "AEvDescT must be a descendant of AEventAbstract");
 
         static_assert(std::is_constructible<AEvDescT, AEvChildConf, _Args...>::value,
                       "Can't construct child object with given params. The "
-                      "first must be AEvChildConf! Please, check parameters of AEvDescT constructor.");
+                      "first must be AEvChildConf! Please check constructor of descendant class.");
 
         AEvPtrBase child_ev = std::make_shared<AEvDescT>(_gen_conf_for_child(timeout), std::forward<_Args>(__args)...);
         _child_ev_list.insert(child_ev);
         child_ev->begin();
     }
 
+    // Registration of AEv vutil deinit function.
+    void register_util(AEvUtilCloseFunc deinit_func);
 
     // Last step of event before destruct.
     void finish();
@@ -97,6 +100,9 @@ protected:
 
     // List of child events.
     AEvSet _child_ev_list;
+
+    // Registered utils. Need to remove additional shared pointer to parent AEv object.
+    AEvUtilsClosersList _registered_utils;
 
     // Pointer to itself. Creating by begin() method. Used for parent callback for
     // request deleting from parent _child_ev_list.

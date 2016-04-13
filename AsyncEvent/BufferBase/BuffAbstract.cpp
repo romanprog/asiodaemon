@@ -86,6 +86,14 @@ size_t BuffAbstract::size_avail() const
     return _size - _top_offset;
 }
 
+void BuffAbstract::operator <<(const char *str)
+{
+    size_t sz = std::strlen(str);
+    release(sz);
+    memcpy(data_top(), str, sz);
+    accept(sz);
+}
+
 void BuffAbstract::operator <<(const std::string &str)
 {
     release(str.size());

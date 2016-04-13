@@ -7,7 +7,7 @@
 namespace aev {
 
 
-class AEventUtilBase
+class AEventUtilBase : public std::enable_shared_from_this<AEventUtilBase>
 {
 public:
     explicit AEventUtilBase();
@@ -22,7 +22,7 @@ protected:
         if (_event_manager == nullptr)
             return false;
 
-        _event_manager->_create_child<EvType>(timeout, std::forward<_Args>(__args)...);
+        _event_manager->create_child<EvType>(timeout, std::forward<_Args>(__args)...);
 
         return true;
     }

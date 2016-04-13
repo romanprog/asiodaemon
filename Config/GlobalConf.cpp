@@ -8,7 +8,7 @@
 #include <vector>
 
 #define CHECK_AND_SET_OPT(OPT) \
-str_tmp = _parse_opt(#OPT);\
+str_tmp = _get_opt_name(#OPT);\
 if (Key == str_tmp) { \
     if (!_set_opt(Value, OPT)) { \
         error_message = "Error on option value. Key: " + Key + ", Value: " + Value; \
@@ -49,7 +49,7 @@ bool Config::read_config(const std::string & conf_file_path)
 
     if (!config_file) {
 
-        error_message = "Can't read file.";
+        error_message = "Can't read file \"" + conf_file_path + "\".";
         error_status = true;
         return false;
 
@@ -152,14 +152,14 @@ void Config::_trim_comments(std::string & conf_line)
     conf_line.resize(pos);
 }
 
-std::string Config::_parse_opt(std::string text)
+std::string Config::_get_opt_name(std::string conf_struct_unit)
 {
-    hstrings::cut_part(text, '.');
-    hstrings::trim(text);
-    return text;
+    hstrings::cut_part(conf_struct_unit, '.', 0);
+    hstrings::trim(conf_struct_unit);
+    return conf_struct_unit;
 }
 
-bool Config::_is_code_begin(const std::string & code_line, std::string & part_type)
+bool Config::_is_code_begin(const std::string & code_line, std::string & part_name)
 {
     std::string command;
     for (int i = 0; i < code_line.size(); ++i)
@@ -170,9 +170,9 @@ bool Config::_is_code_begin(const std::string & code_line, std::string & part_ty
 
     if (command[command.length() - 1] == ':')
     {
-        part_type = command;
+        part_name = command;
         // trim ':'
-        part_type.resize(part_type.size() - 1);
+        part_name.resize(part_name.size() - 1);
         return true;
     }
 

@@ -15,6 +15,11 @@ AEvConnection::AEvConnection(AEvChildConf &&config, asio::ip::tcp::socket _soc)
      log_debug("AEvConnection CONSTRUCTOR! ");
 }
 
+AEvConnection::~AEvConnection()
+{
+    log_debug("AEvConnection DESTRUCT" );
+}
+
 void AEvConnection::_ev_begin()
 {
     log_debug("AEvConnection START");
@@ -26,7 +31,6 @@ void AEvConnection::_ev_begin()
 void AEvConnection::_ev_finish()
 {
     log_debug("AEvConnection FINISH");
-    session.stop_async();
 }
 
 void AEvConnection::_ev_stop()

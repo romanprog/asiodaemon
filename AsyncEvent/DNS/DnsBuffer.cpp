@@ -67,16 +67,16 @@ void DnsBuffer::clear()
 
 size_t DnsBuffer::calculate_mem()
 {
-    size_t block_size {dns::max_pkg_size ? dns::max_pkg_size : 1};
-                       size_t reserve_bl_count {1};
+    size_t block_size = dns::max_pkg_size ? dns::max_pkg_size : 1;
+    size_t reserve_bl_count {1};
 
-                                      return ((top_offset() + size_filled()) / block_size + reserve_bl_count) * block_size;
-                      }
+    return ((top_offset() + size_filled()) / block_size + reserve_bl_count) * block_size;
+}
 
-    void DnsBuffer::when_new_data_acc(size_t bytes_readed)
-    {
+void DnsBuffer::when_new_data_acc(size_t bytes_readed)
+{
 
-    }
+}
 
 
 

@@ -11,11 +11,11 @@ using DataOffsetList = std::vector<DataOffset>;
 using BufferDataList = std::vector<std::string>;
 
 
-class ParsingBuffAbstract : public BuffAbstract
+class PBufferAbstract : public BuffAbstract
 
 {
 public:
-    ParsingBuffAbstract(std::string delimiter, size_t e_pt_sz);
+    PBufferAbstract(std::string delimiter, size_t e_pt_sz);
 
     // Return reference to vector of parsed parts in buffer. Format:
     // std::pair
@@ -39,6 +39,7 @@ protected:
     virtual size_t calculate_mem() override;
     virtual void when_new_data_acc(size_t bytes_readed) override;
     virtual void when_have_new_part(const size_t begin_offset, const size_t size) = 0;
+    virtual void when_parsed_all(size_t new_parts) {}
 
 private:
 
@@ -51,6 +52,6 @@ private:
 
 };
 
-BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_delimiter = true);
+BufferDataList get_buff_dala_list(const PBufferAbstract &_buffer, bool trim_delimiter = true);
 
 #endif // PARSINGBUFFABSTRACT_HPP

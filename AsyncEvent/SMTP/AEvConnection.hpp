@@ -14,7 +14,7 @@ class AEvConnection : public AEventAbstract
 public:
 
     explicit AEvConnection(AEvChildConf && config, asio::ip::tcp::socket _soc);
-    virtual ~AEvConnection() override {}
+    virtual ~AEvConnection() override;
 
 private:
 

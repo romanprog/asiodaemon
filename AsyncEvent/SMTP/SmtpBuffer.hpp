@@ -1,7 +1,7 @@
 #ifndef AEVBUFFER_HPP
 #define AEVBUFFER_HPP
 
-#include "../BufferBase/ParsingBuffAbstract.hpp"
+#include "../BufferBase/PBufferAbstract.hpp"
 #include "../AEvBase/AEventUtilBase.hpp"
 #include "SmtpTypes.hpp"
 
@@ -10,7 +10,7 @@
 #include <queue>
 
 
-class SmtpCmdBuffer : public ParsingBuffAbstract
+class SmtpCmdBuffer : public PBufferAbstract
 {
 public:
     using SmtpCmdCallback = std::function<void ()>;
@@ -21,7 +21,6 @@ public:
     bool is_empty();
     size_t list_size() const;
 
-
 private:
 
     virtual void when_have_new_part(const size_t begin_offset, const size_t size) override;
@@ -30,7 +29,10 @@ private:
     std::queue<std::string> lines_list;
 };
 
-class SmtpDataBuffer : public ParsingBuffAbstract
+
+///////////// Buffer for reading SMTP DATA //////////////////
+
+class SmtpDataBuffer : public PBufferAbstract
 {
 public:
     using SmtpDataCallback = std::function<void ()>;

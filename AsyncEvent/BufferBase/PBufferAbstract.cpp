@@ -1,14 +1,14 @@
-#include "ParsingBuffAbstract.hpp"
+#include "PBufferAbstract.hpp"
 
 #include <cstring>
 #include <algorithm>
 
-ParsingBuffAbstract::ParsingBuffAbstract(std::string delimiter, size_t e_pt_sz)
+PBufferAbstract::PBufferAbstract(std::string delimiter, size_t e_pt_sz)
     :_delimiter(delimiter),
      _expected_part_size(e_pt_sz)
 { }
 
-int ParsingBuffAbstract::parse()
+int PBufferAbstract::parse()
 {
 
     const char * d_tmp = data() + _unsearched_offset;
@@ -38,24 +38,24 @@ int ParsingBuffAbstract::parse()
 }
 
 
-size_t ParsingBuffAbstract::redundant_data_size() const
+size_t PBufferAbstract::redundant_data_size() const
 {
     return top_offset() - _unparsed_offset;
 }
 
-std::string ParsingBuffAbstract::get_delimiter() const
+std::string PBufferAbstract::get_delimiter() const
 {
     return _delimiter;
 }
 
-void ParsingBuffAbstract::reset()
+void PBufferAbstract::reset()
 {
     BuffAbstract::reset();
     _unparsed_offset = _unsearched_offset = 0;
     _data_parts.clear();
 }
 
-void ParsingBuffAbstract::mem_reduce()
+void PBufferAbstract::mem_reduce()
 {
     if (!redundant_data_size()) {
         reset();
@@ -69,24 +69,24 @@ void ParsingBuffAbstract::mem_reduce()
 
 }
 
-const DataOffsetList &ParsingBuffAbstract::get_offsets_list() const
+const DataOffsetList &PBufferAbstract::get_offsets_list() const
 {
     return _data_parts;
 }
 
-size_t ParsingBuffAbstract::calculate_mem()
+size_t PBufferAbstract::calculate_mem()
 {
     size_t reserve_bl_count {2};
     return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
 }
 
-void ParsingBuffAbstract::when_new_data_acc(size_t bytes_readed)
+void PBufferAbstract::when_new_data_acc(size_t bytes_readed)
 {
-    parse();
+    when_parsed_all(parse());
 }
 
 
-BufferDataList get_buff_dala_list(const ParsingBuffAbstract &_buffer, bool trim_delimiter)
+BufferDataList get_buff_dala_list(const PBufferAbstract &_buffer, bool trim_delimiter)
 {
     BufferDataList _temp_data_list;
 

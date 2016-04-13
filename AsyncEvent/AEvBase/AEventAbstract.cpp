@@ -1,4 +1,5 @@
 #include "AEventAbstract.hpp"
+#include "AEventUtilBase.hpp"
 
 
 #include <memory>
@@ -42,6 +43,11 @@ void AEventAbstract::begin()
     _ev_begin();
 }
 
+void AEventAbstract::register_util(AEvUtilCloseFunc deinit_func)
+{
+    _registered_utils.push_back(deinit_func);
+}
+
 void AEventAbstract::finish()
 {
     _timer.cancel();
@@ -79,6 +85,9 @@ void AEventAbstract::stop()
     if (stop_inited)
         return;
     stop_inited = true;
+
+    for (auto & util_stop : _registered_utils)
+        util_stop();
 
     auto ch_list_copy_tmp = _child_ev_list;
 

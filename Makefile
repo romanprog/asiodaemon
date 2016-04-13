@@ -60,7 +60,7 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsyncEvent/SysSig/AEvSysSig.cpp \
              AsyncEvent/AEvBase/AEventAbstract.cpp \
              AsyncEvent/AEvBase/AEventUtilBase.cpp \
-             AsyncEvent/BufferBase/ParsingBuffAbstract.cpp \
+             AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp
@@ -81,13 +81,15 @@ TESTING_SOURCES = testing.cpp \
              HUtils/HFiles.cpp \
              HUtils/HDaemon.cpp \
              HUtils/HFiles.cpp \
-             AsyncEvent/BufferBase/ParsingBuffAbstract.cpp \
+             AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
+             AsyncEvent/Redis/RedisBuffer.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp
 
 
-all : $(TESTING_NAME) $(ASYNCD_NAME)
+all : $(TESTING_NAME)
+#$(ASYNCD_NAME)
 
 $(ASYNCD_NAME): $(ASYNCD_SOURCES)
 	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)

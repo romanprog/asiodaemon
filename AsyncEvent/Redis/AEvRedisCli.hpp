@@ -1,26 +1,25 @@
-#ifndef AEVDNSCLIENT_HPP
-#define AEVDNSCLIENT_HPP
+#ifndef AEvRedisCli_HPP
+#define AEvRedisCli_HPP
 
 #include "../AEvBase/AEventAbstract.hpp"
-#include "DnsBuffer.hpp"
+#include "RedisBuffer.hpp"
 
 namespace aev {
 
 using RetFunc = std::function<void (int err, dns::DnsRespondPtr && result)>;
 
-class AEvDnsClient : public AEventAbstract
+class AEvRedisCli : public AEventAbstract
 {
 public:
-    explicit AEvDnsClient(AEvChildConf &&config, std::string name, dns::DnsQType qt, RetFunc ret_func);
-    ~AEvDnsClient();
+    explicit AEvRedisCli(AEvChildConf &&config, std::string query, RetFunc ret_func);
+    ~AEvRedisCli();
 private:
 
     asio::ip::udp::socket _socket;
-    std::string _domain;
-    asio::ip::udp::endpoint endpoint;
+    std::string _query;
+    asio::ip::tcp::endpoint endpoint;
     DnsBuffer buff;
     RetFunc ret_function_cb;
-    dns::DnsQType query_type;
     dns::DnsError err {dns::DnsError::noerror};
 
     virtual void _ev_begin() override;
@@ -36,4 +35,4 @@ private:
 
 } //namespace
 
-#endif // AEVDNSCLIENT_HPP
+#endif // AEvRedisCli_HPP

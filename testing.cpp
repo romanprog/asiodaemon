@@ -10,18 +10,19 @@
 #include "HUtils/HStrings.hpp"
 #include "Logger/Logger.hpp"
 #include "Config/GlobalConf.hpp"
+#include "AsyncEvent/Redis/RedisBuffer.hpp"
 
 int main () {
     Config config = Config::glob();
-    config.read_config("main.conwf");
+    config.read_config("main.conf");
     if (config.have_error()) {
-        CLog::glob().write("Error reading config. Error: %", config.error_text());
+        CLog::glob().write("Error loading config: %", config.error_text());
         exit(0);
     }
+    Config::glob().set_opt("logging_level", "3");
+    RedisBuffer buff;
+    buff << "-Errrrr\r\n";
 
-    std::string s("one:two:three:::");
-    std::string result;
-    if (hstrings::cut_part_reverse(s, result, ':', 0))
-        std::cout << result << std::endl;
+
 }
 

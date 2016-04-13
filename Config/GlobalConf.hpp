@@ -33,35 +33,47 @@ struct MySQLConf
 struct PluginConfig
 {
     // options:
-    // global optiong
     uint logging_level {1};
 };
 
 class Config
 {
 public:
-    Config() = default;
-      // Error message.
+
+    // Error message.
     const std::string &error_text();
+    // Read config from file @conf_file_path.
+    // If an error occurs - return false.
     bool read_config(const std::string &conf_file_path);
+    // For the manual options setting.
     bool set_opt(const std::string &opt_name, const std::string &opt_value);
     // Chech for config errors.
     bool have_error();
     bool is_inited();
+    // Create a global config state for use in any part of the application.
     static Config & glob();
+    // Return config struct reference.
     PluginConfig & get_conf();
 
 private:
+    // Deletes comments from config line.
     void _trim_comments(std::string & conf_line);
-    std::string _parse_opt(std::string text);
-    bool _is_code_begin(const std::string &code_line, std::string &part_type);
-    bool _read_block(const std::istream & file, std::string & block);
+    // Return option name from full name of PluginConfig member.
+    std::string _get_opt_name(std::string conf_struct_unit);
+    // If @code_line is begin of runing code section - return true and write section
+    // name to @part_name.
+    bool _is_code_begin(const std::string &code_line, std::string &part_name);
+    // Set PluginConfig member unit from parsed to {key,value} config line.
     bool _set_conf_unit(const std::string & Key, const std::string & Value);
 
+    // Have error.
     bool error_status = false;
+    // File readed, config units inited. No errors.
     bool inited = true;
     std::string error_message = "Not inited";
+    // Main config struct.
     PluginConfig config;
+    // Path to config file.
     std::string config_path;
 };
 

@@ -5,7 +5,7 @@
 
 
 SmtpCmdBuffer::SmtpCmdBuffer()
-    :ParsingBuffAbstract::ParsingBuffAbstract("\r\n", 2048)
+    :PBufferAbstract::PBufferAbstract("\r\n", 2048)
 {
 
 }
@@ -48,7 +48,7 @@ void SmtpCmdBuffer::when_have_new_part(const size_t begin_offset, const size_t s
 // ======================= Data buffer =========================
 
 SmtpDataBuffer::SmtpDataBuffer()
-    :ParsingBuffAbstract::ParsingBuffAbstract("\r\n.\r\n", 70000)
+    :PBufferAbstract::PBufferAbstract("\r\n.\r\n", 70000)
 {
 
 }
