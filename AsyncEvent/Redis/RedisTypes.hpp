@@ -22,6 +22,13 @@ struct RespData
     std::string sres;
     int ires {0};
     std::vector<RespData> ares;
+    void reset()
+    {
+        ares.clear();
+        ires = 0;
+        sres.clear();
+        type = RespType::empty;
+    }
 };
 
 using RespDataPtr = std::unique_ptr<RespData>;

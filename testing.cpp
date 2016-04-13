@@ -21,8 +21,14 @@ int main () {
     }
     Config::glob().set_opt("logging_level", "3");
     RedisBuffer buff;
-    buff << "-Errrrr\r\n";
+    for (int i = 0; i < 1000000; ++i)
+    {
 
+        buff << "$20\r\na2201oajqkeiskaumsya\r\n";
+
+        if (buff.is_complate())
+            buff.reset(true);
+    }
 
 }
 

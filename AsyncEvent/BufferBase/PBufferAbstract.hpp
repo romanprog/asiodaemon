@@ -30,7 +30,7 @@ public:
     std::string get_delimiter() const;
 
     // Full buffer reset. One more override not allowed. Use virtual method when_reseted().
-    void reset() override final;
+    void reset(bool soft_reset = false);
 
     // Free mem of parsed data. Reset bufer and write in it unparsed part.
     void mem_reduce();

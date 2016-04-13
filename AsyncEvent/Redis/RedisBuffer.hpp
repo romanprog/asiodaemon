@@ -18,12 +18,17 @@ public:
     }
 
     redis::RespDataPtr withdraw_respond();
+    bool is_complate()
+    {
+        return comlated;
+    }
 
     void clear();
 
 private:
     virtual void when_new_data_acc(size_t bytes_readed) override;
     virtual size_t calculate_mem() override;
+    virtual void when_reseted();
 
     size_t unparsed_size();
 

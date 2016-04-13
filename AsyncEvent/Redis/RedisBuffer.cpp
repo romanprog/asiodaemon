@@ -15,12 +15,6 @@ redis::RespDataPtr RedisBuffer::withdraw_respond()
     return std::move(_respond_ptr);
 }
 
-void RedisBuffer::clear()
-{
-    reset();
-    _respond_ptr = std::make_unique<redis::RespData>();
-}
-
 void RedisBuffer::when_new_data_acc(size_t bytes_readed)
 {
     if (!_parsed_offset) {
@@ -40,6 +34,13 @@ size_t RedisBuffer::calculate_mem()
     size_t reserve_bl_count {1};
     size_t _expected_part_size {100}; // Tmp value.
     return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
+}
+
+void RedisBuffer::when_reseted()
+{
+    _respond_ptr->reset();
+    comlated = false;
+    _parsed_offset = 0;
 }
 
 size_t RedisBuffer::unparsed_size()

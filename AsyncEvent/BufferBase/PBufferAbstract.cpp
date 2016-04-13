@@ -1,4 +1,5 @@
 #include "PBufferAbstract.hpp"
+#include "../../Logger/Logger.hpp"
 
 #include <cstring>
 #include <algorithm>
@@ -48,9 +49,10 @@ std::string PBufferAbstract::get_delimiter() const
     return _delimiter;
 }
 
-void PBufferAbstract::reset()
+void PBufferAbstract::reset(bool soft_reset)
 {
-    BuffAbstract::reset();
+    log_debug("PBufferAbstract reset");
+    BuffAbstract::reset(soft_reset);
     _unparsed_offset = _unsearched_offset = 0;
     _data_parts.clear();
 }

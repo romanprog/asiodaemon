@@ -1,4 +1,5 @@
 #include "BuffAbstract.hpp"
+#include "../../Logger/Logger.hpp"
 
 BuffAbstract::BuffAbstract()
     : _reserved(calculate_mem())
@@ -68,11 +69,14 @@ size_t BuffAbstract::size_filled() const
 }
 
 
-void BuffAbstract::reset()
+void BuffAbstract::reset(bool soft_reset)
 {
     _top_offset = _size = 0;
-    _reserved = calculate_mem();
-    _cdata = static_cast<char *>(realloc(_cdata, _reserved));
+
+    if (!soft_reset) {
+        _cdata = static_cast<char *>(realloc(_cdata, _reserved));
+        _reserved = calculate_mem();
+    }
     when_reseted();
 }
 
