@@ -6,12 +6,12 @@
 
 namespace aev {
 
-using RetFunc = std::function<void (int err, dns::DnsRespondPtr && result)>;
+using DnsRetFunc = std::function<void (int err, dns::DnsRespondPtr && result)>;
 
 class AEvDnsClient : public AEventAbstract
 {
 public:
-    explicit AEvDnsClient(AEvChildConf &&config, std::string name, dns::DnsQType qt, RetFunc ret_func);
+    explicit AEvDnsClient(AEvChildConf &&config, std::string name, dns::DnsQType qt, DnsRetFunc ret_func);
     ~AEvDnsClient();
 private:
 
@@ -19,7 +19,7 @@ private:
     std::string _domain;
     asio::ip::udp::endpoint endpoint;
     DnsBuffer buff;
-    RetFunc ret_function_cb;
+    DnsRetFunc ret_function_cb;
     dns::DnsQType query_type;
     dns::DnsError err {dns::DnsError::noerror};
 

@@ -5,7 +5,7 @@
 
 namespace aev {
 
-AEvDnsClient::AEvDnsClient(AEvChildConf && config, std::string name, dns::DnsQType qt, RetFunc ret_func)
+AEvDnsClient::AEvDnsClient(AEvChildConf && config, std::string name, dns::DnsQType qt, DnsRetFunc ret_func)
     :AEventAbstract::AEventAbstract(std::move(config)),
      _socket(_ev_loop->get_io_service(), asio::ip::udp::endpoint(asio::ip::udp::v4(), 0)),
      _domain(name),

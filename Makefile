@@ -62,6 +62,8 @@ ASYNCD_SOURCES = async_daemon.cpp \
              AsyncEvent/AEvBase/AEventUtilBase.cpp \
              AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
+             AsyncEvent/Redis/RedisBuffer.cpp \
+             AsyncEvent/Redis/AEvRedisCli.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp
 

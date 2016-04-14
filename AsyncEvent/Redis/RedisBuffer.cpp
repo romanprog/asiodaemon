@@ -4,10 +4,16 @@
 
 #include <cstring>
 #include <iostream>
+#include <algorithm>
 
 RedisBuffer::RedisBuffer()
      :_respond_ptr(std::make_unique<redis::RespData>())
 { }
+
+std::string RedisBuffer::error_msg() const
+{
+    return _err_message;
+}
 
 
 redis::RespDataPtr RedisBuffer::withdraw_respond()
@@ -15,17 +21,26 @@ redis::RespDataPtr RedisBuffer::withdraw_respond()
     return std::move(_respond_ptr);
 }
 
+bool RedisBuffer::is_complate()
+{
+    return _comlated;
+}
+
+bool RedisBuffer::have_error()
+{
+    return _error_status;
+}
+
 void RedisBuffer::when_new_data_acc(size_t bytes_readed)
 {
-    if (!_parsed_offset) {
+    if (!_unparsed_offset) {
         if (_read_data(*_respond_ptr, data()))
-            comlated = true;
+            _comlated = true;
     }
     else {
         if (_fill_array(*_respond_ptr))
-            comlated = true;
+            _comlated = true;
     }
-    int dbg = 1;
     return;
 }
 
@@ -39,110 +54,148 @@ size_t RedisBuffer::calculate_mem()
 void RedisBuffer::when_reseted()
 {
     _respond_ptr->reset();
-    comlated = false;
-    _parsed_offset = 0;
+    _comlated = false;
+    _unparsed_offset = 0;
 }
 
 size_t RedisBuffer::unparsed_size()
 {
-    return top_offset() - _parsed_offset;
+    return top_offset() - _unparsed_offset;
 }
 
 bool RedisBuffer::_read_simple_string(redis::RespData &target, const char * cursor, size_t sz)
 {
-    sz -= 3;
-    size_t i;
-    for (i = 0; cursor[i] != '\r'; ++i)
+    size_t i {0};
+
+    while (cursor[i] != '\r')
     {
-        if (!(sz - i + 1))
+        if (!(sz - i - 2))
             return false;
+        ++i;
     }
 
+#ifdef ADDITIONAL_ERROR_CHECK
+    if (cursor[i+1] != '\n') {
+        parsing_error_hendler();
+        return false;
+    }
+#endif
+
     target.sres.assign(cursor, i);
-    _parsed_offset = (cursor - static_cast<const char *> (vdata())) + 2;
-    log_debug("%", target.ires);
+    _unparsed_offset = (cursor - data()) + i + 2; // 2 = "\r\n" length
+
     return true;
 }
 
 bool RedisBuffer::_read_integer(redis::RespData &target, const char *cursor, size_t sz)
 {
-    sz -= 3;
-
-    int i {0};
     target.ires = 0;
-    while (*cursor != '\r')
+    size_t i {0};
+
+    while (cursor[i] != '\r')
     {
-        target.ires = (target.ires * 10) + (*cursor - '0');
-        ++i; ++cursor;
-        if (!(sz - i + 1))
+        if (!(sz - i - 2))
             return false;
+        target.ires = (target.ires * 10) + (cursor[i] - '0');
+        ++i;
     }
-    _parsed_offset = (cursor - static_cast<const char *> (vdata())) + 2;
-    log_debug("%", target.ires);
+
+#ifdef ADDITIONAL_ERROR_CHECK
+    if (cursor[i+1] != '\n') {
+        parsing_error_hendler();
+        return false;
+    }
+#endif
+
+    target.type = redis::RespType::integer;
+    _unparsed_offset = (cursor - data()) + i + 2; // 2 = "\r\n" length
     return true;
 }
 
 bool RedisBuffer::_read_bulk_string(redis::RespData &target, const char *cursor, size_t sz)
 {
-    sz -= 3;
-    size_t bulk_size {0};
-
-    // $-1\r\n. Empty bulk string.
-    if (*cursor == '-')
-        return true;
-
-    int i {0};
-
-    while (*cursor != '\r')
-    {
-        bulk_size = (bulk_size * 10) + (*cursor - '0');
-        ++i; ++cursor;
-        if (!(sz - i))
+    // $-1\r\n. Null bulk string. (Unexisting key).
+    if (*cursor == '-') {
+#ifdef ADDITIONAL_ERROR_CHECK
+        if (cursor[1] != '1' || cursor[2] != '\r' || cursor[3] != '\n') {
+            parsing_error_hendler();
             return false;
+        }
+#endif
+        target.isnull = true;
+        _unparsed_offset = (cursor - data()) + 4;
+        return true;
     }
 
-    if (sz - i < bulk_size + 2)
+    size_t bulk_size {0};
+    size_t i {0};
+
+    while (cursor[i] != '\r')
+    {
+        if (!(sz - i))
+            return false;
+        bulk_size = (bulk_size * 10) + (cursor[i] - '0');
+        ++i;
+    }
+
+    if (sz - i < bulk_size + 4)
         return false;
 
-    cursor += 2;
-    target.sres.assign(cursor, bulk_size);
-    _parsed_offset = (cursor - data()) + bulk_size + 2;
+#ifdef ADDITIONAL_ERROR_CHECK
+    if (cursor[bulk_size + i + 3] != '\n') {
+        parsing_error_hendler();
+        return false;
+    }
+#endif
+
+    target.sres.assign(cursor + i + 2, bulk_size);
+    target.type = redis::RespType::bulk_str;
+    _unparsed_offset = (cursor - data()) + bulk_size + i + 4;
     return true;
 
 }
 
 bool RedisBuffer::_init_array(redis::RespData &target, const char *cursor, size_t sz)
 {
-    sz -= 3;
-    size_t array_size {0};
-
     // *0\r\n. Empty array.
-    if (*cursor == '0')
-        return true;
-
-    int i {0};
-
-    while (*cursor != '\r')
-    {
-        array_size = (array_size * 10) + (*cursor - '0');
-        ++i; ++cursor;
-        if (!(sz - i + 1))
+    if (*cursor == '0') {
+#ifdef ADDITIONAL_ERROR_CHECK
+        if (cursor[1] != '\r' || cursor[2] != '\n') {
+            parsing_error_hendler();
             return false;
+        }
+#endif
+        target.isnull = true;
+        _unparsed_offset = (cursor - data()) + 3;
+        return true;
     }
 
-    if (!array_size)
-        return true;
+    size_t array_size {0};
+    size_t i {0};
+
+    while (cursor[i] != '\r')
+    {
+        if (!(sz - i))
+            return false;
+        array_size = (array_size * 10) + (cursor[i] - '0');
+        ++i;
+    }
+
+#ifdef ADDITIONAL_ERROR_CHECK
+    if (cursor[i + 1] != '\n') {
+        parsing_error_hendler();
+        return false;
+    }
+#endif
 
     target.ares.resize(array_size);
-    _parsed_offset = (cursor - data()) + 2;
+    _unparsed_offset = (cursor - data()) + i + 2;
 
     if (!_fill_array(target)) {
         _incompl_arr = true;
         return false;
     }
-
     return true;
-
 }
 
 bool RedisBuffer::_fill_array(redis::RespData &target)
@@ -150,13 +203,11 @@ bool RedisBuffer::_fill_array(redis::RespData &target)
     if (target.ares.empty())
         return true;
 
-    if (_parsed_offset >= top_offset())
+    if (_unparsed_offset >= top_offset())
         return false;
 
-//    for (auto & un : target.ares)
     for (int i = 0; i < target.ares.size(); ++i)
     {
-        int deb0 = 1;
         if (target.ares[i].type == redis::RespType::array)
         {
             if (!_fill_array(target.ares[i]))
@@ -167,10 +218,8 @@ bool RedisBuffer::_fill_array(redis::RespData &target)
         else if (target.ares[i].type != redis::RespType::empty)
             continue;
 
-        if (!_read_data(target.ares[i], data() + _parsed_offset))
+        if (!_read_data(target.ares[i], data() + _unparsed_offset))
             return false;
-
-        int deb = 1;
 
     }
     return true;
@@ -179,36 +228,40 @@ bool RedisBuffer::_fill_array(redis::RespData &target)
 bool RedisBuffer::_read_data(redis::RespData &target, const char *cursor)
 {
 
-    if (unparsed_size() < 4)
-        return false; // Incomplate reply.
-
     switch (*cursor) {
     case '+':
     {
         // Simple string. Simple parsing.
-        target.type = redis::RespType::simple_str;
 
-        if (_read_simple_string(target, ++cursor, unparsed_size()))
+        if (unparsed_size() < 4)
+            return false; // Incomplate reply.
+
+        if (_read_simple_string(target, ++cursor, unparsed_size() - 1)) {
+            target.type = redis::RespType::simple_str;
             return true;
+        }
 
         break;
     }
     case '-':
     {
-        // Simple string with error message.
-        target.type = redis::RespType::error_str;
+        if (unparsed_size() < 4)
+            return false; // Incomplate reply.
 
-        if (_read_simple_string(target, ++cursor, unparsed_size()))
+        // Simple string with error message.
+        if (_read_simple_string(target, ++cursor, unparsed_size() - 1)) {
+            target.type = redis::RespType::error_str;
             return true;
+        }
 
         break;
     }
     case ':':
     {
-        // Simple string with error message.
-        target.type = redis::RespType::integer;
+        if (unparsed_size() < 4)
+            return false; // Incomplate reply.
 
-        if (_read_integer(target, ++cursor, unparsed_size()))
+        if (_read_integer(target, ++cursor, unparsed_size() - 1))
             return true;
 
         break;
@@ -216,23 +269,36 @@ bool RedisBuffer::_read_data(redis::RespData &target, const char *cursor)
     case '$':
     {
         // Bulk string.
-        target.type = redis::RespType::bulk_str;
+        if (unparsed_size() < 5)
+            return false; // Incomplate reply.
 
-        if (_read_bulk_string(target, ++cursor, unparsed_size()))
+        if (_read_bulk_string(target, ++cursor, unparsed_size() - 1)) {
+            target.type = redis::RespType::bulk_str;
             return true;
-
+        }
         break;
     }
     case '*':
         // Array.
-        target.type = redis::RespType::array;
-        if (_init_array(target, ++cursor, unparsed_size()))
+        if (unparsed_size() < 4)
+            return false; // Incomplate reply.
+
+        if (_init_array(target, ++cursor, unparsed_size() - 1))
             return true;
 
         break;
+    default:
+        parsing_error_hendler();
     }
 
     return false;
+}
+
+void RedisBuffer::parsing_error_hendler()
+{
+    _error_status = true;
+    _err_message = "Reply data parsing error.";
+    log_debug(_err_message);
 }
 
 

@@ -4,6 +4,7 @@
 #include "../DNS/AEvDnsClient.hpp"
 #include "../../HUtils/HStrings.hpp"
 #include "../../Logger/Logger.hpp"
+#include "../Redis/AEvRedisCli.hpp"
 
 SmtpSession::SmtpSession(SendHendler cb, SendWithConfirmHendler cbc)
     :send_line(cb),
@@ -85,13 +86,32 @@ void SmtpSession::transaction(SmtpCmdBuffer &data)
 
         }
 
-        case smtp::SmtpCmd::unknown:
-        {
-            send_line(smtp::utils::err_to_str(smtp::SmtpErr::unrecognized));
-            break;
-        }
+//        case smtp::SmtpCmd::unknown:
+//        {
+//            send_line(smtp::utils::err_to_str(smtp::SmtpErr::unrecognized));
+//            break;
+//        }
 
         default:
+            _create_child<aev::AEvRedisCli>(1, cmd_line,
+                                            [this](int err, redis::RespDataPtr && respond)
+            {
+                if (err)
+                {
+                    log_debug("Redis client error");
+                    return;
+                }
+                switch (respond->type) {
+                case redis::RespType::integer:
+                    send_line(std::to_string(respond->ires) + "\r\n");
+                    break;
+                default:
+                    send_line(respond->sres + "\r\n");
+                    break;
+                }
+
+
+            });
             break;
 
         }
@@ -145,6 +165,7 @@ void SmtpSession::_helo_cmd(const std::string & args)
         });
 
     }
+
     std::string reply = "250 " + prim_hostname + " " + (_state.client_ip_ptr.empty() ? _state.client_ip : _state.client_ip_ptr) + "\r\n";
     _state.client_hello.inited = true;
     send_line(reply);

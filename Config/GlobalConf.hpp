@@ -34,6 +34,9 @@ struct PluginConfig
 {
     // options:
     uint logging_level {1};
+    std::string redis_host;
+    uint redis_port;
+
 };
 
 class Config

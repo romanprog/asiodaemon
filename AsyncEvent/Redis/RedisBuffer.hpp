@@ -1,5 +1,7 @@
 #ifndef REDISBUFFER_HPP
 #define REDISBUFFER_HPP
+// Additional error hendling.
+// #define ADDITIONAL_ERROR_CHECK
 
 #include "../BufferBase/PBufferAbstract.hpp"
 #include "RedisTypes.hpp"
@@ -12,18 +14,10 @@ class RedisBuffer : public BuffAbstract
 public:
     RedisBuffer();
 
-    std::string get_error_text() const
-    {
-        return err_text;
-    }
-
+    std::string error_msg() const;
     redis::RespDataPtr withdraw_respond();
-    bool is_complate()
-    {
-        return comlated;
-    }
-
-    void clear();
+    bool is_complate();
+    bool have_error();
 
 private:
     virtual void when_new_data_acc(size_t bytes_readed) override;
@@ -40,11 +34,14 @@ private:
     bool _fill_array(redis::RespData &target);
     bool _read_data(redis::RespData &target, const char *cursor);
 
-    std::string err_text;
-    bool comlated {false};
+    inline void parsing_error_hendler();
+
+    std::string _err_message;
+    bool _error_status {false};
+    bool _comlated {false};
     bool _incompl_arr {false};
     redis::RespDataPtr _respond_ptr;
-    size_t _parsed_offset {0};
+    size_t _unparsed_offset {0};
 
 };
 

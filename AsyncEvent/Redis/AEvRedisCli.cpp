@@ -1,17 +1,20 @@
 #include "AEvRedisCli.hpp"
-#include "DnsBuffer.hpp"
+#include "RedisBuffer.hpp"
+#include "../../Config/GlobalConf.hpp"
 
 #include "iostream"
 
 namespace aev {
 
-AEvRedisCli::AEvRedisCli(AEvChildConf && config, std::string query, RetFunc ret_func)
+AEvRedisCli::AEvRedisCli(AEvChildConf && config, std::string query, RedisRetFunc ret_func)
     :AEventAbstract::AEventAbstract(std::move(config)),
-     _socket(_ev_loop->get_io_service(), asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 0)),
+     _socket(_ev_loop->get_io_service()),
      _query(std::move(query)),
-     ret_function_cb(ret_func),
+     endpoint(asio::ip::address::from_string(Config::glob().get_conf().redis_host), Config::glob().get_conf().redis_port),
+     ret_function_cb(ret_func)
 
 {
+    _query += "\r\n";
     log_debug("AEvRedisCli CONSTRUCTOR! ");
 }
 
@@ -23,14 +26,14 @@ AEvRedisCli::~AEvRedisCli()
 void AEvRedisCli::_ev_begin()
 {
     log_debug("AEvRedisCli START");
-    _send_request();
+    _connect();
 }
 
 void AEvRedisCli::_ev_finish()
 {
     log_debug("AEvRedisCli FINISH" );
     _socket.close();
-    ret_function_cb(static_cast<int>(err), buff.withdraw_respond());
+    ret_function_cb(err, buff.withdraw_respond());
 }
 
 void AEvRedisCli::_ev_stop()
@@ -42,29 +45,23 @@ void AEvRedisCli::_ev_stop()
 void AEvRedisCli::_ev_timeout()
 {
     log_debug("AEvRedisCli TIMEOUT");
-    err = dns::DnsError::timeout_err;
+    err = 1;
 }
+
 
 
 void AEvRedisCli::_send_request()
 {
 
-    asio::ip::udp::resolver resolver(_ev_loop->get_io_service());
-    endpoint = *resolver.resolve({asio::ip::tcp::v4(), "127.0.1.1", "53"});
-
-    if (!buff.prepare_for_request(_query, query_type))
-    {
-        stop();
-        return;
-    }
-    _socket.async_send_to(asio::buffer(buff.data(), buff.size_filled()), endpoint,
+    _socket.async_send(asio::buffer(_query),
                           _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_sent)
     {
                               if (ec) {
                                   stop();
                                   return;
                               }
-                              log_debug("sended DNS");
+                              log_debug("sended Redis Request");
+                              buff.reset(true);
                               _get_respond();
                           })
             );
@@ -72,22 +69,21 @@ void AEvRedisCli::_send_request()
 
 void AEvRedisCli::_get_respond()
 {
-
-        if (!buff.prepare_for_respond())
-        {
-            stop();
-            return;
-        }
-        _socket.async_receive_from(asio::buffer(buff.data_top(), buff.size_avail()), endpoint,
+    buff.release(2048);
+    _socket.async_read_some(asio::buffer(buff.data_top(), buff.size_avail()),
                                    _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_sent)
         {
                                        if (ec) {
+                                           log_debug("Receive error %", ec.message());
                                            stop();
                                            return;
                                        }
-                                       log_debug("receive DNS");
-                                       buff.read_respond(bytes_sent);
-                                       err = buff.get_error();
+                                       log_debug("received Redis Respond");
+                                       buff.accept(bytes_sent);
+
+                                       if (!buff.is_complate())
+                                            _get_respond();
+
                                        stop();
                                    })
                 );
@@ -97,6 +93,24 @@ void AEvRedisCli::_get_respond()
 void aev::AEvRedisCli::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 {
 
+}
+
+void AEvRedisCli::_connect()
+{
+    log_debug("AEvRedisCli Try to connect");
+    _socket.async_connect(endpoint,
+                          _ev_loop->wrap(
+                        [this](std::error_code ec)
+                        {
+                              if (ec) {
+                                  log_debug("Connection error! % ", ec.message());
+                                  stop();
+                                  return;
+                              }
+                              _send_request();
+
+                          }
+                              ));
 }
 
 

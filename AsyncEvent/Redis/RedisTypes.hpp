@@ -22,11 +22,13 @@ struct RespData
     std::string sres;
     int ires {0};
     std::vector<RespData> ares;
+    bool isnull {false};
     void reset()
     {
         ares.clear();
         ires = 0;
         sres.clear();
+        isnull = false;
         type = RespType::empty;
     }
 };
