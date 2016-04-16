@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <queue>
 
 namespace redis {
 
@@ -16,6 +17,7 @@ enum class RespType
     array,
     empty
 };
+
 struct RespData
 {
     RespType type {RespType::empty};
@@ -34,7 +36,8 @@ struct RespData
 };
 
 using RespDataPtr = std::unique_ptr<RespData>;
-
+using RedisCallback = std::function<void (int, const RespData &)>;
+using RedisCallbackQueue = std::queue<RedisCallback>;
 }
 
 #endif // REDISTYPES_HPP

@@ -90,6 +90,11 @@ size_t BuffAbstract::size_avail() const
     return _size - _top_offset;
 }
 
+size_t BuffAbstract::size_reserved() const
+{
+    return _reserved;
+}
+
 void BuffAbstract::operator <<(const char *str)
 {
     size_t sz = std::strlen(str);
@@ -121,4 +126,14 @@ void BuffAbstract::when_reseted()
 size_t BuffAbstract::top_offset() const
 {
     return _top_offset;
+}
+
+void BuffAbstract::change_data_top(size_t new_data_top)
+{
+    _top_offset = new_data_top;
+}
+
+void BuffAbstract::reset_size()
+{
+    _size = 0;
 }

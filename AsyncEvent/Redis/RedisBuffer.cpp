@@ -7,18 +7,11 @@
 #include <algorithm>
 
 RedisBuffer::RedisBuffer()
-     :_respond_ptr(std::make_unique<redis::RespData>())
 { }
 
 std::string RedisBuffer::error_msg() const
 {
     return _err_message;
-}
-
-
-redis::RespDataPtr RedisBuffer::withdraw_respond()
-{
-    return std::move(_respond_ptr);
 }
 
 bool RedisBuffer::is_complate()
@@ -31,30 +24,44 @@ bool RedisBuffer::have_error()
     return _error_status;
 }
 
-void RedisBuffer::when_new_data_acc(size_t bytes_readed)
+bool RedisBuffer::parse_one(redis::RespData &respond)
 {
-    if (!_unparsed_offset) {
-        if (_read_data(*_respond_ptr, data()))
+    _comlated = false;
+
+    if (top_offset() <= _unparsed_offset)
+        return false;
+
+    if (!_incompl_arr) {
+
+        respond.reset();
+        if (_read_data(respond, data() + _unparsed_offset))
             _comlated = true;
     }
     else {
-        if (_fill_array(*_respond_ptr))
+        if (_fill_array(respond))
             _comlated = true;
     }
-    return;
+    if (_comlated)
+        manage_mem();
+
+    return _comlated;
+}
+
+void RedisBuffer::when_new_data_acc(size_t bytes_readed)
+{
+
 }
 
 size_t RedisBuffer::calculate_mem()
 {
-    size_t reserve_bl_count {1};
-    size_t _expected_part_size {100}; // Tmp value.
+    size_t reserve_bl_count {2};
+    size_t _expected_part_size {256}; // Tmp value.
     return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
 }
 
 void RedisBuffer::when_reseted()
 {
-    _respond_ptr->reset();
-    _comlated = false;
+//    _comlated = false;
     _unparsed_offset = 0;
 }
 
@@ -299,6 +306,24 @@ void RedisBuffer::parsing_error_hendler()
     _error_status = true;
     _err_message = "Reply data parsing error.";
     log_debug(_err_message);
+}
+
+void RedisBuffer::manage_mem()
+{
+    if (_unparsed_offset >= top_offset()) {
+        reset(true);
+        return;
+    }
+
+    if (size_reserved() > size_filled() * 2)
+        return;
+
+    if ((top_offset() - _unparsed_offset) > _unparsed_offset)
+        return;
+
+    memcpy(vdata(), data() + _unparsed_offset, top_offset() - _unparsed_offset);
+    change_data_top(top_offset() - _unparsed_offset);
+    _unparsed_offset = 0;
 }
 
 

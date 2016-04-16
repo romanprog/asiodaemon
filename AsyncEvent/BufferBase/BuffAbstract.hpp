@@ -42,6 +42,9 @@ public:
     // Return size of free buffer space, allowing to store new data.
     size_t size_avail() const;
 
+    // Fuul reserved size.
+    size_t size_reserved() const;
+
     template <typename T>
     void operator << (const T & obj)
     {
@@ -58,6 +61,8 @@ protected:
     virtual void when_new_data_acc(size_t bytes_readed) = 0;
     virtual void when_reseted();
     size_t top_offset() const;
+    void change_data_top(size_t new_data_top);
+    void reset_size();
 
 private:
     size_t _top_offset {0};

@@ -33,7 +33,7 @@ void AEvRedisCli::_ev_finish()
 {
     log_debug("AEvRedisCli FINISH" );
     _socket.close();
-    ret_function_cb(err, buff.withdraw_respond());
+//    ret_function_cb(err, buff.);
 }
 
 void AEvRedisCli::_ev_stop()

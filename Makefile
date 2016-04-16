@@ -1,10 +1,4 @@
-CXX ?= clang++
-CC ?= clang
-LD ?= clang
-INSTALL = install
-
-MYSQL_CPP_INCLUDES ?= -I/usr/local/include/cppconn -I/usr/local/include
-MYSQL_CPP_LIBS ?= -lmysqlcppconn
+CXX:=$(shell sh -c 'type $(CXX) >/dev/null 2>/dev/null && echo $(CXX) || echo g++')
 
 MYSQL_C_INC ?= $(shell mysql_config --cflags)
 MYSQL_C_LIBS ?= $(shell mysql_config --libs)
@@ -12,14 +6,24 @@ MYSQL_C_LIBS ?= $(shell mysql_config --libs)
 GMIME_INCLUDES ?=  $(shell pkg-config gmime-2.6 --cflags)
 GMIME_LIBS ?=  $(shell pkg-config gmime-2.6 --libs)
 
-LIBXML_INCLUDES ?= -I/usr/include/libxml2
-LIBXML_LIBS ?= -lxml2
-
 CLD_INCLUDES = -I/usr/local/include/cld
 CLD_LIBS = -lcld2
 
-CXXFLAGS += -fPIC -g -fstack-protector -DUSE_CXX0X -std=c++1y
-#CXXFLAGS += -DASIO_STANDALONE -DASIO_CPP11_DATE_TIME -fPIC -g -fstack-protector -DUSE_CXX0X -std=c++1y
+OPTIMIZATION? = -O3
+
+WARNINGS =     \
+                -Wall \
+                -Wno-sign-compare \
+                -Wno-deprecated-register \
+                -Wno-unused-function
+
+DEBUG ?= -g -ggdb
+
+STDC = -std=c++1y
+
+LDFLAGS = -lstdc++ -pthread
+
+CXXFLAGS = $(OPTIMIZATION) -fPIC -fstack-protector $(CFLAGS) $(WARNINGS) $(DEBUG) $(STDC) -DUSE_CXX0X
 
 STDLIB =
 ifeq ($(shell uname -s), FreeBSD)
@@ -29,19 +33,9 @@ LIBXML_INCLUDES = -I/usr/local/include/libxml2
 endif
 CXXFLAGS +=  $(STDLIB)
 
-CXXFLAGS +=     \
-                -Wall \
-                -Wno-sign-compare \
-                -Wno-deprecated-register \
-                -Wno-unused-function
+CFLAGS=-c -Wall
 
-ASYNCD_LDLIBS = -lstdc++ -pthread
-
-ASYNCD_INCLUDES = 
-
-ASYNCD_NAME = async_daemon
-
-ASYNCD_SOURCES = async_daemon.cpp \
+SOURCES = async_daemon.cpp \
              HUtils/HStrings.cpp \
              HUtils/BTreeStore.cpp \
              HUtils/BTreeStoreCPP.cpp \
@@ -67,12 +61,9 @@ ASYNCD_SOURCES = async_daemon.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp
 
+EXECUTABLE = aevdaemon
 
-TESTING_LDLIBS = -lstdc++ $(MYSQL_C_LIBS)
-
-TESTING_INCLUDES = $(MYSQL_C_INC)
-
-TESTING_NAME = testing
+OBJECTS=$(SOURCES:.cpp=.o)
 
 TESTING_SOURCES = testing.cpp \
              HUtils/HStrings.cpp \
@@ -82,27 +73,28 @@ TESTING_SOURCES = testing.cpp \
              HUtils/AsyncQueue.cpp \
              HUtils/HFiles.cpp \
              HUtils/HDaemon.cpp \
-             HUtils/HFiles.cpp \
              AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
              AsyncEvent/Redis/RedisBuffer.cpp \
+	     AsyncEvent/Redis/AEvRedisMod.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp
 
+TESTING_EXEC = testing
 
-all : $(TESTING_NAME)
-# $(ASYNCD_NAME)
+TESTING_OBJ=$(TESTING_SOURCES:.cpp=.o)
 
-$(ASYNCD_NAME): $(ASYNCD_SOURCES)
-	$(CXX) $(ASYNCD_INCLUDES) $(CXXFLAGS) -o $@ $^ $(ASYNCD_LDLIBS)
+all: $(SOURCES) $(EXECUTABLE) $(TESTING_EXEC)
 
-$(TESTING_NAME): $(TESTING_SOURCES)
-	$(CXX) $(TESTING_INCLUDES) $(CXXFLAGS) -o $@ $^ $(TESTING_LDLIBS)
+$(EXECUTABLE): $(OBJECTS) 
+	$(CXX) $(LDFLAGS) $(OBJECTS) -o $@
 
-install: $(LIBNAME)
-	$(INSTALL) $(ASYNCD_NAME) /usr/local/bin
+$(TESTING_EXEC): $(TESTING_OBJ) 
+	$(CXX) $(LDFLAGS) $(TESTING_OBJ) -o $@
 
-clean:
-	rm -rf $(ASYNCD_NAME)
-	rm -rf $(TESTING_NAME)
+.cpp.o:
+	$(CXX) $(CXXFLAGS) $< -o $@
+
+clean: 
+	rm $(OBJECTS) $(EXECUTABLE) $(TESTING_OBJ) $(TESTING_EXEC)
 

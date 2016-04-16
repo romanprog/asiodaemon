@@ -25,6 +25,7 @@ char rand_char()
 
 std::string &rand_str(std::string &str, size_t lenth)
 {
+
     str.resize(lenth);
     std::generate_n(&str[0], lenth, rand_char);
     return str;

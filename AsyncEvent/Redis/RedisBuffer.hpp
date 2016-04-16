@@ -15,9 +15,9 @@ public:
     RedisBuffer();
 
     std::string error_msg() const;
-    redis::RespDataPtr withdraw_respond();
     bool is_complate();
     bool have_error();
+    bool parse_one(redis::RespData & respond);
 
 private:
     virtual void when_new_data_acc(size_t bytes_readed) override;
@@ -35,12 +35,12 @@ private:
     bool _read_data(redis::RespData &target, const char *cursor);
 
     inline void parsing_error_hendler();
+    void manage_mem();
 
     std::string _err_message;
     bool _error_status {false};
     bool _comlated {false};
     bool _incompl_arr {false};
-    redis::RespDataPtr _respond_ptr;
     size_t _unparsed_offset {0};
 
 };
