@@ -18,7 +18,7 @@ private:
     asio::ip::tcp::socket _socket;
     std::string _query;
     asio::ip::tcp::endpoint endpoint;
-    RedisBuffer buff;
+    RedisRBuffer buff;
     RedisRetFunc ret_function_cb;
     int err {0};
 

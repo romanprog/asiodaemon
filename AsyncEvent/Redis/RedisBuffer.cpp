@@ -1,4 +1,5 @@
 #include "RedisBuffer.hpp"
+#include "../../HUtils/HStrings.hpp"
 
 #include "../../Logger/Logger.hpp"
 
@@ -6,25 +7,25 @@
 #include <iostream>
 #include <algorithm>
 
-RedisBuffer::RedisBuffer()
+RedisRBuffer::RedisRBuffer()
 { }
 
-std::string RedisBuffer::error_msg() const
+std::string RedisRBuffer::error_msg() const
 {
     return _err_message;
 }
 
-bool RedisBuffer::is_complate()
+bool RedisRBuffer::is_complate()
 {
     return _comlated;
 }
 
-bool RedisBuffer::have_error()
+bool RedisRBuffer::have_error()
 {
     return _error_status;
 }
 
-bool RedisBuffer::parse_one(redis::RespData &respond)
+bool RedisRBuffer::parse_one(redis::RespData &respond)
 {
     _comlated = false;
 
@@ -47,30 +48,30 @@ bool RedisBuffer::parse_one(redis::RespData &respond)
     return _comlated;
 }
 
-void RedisBuffer::when_new_data_acc(size_t bytes_readed)
+void RedisRBuffer::when_new_data_acc(size_t bytes_readed)
 {
 
 }
 
-size_t RedisBuffer::calculate_mem()
+size_t RedisRBuffer::calculate_mem()
 {
     size_t reserve_bl_count {2};
     size_t _expected_part_size {256}; // Tmp value.
     return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
 }
 
-void RedisBuffer::when_reseted()
+void RedisRBuffer::when_reseted()
 {
 //    _comlated = false;
     _unparsed_offset = 0;
 }
 
-size_t RedisBuffer::unparsed_size()
+size_t RedisRBuffer::unparsed_size()
 {
     return top_offset() - _unparsed_offset;
 }
 
-bool RedisBuffer::_read_simple_string(redis::RespData &target, const char * cursor, size_t sz)
+bool RedisRBuffer::_read_simple_string(redis::RespData &target, const char * cursor, size_t sz)
 {
     size_t i {0};
 
@@ -94,7 +95,7 @@ bool RedisBuffer::_read_simple_string(redis::RespData &target, const char * curs
     return true;
 }
 
-bool RedisBuffer::_read_integer(redis::RespData &target, const char *cursor, size_t sz)
+bool RedisRBuffer::_read_integer(redis::RespData &target, const char *cursor, size_t sz)
 {
     target.ires = 0;
     size_t i {0};
@@ -119,7 +120,7 @@ bool RedisBuffer::_read_integer(redis::RespData &target, const char *cursor, siz
     return true;
 }
 
-bool RedisBuffer::_read_bulk_string(redis::RespData &target, const char *cursor, size_t sz)
+bool RedisRBuffer::_read_bulk_string(redis::RespData &target, const char *cursor, size_t sz)
 {
     // $-1\r\n. Null bulk string. (Unexisting key).
     if (*cursor == '-') {
@@ -162,7 +163,7 @@ bool RedisBuffer::_read_bulk_string(redis::RespData &target, const char *cursor,
 
 }
 
-bool RedisBuffer::_init_array(redis::RespData &target, const char *cursor, size_t sz)
+bool RedisRBuffer::_init_array(redis::RespData &target, const char *cursor, size_t sz)
 {
     // *0\r\n. Empty array.
     if (*cursor == '0') {
@@ -205,7 +206,7 @@ bool RedisBuffer::_init_array(redis::RespData &target, const char *cursor, size_
     return true;
 }
 
-bool RedisBuffer::_fill_array(redis::RespData &target)
+bool RedisRBuffer::_fill_array(redis::RespData &target)
 {
     if (target.ares.empty())
         return true;
@@ -232,7 +233,7 @@ bool RedisBuffer::_fill_array(redis::RespData &target)
     return true;
 }
 
-bool RedisBuffer::_read_data(redis::RespData &target, const char *cursor)
+bool RedisRBuffer::_read_data(redis::RespData &target, const char *cursor)
 {
 
     switch (*cursor) {
@@ -301,14 +302,14 @@ bool RedisBuffer::_read_data(redis::RespData &target, const char *cursor)
     return false;
 }
 
-void RedisBuffer::parsing_error_hendler()
+void RedisRBuffer::parsing_error_hendler()
 {
     _error_status = true;
     _err_message = "Reply data parsing error.";
     log_debug(_err_message);
 }
 
-void RedisBuffer::manage_mem()
+void RedisRBuffer::manage_mem()
 {
     if (_unparsed_offset >= top_offset()) {
         reset(true);
@@ -326,5 +327,76 @@ void RedisBuffer::manage_mem()
     _unparsed_offset = 0;
 }
 
+RedisWBuffer::RedisWBuffer()
+{
 
+}
 
+bool RedisWBuffer::nothing_to_send()
+{
+    return top_offset() == sended_offset;
+}
+
+void RedisWBuffer::sending_report(size_t bytes_sended)
+{
+    sended_offset += bytes_sended;
+    if (nothing_to_send()) {
+        reset(true);
+        sended_offset = 0;
+    }
+
+}
+
+const char *RedisWBuffer::new_data()
+{
+    return data() + sended_offset;
+}
+
+size_t RedisWBuffer::new_data_size()
+{
+    return top_offset() - sended_offset;
+}
+
+bool RedisWBuffer::add_query(const std::string &query)
+{
+//    std::vector<std::string> splited_query;
+//    hstrings::split(query, splited_query,' ', true);
+//    if (!splited_query.size())
+//        return false;
+//    std::string formated_query;
+//    if (splited_query.size() == 1) {
+//        formated_query += "$" + std::to_string(splited_query[0].size()) + "\r\n" + splited_query[0] + "\r\n";
+
+//    }  else
+//    {
+//        formated_query += '*' + std::to_string(splited_query.size()) + "\r\n";
+//        for (auto & pt : splited_query)
+//            formated_query += '$' + std::to_string(pt.size()) + "\r\n" + pt + "\r\n";
+
+//    }
+    *this << query;
+    *this << "\r\n";
+
+    return true;
+}
+
+void RedisWBuffer::when_new_data_acc(size_t bytes_readed)
+{
+}
+
+size_t RedisWBuffer::calculate_mem()
+{
+    size_t reserve_bl_count {2};
+    size_t _expected_part_size {256}; // Tmp value.
+    return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
+}
+
+void RedisWBuffer::when_reseted()
+{
+
+}
+
+void RedisWBuffer::manage_mem()
+{
+
+}

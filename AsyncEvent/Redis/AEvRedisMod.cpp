@@ -4,196 +4,211 @@
 
 namespace aev {
 
-AEvRedisMod::AEvRedisMod(AEvStrandPtr _main_loop)
-    :_ev_loop(std::move(_main_loop)),
-     _socket(_ev_loop->get_io_service()),
-     redis_ip(Config::glob().get_conf().redis_host),
-     redis_port(Config::glob().get_conf().redis_port)
+AEvRedisMod::AEvRedisMod(AEvStrandPtr main_loop_)
+    :_ev_loop(std::move(main_loop_)),
+     _socket(_ev_loop->get_io_service())
 {
 
 }
 
-AEvRedisMod::AEvRedisMod(AEvStrandPtr _main_loop, const std::string &ip, int port)
-    :_ev_loop(std::move(_main_loop)),
-     _socket(_ev_loop->get_io_service()),
-     redis_ip(ip),
-     redis_port(port)
-{
-
-}
-
-void AEvRedisMod::query_processor()
+void AEvRedisMod::__req_poc()
 {
 
     auto sender_handler = [this](std::error_code ec, std::size_t bytes_sent)
     {
           if (ec) {
-              log_debug("Send error %", ec.message());
+              redis::RespData resp;
+              resp.sres = ec.message();
+
+              if (!_cb_queue.size())
+                  throw std::logic_error("No one callbacks(12). Query/resp processors sync error.");
+
+              _cb_queue.front()(ec.value(), resp);
+
               {
                   std::lock_guard<std::mutex> lock(queue_locker);
-                  _cb_queue.front()(1000, _respond);
                   _cb_queue.pop();
               }
-          }
 
-          if (!_query_queue.empty())
-              query_processor();
+              if (!_cb_queue.size()) {
+                  _req_proc_running = false;
+                  return;
+              }
+          }
+          {
+              std::lock_guard<std::mutex> lock(sbuff_locker);
+              _sending_buff.sending_report(bytes_sent);
+          }
+          if (!_sending_buff.nothing_to_send()) {
+              __req_poc();
+              if (!_resp_proc_running)
+                __resp_proc();
+          }
           else
-              is_busy = false;
+              _req_proc_running = false;
 
     };
+    std::lock_guard<std::mutex> lock(sbuff_locker);
+    _socket.async_send(asio::buffer(_sending_buff.new_data(), _sending_buff.new_data_size()), _ev_loop->wrap(sender_handler));
 
-    _socket.async_send(asio::buffer(_query_queue.front()), _ev_loop->wrap(sender_handler));
-
-    std::lock_guard<std::mutex> lock(queue_locker);
-    _query_queue.pop();
 }
 
-void AEvRedisMod::async_query(std::string query, redis::RedisCallback cb)
+void AEvRedisMod::async_query(const std::string &query_, redis::RedisCallback cb_)
 {
-    if (!connected) {
-        cb(1, _respond);
-        return;
+
+    if (!_connected)
+        throw std::logic_error("Not connected to Redis db.");
+
+    if (_waiting_for_complation)
+        throw std::logic_error("Stop process inited. Query ignored.");
+
+    {
+        std::lock_guard<std::mutex> lock(sbuff_locker);
+        _sending_buff << query_;
+        _sending_buff << "\r\n";
     }
 
-    query+="\r\n";
     {
         std::lock_guard<std::mutex> lock(queue_locker);
-        _query_queue.push(std::move(query));
-        _cb_queue.push(cb);
+        _cb_queue.push(cb_);
     }
-    if (is_busy)
+
+    if (_req_proc_running.load())
         return;
 
-    is_busy = true;
-    query_processor();
+    _req_proc_running.store(true);
+    __req_poc();
 }
 
-void AEvRedisMod::stop()
+void AEvRedisMod::disconnect()
 {
+    if (!_connected)
+        return;
+
+    wait();
     _socket.close();
-    while (!_cb_queue.empty())
-    {
-        _cb_queue.front()(100, _respond);
-        _cb_queue.pop();
-    }
-    while (!_query_queue.empty())
-        _query_queue.pop();
-    _query_queue = std::queue<std::string>();
     _cb_queue = redis::RedisCallbackQueue();
-    connected = false;
+
 }
 
-void AEvRedisMod::async_connect(std::function<void (int)> cb)
+void AEvRedisMod::async_connect(const std::string &ip_, const unsigned port_, ConnCallback cb_)
 {
+
     asio::error_code ec;
-    asio::ip::address ip(asio::ip::address::from_string(redis_ip, ec));
+    asio::ip::address ip(asio::ip::address::from_string(ip_, ec));
     if (ec) {
-        error_handler(ec.message());
-        cb(ec.value());
+        cb_(ec);
         return;
     }
 
-    auto connection_handler = [this, cb](asio::error_code ec)
+    auto connection_handler = [this, cb_](asio::error_code ec)
     {
+        cb_(ec);
+
         if (ec)
-        {
-            error_handler(ec.message());
-            cb(ec.value());
             return;
-        }
-        connected = true;
-        cb(0);
-        resp_processor();
+
+        cb_(ec);
+        _connected = true;
+        _resp_proc_running = true;
+        __resp_proc();
 
     };
-    endpoint = asio::ip::tcp::endpoint(ip, redis_port);
-    _socket.async_connect(endpoint, _ev_loop->wrap(connection_handler));
+    _endpoint = asio::ip::tcp::endpoint(ip, port_);
+    _socket.async_connect(_endpoint, _ev_loop->wrap(connection_handler));
 
 }
 
-void AEvRedisMod::query_loop(std::string query, redis::RedisCallback cb, int count)
+void AEvRedisMod::wait()
 {
-    query+="\r\n";
-    loop_counter = count;
-    loop_query = std::move(query);
-    _loop_cb = cb;
-
-    query_loop_procc();
-
-}
-
-void AEvRedisMod::query_loop_procc()
-{
-    auto sender_handler = [this](std::error_code ec, std::size_t bytes_sent)
+    _waiting_for_complation = true;
+    while (true)
     {
-          if (ec)
-                return;
-
-          --loop_counter;
-          if (!loop_counter) {
-              exit(0);
-              return;
-          }
-
-          query_loop_procc();
-    };
-
-    _socket.async_send(asio::buffer(loop_query.data(), loop_query.size()), sender_handler);
+        if (!_resp_proc_running)
+            break;
+    }
 }
 
-bool AEvRedisMod::connect()
+
+bool AEvRedisMod::connect(const std::string &ip_, const unsigned port_)
 {
     asio::error_code ec;
-    asio::ip::address ip(asio::ip::address::from_string(redis_ip, ec));
-    if (ec) {
-        error_handler(ec.message());
+    return connect(ip_, port_, ec);
+}
+
+bool AEvRedisMod::connect(const std::string &ip_, const unsigned port_, asio::error_code &ec_)
+{
+    asio::ip::address ip(asio::ip::address::from_string(ip_, ec_));
+    if (ec_)
         return false;
-    }
-    endpoint = asio::ip::tcp::endpoint(ip, redis_port);
-    _socket.connect(endpoint, ec);
-    if (ec) {
-        error_handler(ec.message());
+
+    _endpoint = asio::ip::tcp::endpoint(ip, port_);
+    _socket.connect(_endpoint, ec_);
+
+    if (ec_)
         return false;
-    }
-    connected = true;
-    resp_processor();
+
+    _connected = true;
+    _resp_proc_running = true;
+    __resp_proc();
     return true;
 }
 
-void AEvRedisMod::error_handler(const std::string msg)
+void AEvRedisMod::__resp_proc()
 {
-    log_main("Error message: %", msg);
-}
-
-void AEvRedisMod::resp_processor()
-{
-    buff.release(256);
+    _reading_buff.release(256);
     auto resp_handler = [this](std::error_code ec, std::size_t bytes_sent)
     {
           if (ec) {
-              log_debug("Receive error %", ec.message());
+              {
+                  redis::RespData resp;
+                  resp.sres = ec.message();
+                  if (!_cb_queue.size())
+                      throw std::logic_error("No one callbacks(10). Query/resp processors sync error.");
 
+                  _cb_queue.front()(ec.value(), resp);
+                  {
+                      std::lock_guard<std::mutex> lock(queue_locker);
+                      _cb_queue.pop();
+                  }
+
+                  if (!_cb_queue.size() && _waiting_for_complation && !_req_proc_running.load()) {
+                      _resp_proc_running = false;
+                      return;
+                  };
+               }
+              __resp_proc();
               return;
           }
 
-          buff.accept(bytes_sent);
-
-          while (buff.parse_one(_respond))
+          _reading_buff.accept(bytes_sent);
           {
-//              {
-//                  std::lock_guard<std::mutex> lock(queue_locker);
-//                  _cb_queue.front()(0, _respond);
-//                  _cb_queue.pop();
-//              }
-              _loop_cb(0, _respond);
+              while (_reading_buff.parse_one(_respond))
+              {
+                  // Critical error. Answer resived, but no one callback in queue.
+                  if (!_cb_queue.size())
+                      throw std::logic_error("No one callbacks(11). Query/resp processors sync error.");
 
+                  // Call client function.
+                  _cb_queue.front()(0, _respond);
+
+                  // Lock queue for pop first.
+                  {
+                      std::lock_guard<std::mutex> lock(queue_locker);
+                      _cb_queue.pop();
+                  }
+                  // All queryes are complated, query processor not runing and client initiated waiting
+                  // for complation all queryes.
+                  if (!_cb_queue.size() && _waiting_for_complation && !_req_proc_running.load()) {
+                      _resp_proc_running = false;
+                      return;
+                  }
+
+              }
           }
-
-          resp_processor();
-
+          __resp_proc();
       };
-    _socket.async_read_some(asio::buffer(buff.data_top(), buff.size_avail()), _ev_loop->wrap(resp_handler));
+    _socket.async_read_some(asio::buffer(_reading_buff.data_top(), _reading_buff.size_avail()), _ev_loop->wrap(resp_handler));
 }
 
 } // namespace

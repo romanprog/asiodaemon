@@ -6,7 +6,9 @@
 int main () {
 
 
-    std::cout << hstrings::rand_str(12) << std::endl;
+    // To learn and using:
+    std::accumulate();
+
 
 }
 

@@ -8,11 +8,12 @@
 
 #include <string>
 #include <vector>
+#include <mutex>
 
-class RedisBuffer : public BuffAbstract
+class RedisRBuffer : public BuffAbstract
 {
 public:
-    RedisBuffer();
+    RedisRBuffer();
 
     std::string error_msg() const;
     bool is_complate();
@@ -43,6 +44,26 @@ private:
     bool _incompl_arr {false};
     size_t _unparsed_offset {0};
 
+};
+
+/// ///////////////////// Write Buffer /////////////////////////// ///
+class RedisWBuffer : public BuffAbstract
+{
+public:
+    RedisWBuffer();
+    bool nothing_to_send();
+    void sending_report(size_t bytes_sended);
+    const char * new_data();
+    size_t new_data_size();
+    bool add_query(const std::string &query);
+
+private:
+    virtual void when_new_data_acc(size_t bytes_readed) override;
+    virtual size_t calculate_mem() override;
+    virtual void when_reseted();
+
+    void manage_mem();
+    size_t sended_offset {0};
 };
 
 

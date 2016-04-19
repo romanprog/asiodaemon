@@ -1,6 +1,5 @@
 #include "AtomicTypes.hpp"
 
-AtomicTypes::AtomicTypes()
-{
+namespace Atomic {
 
 }

@@ -74,8 +74,9 @@ void BuffAbstract::reset(bool soft_reset)
     _top_offset = _size = 0;
 
     if (!soft_reset) {
-        _cdata = static_cast<char *>(realloc(_cdata, _reserved));
         _reserved = calculate_mem();
+        _cdata = static_cast<char *>(realloc(_cdata, _reserved));
+
     }
     when_reseted();
 }

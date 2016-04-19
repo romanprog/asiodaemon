@@ -11,43 +11,35 @@ namespace aev {
 class AEvRedisMod
 {
 public:
-    AEvRedisMod(AEvStrandPtr _main_loop);
-    AEvRedisMod(AEvStrandPtr _main_loop, const std::string & ip, int port);
 
-    void async_query(std::string query,  redis::RedisCallback cb);
-    void stop();
-    void async_connect(std::function<void(int)> cb);
-    void query_loop(std::string query,  redis::RedisCallback cb, int count);
-    void query_loop_procc();
-    bool connect();
+    AEvRedisMod(AEvStrandPtr main_loop_);
+
+    using ConnCallback = std::function<void (asio::error_code&)>;
+    bool connect(const std::string & ip_, const unsigned port_);
+    bool connect(const std::string & ip_, const unsigned port_, asio::error_code & ec_);
+    void async_connect(const std::string & ip_, const unsigned port_, ConnCallback cb_);
+    void async_query(const std::string & query_,  redis::RedisCallback cb_);
+    void wait();
+    void disconnect();
 
 private:
     AEvStrandPtr _ev_loop;
     asio::ip::tcp::socket _socket;
-    asio::ip::tcp::endpoint endpoint;
-    RedisBuffer buff;
+    asio::ip::tcp::endpoint _endpoint;
+    RedisRBuffer _reading_buff;
+    RedisWBuffer _sending_buff;
     redis::RedisCallbackQueue _cb_queue;
-    std::queue<std::string> _query_queue;
     redis::RespData _respond;
-    std::string redis_ip;
-    int redis_port;
 
-    redis::RedisCallback _loop_cb;
-    std::string loop_query;
-    std::atomic<int> loop_counter {0};
+    std::mutex queue_locker, sbuff_locker;
 
-    std::mutex queue_locker;
+    bool _connected {false};
+    std::atomic<bool> _req_proc_running {false};
+    bool _resp_proc_running {false};
+    std::atomic<bool> _waiting_for_complation {false};
 
-    std::string error_message;
-    int error_code;
-
-    bool connected {false};
-    bool is_busy {false};
-
-    void error_handler(const std::string msg);
-    void query_processor();
-    void resp_processor();
-    int err {0};
+    void __req_poc();
+    void __resp_proc();
 
 };
 

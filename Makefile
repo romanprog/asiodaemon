@@ -9,7 +9,7 @@ GMIME_LIBS ?=  $(shell pkg-config gmime-2.6 --libs)
 CLD_INCLUDES = -I/usr/local/include/cld
 CLD_LIBS = -lcld2
 
-OPTIMIZATION? = -O3
+OPTIMIZATION = -O0
 
 WARNINGS =     \
                 -Wall \
@@ -17,7 +17,7 @@ WARNINGS =     \
                 -Wno-deprecated-register \
                 -Wno-unused-function
 
-DEBUG ?= -g -ggdb
+DEBUG = -g
 
 STDC = -std=c++1y
 
@@ -78,7 +78,8 @@ TESTING_SOURCES = testing.cpp \
              AsyncEvent/Redis/RedisBuffer.cpp \
 	     AsyncEvent/Redis/AEvRedisMod.cpp \
              Logger/Logger.cpp \
-             Config/GlobalConf.cpp
+             Config/GlobalConf.cpp \
+             Atomic/AtomicTypes.cpp
 
 TESTING_EXEC = testing
 

@@ -5,7 +5,7 @@
 #include <algorithm>
 
 PBufferAbstract::PBufferAbstract(std::string delimiter, size_t e_pt_sz)
-    :_delimiter(delimiter),
+    :_delimiter(std::move(delimiter)),
      _expected_part_size(e_pt_sz)
 { }
 
