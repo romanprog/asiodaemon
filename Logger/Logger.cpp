@@ -43,3 +43,9 @@ void FLog::__write_log(const std::string &log_message)
 
     log_file << log_message << std::endl;
 }
+
+Log &Log::glob()
+{
+    static Log global_log_utils;
+    return global_log_utils;
+}

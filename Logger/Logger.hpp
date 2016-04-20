@@ -31,11 +31,11 @@ enum class LogLevel
 /// std::string str("String arg.");
 /// CLog::glob().write("i = %; i1 = %; str = %;", i, i1, str);;
 /// /////////////////////////////////////////////////////////////////////////
-class LoggerBase
+class Log
 {
 public:
-    LoggerBase() {}
-    virtual ~LoggerBase() {}
+    Log() {}
+    virtual ~Log() {}
 
     // Standart log write. (Typically, it's errors, and standart log information).
     template<typename ...Args>
@@ -85,6 +85,7 @@ public:
     {
         return pattern;
     }
+    static Log & glob();
 
 private:
 
@@ -147,7 +148,7 @@ private:
 
 /// ============  Console child =============
 
-class CLog : public LoggerBase
+class CLog : public Log
 {
 public:
     CLog();
@@ -159,7 +160,7 @@ private:
 
 /// =============  File logger child ================
 
-class FLog : public LoggerBase
+class FLog : public Log
 {
 public:
     FLog(const std::string && filename);

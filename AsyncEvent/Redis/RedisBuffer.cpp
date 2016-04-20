@@ -334,7 +334,7 @@ RedisWBuffer::RedisWBuffer()
 
 bool RedisWBuffer::nothing_to_send()
 {
-    return top_offset() == sended_offset;
+    return top_offset() <= sended_offset;
 }
 
 void RedisWBuffer::sending_report(size_t bytes_sended)

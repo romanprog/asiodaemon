@@ -1,3 +1,4 @@
+
 #include <random>
 #include <iostream>
 #include <functional>
@@ -7,22 +8,97 @@
 #include <string>
 #include <iostream>
 #include <thread>
-#include <set>
 
+#include "HUtils/HStrings.hpp"
 #include "Logger/Logger.hpp"
+#include "Config/GlobalConf.hpp"
+#include "AsyncEvent/Redis/RedisBuffer.hpp"
+#include "AsyncEvent/AEvBase/AEventAbstract.hpp"
+#include "AsyncEvent/Redis/AEvRedisMod.hpp"
+
+
+redis::RespData result;
+
+asio::io_service main_io;
+
+aev::AEvStrandPtr _ev_loop(std::make_shared<asio::strand>(main_io));
+
+int respond_count_t1 = 0;
+int respond_count_t2 = 0;
+int respond_count_main = 0;
+
+
+void f(std::string const & s)
+{
+    std::string k {s};
+}
 
 int main () {
 
-    std::set<int> s = { 1, 2, 3, 4, 5 };
-    std::vector<int> v;
+    Config::glob().read_config("main.conf");
+    if (Config::glob().have_error()) {
+        CLog::glob().write("Error loading config: %", Config::glob().error_text());
+        exit(0);
+    }
+    Config::glob().set_opt("logging_level", "3");
 
-    // multiply set's elements by 100 and store it into v
-    std::transform(s.begin(), s.end(),    // source
-        std::back_inserter(v),    // destination
-        std::bind(std::multiplies<int>(), std::placeholders::_1, 100)  // C++11
-        );
-    for (auto & r : v)
-        log_main("%", r);
+    aev::AEvRedisMod redis_db(_ev_loop);
+    if (!redis_db.connect("127.0.0.1", 6379))
+        exit(1);
+
+    auto ra_handler_t1 = [&redis_db](int err, const redis::RespData & result)
+    {
+        if (err)
+            log_debug("Error num: %", err);
+        ++respond_count_t1;
+//        if (result.sres != "1")
+//            log_main("error 1 %", result.sres);
+        // log_main("%", result.ires);
+    };
+    auto ra_handler_t2 = [&redis_db](int err, const redis::RespData & result)
+    {
+        if (err)
+            log_debug("Error num: %", err);
+        ++respond_count_t2;
+//        if (result.sres != "2")
+//            log_main("error 2 %", result.sres);
+        // log_main("%", result.ires);
+    };
+    auto ra_handler = [&redis_db](int err, const redis::RespData & result)
+    {
+        if (err)
+            log_debug("Error num: %", err);
+        ++respond_count_main;
+//        if (result.sres != "0")
+//           log_main("error 0 %", result.sres);
+        // log_main("%", result.ires);
+    };
+
+    std::thread q1 {[&]() {
+            for (int i = 0; i < 1000000; ++i)
+            {
+                redis_db.async_query("incr test1", ra_handler_t1);
+            }
+                    }};
+    std::thread q2 {[&]() {
+            for (int i = 0; i < 1000000; ++i)
+            {
+                redis_db.async_query("incr test2", ra_handler_t2);
+            }
+                    }};
+
+    for (int i = 0; i < 1000000; ++i)
+    {
+        redis_db.async_query("incr test", ra_handler);
+    }
+    q1.join();
+    q2.join();
+    log_main("All sended.");
+    redis_db.disconnect();
+
+    log_main("Resived main = %, t1 = %, t2 = %", respond_count_main, respond_count_t1, respond_count_t2);
+    //    t1.join();
 
 }
+
 
