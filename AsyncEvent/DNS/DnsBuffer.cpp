@@ -65,9 +65,9 @@ void DnsBuffer::clear()
     _respond_ptr = std::make_unique<dns::DnsRespond>();
 }
 
-size_t DnsBuffer::calculate_mem()
+size_t DnsBuffer::calculate_mem(size_t block_size)
 {
-    size_t block_size = dns::max_pkg_size ? dns::max_pkg_size : 1;
+    // size_t block_size = dns::max_pkg_size ? dns::max_pkg_size : 1;
     size_t reserve_bl_count {1};
 
     return ((top_offset() + size_filled()) / block_size + reserve_bl_count) * block_size;

@@ -1,7 +1,13 @@
 #ifndef ATOMICTYPES_HPP
 #define ATOMICTYPES_HPP
+
+#include "../Logger/Logger.hpp"
+
 #include <atomic>
 #include <memory>
+#include <mutex>
+#include <set>
+#include <vector>
 
 namespace Atomic {
 

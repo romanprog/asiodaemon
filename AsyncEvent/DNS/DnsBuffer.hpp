@@ -30,7 +30,7 @@ public:
 
 private:
 
-    virtual size_t calculate_mem() override;
+    virtual size_t calculate_mem(size_t block_size) override;
     virtual void when_new_data_acc(size_t bytes_readed) override;
     dns::DnsError err;
 

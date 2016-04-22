@@ -1,7 +1,7 @@
 #ifndef REDISBUFFER_HPP
 #define REDISBUFFER_HPP
 // Additional error hendling.
-// #define ADDITIONAL_ERROR_CHECK
+#define ADDITIONAL_ERROR_CHECK
 
 #include "../BufferBase/PBufferAbstract.hpp"
 #include "RedisTypes.hpp"
@@ -22,7 +22,7 @@ public:
 
 private:
     virtual void when_new_data_acc(size_t bytes_readed) override;
-    virtual size_t calculate_mem() override;
+    // virtual size_t calculate_mem() override;
     virtual void when_reseted();
 
     size_t unparsed_size();
@@ -59,7 +59,6 @@ public:
 
 private:
     virtual void when_new_data_acc(size_t bytes_readed) override;
-    virtual size_t calculate_mem() override;
     virtual void when_reseted();
 
     void manage_mem();

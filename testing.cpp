@@ -1,4 +1,3 @@
-
 #include <random>
 #include <iostream>
 #include <functional>
@@ -12,10 +11,11 @@
 #include "HUtils/HStrings.hpp"
 #include "Logger/Logger.hpp"
 #include "Config/GlobalConf.hpp"
+#include "Atomic/AtomicTypes.hpp"
 #include "AsyncEvent/Redis/RedisBuffer.hpp"
 #include "AsyncEvent/AEvBase/AEventAbstract.hpp"
 #include "AsyncEvent/Redis/AEvRedisMod.hpp"
-
+#include "AsyncEvent/Redis/RedisBuffer.hpp"
 
 redis::RespData result;
 
@@ -46,58 +46,36 @@ int main () {
     if (!redis_db.connect("127.0.0.1", 6379))
         exit(1);
 
-    auto ra_handler_t1 = [&redis_db](int err, const redis::RespData & result)
-    {
-        if (err)
-            log_debug("Error num: %", err);
-        ++respond_count_t1;
-//        if (result.sres != "1")
-//            log_main("error 1 %", result.sres);
-        // log_main("%", result.ires);
-    };
-    auto ra_handler_t2 = [&redis_db](int err, const redis::RespData & result)
-    {
-        if (err)
-            log_debug("Error num: %", err);
-        ++respond_count_t2;
-//        if (result.sres != "2")
-//            log_main("error 2 %", result.sres);
-        // log_main("%", result.ires);
-    };
     auto ra_handler = [&redis_db](int err, const redis::RespData & result)
     {
         if (err)
             log_debug("Error num: %", err);
         ++respond_count_main;
+//        log_main("%", respond_count_main);
 //        if (result.sres != "0")
 //           log_main("error 0 %", result.sres);
         // log_main("%", result.ires);
     };
 
-    std::thread q1 {[&]() {
-            for (int i = 0; i < 1000000; ++i)
-            {
-                redis_db.async_query("incr test1", ra_handler_t1);
-            }
-                    }};
-    std::thread q2 {[&]() {
-            for (int i = 0; i < 1000000; ++i)
-            {
-                redis_db.async_query("incr test2", ra_handler_t2);
-            }
-                    }};
 
-    for (int i = 0; i < 1000000; ++i)
-    {
-        redis_db.async_query("incr test", ra_handler);
-    }
-    q1.join();
-    q2.join();
+
+
+//    for (int i = 0; rbuff.parse_one(resp); ++i)
+//        log_main("% %", i, resp.sres);
+
+
+    redis_db.async_query("LRANGE mylist1 0 -1", ra_handler);
+//    for (int i = 0; i < 1000000; ++i)
+//    {
+//        redis_db.async_query("LRANGE mylist1 0 -1", ra_handler);
+//    }
     log_main("All sended.");
-    redis_db.disconnect();
 
+    redis_db.disconnect();
     log_main("Resived main = %, t1 = %, t2 = %", respond_count_main, respond_count_t1, respond_count_t2);
     //    t1.join();
+
+    sleep(1);
 
 }
 

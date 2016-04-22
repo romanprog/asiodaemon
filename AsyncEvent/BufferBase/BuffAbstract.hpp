@@ -57,7 +57,7 @@ public:
     void operator << (const char * str);
 
 protected:
-    virtual size_t calculate_mem();
+    virtual size_t calculate_mem(size_t block_size);
     virtual void when_new_data_acc(size_t bytes_readed) = 0;
     virtual void when_reseted();
     size_t top_offset() const;
@@ -65,10 +65,12 @@ protected:
     void reset_size();
 
 private:
+    size_t _basic_block_size {1024};
     size_t _top_offset {0};
     size_t _reserved {0};
     size_t _size {0};
     char * _cdata;
+
 
 };
 

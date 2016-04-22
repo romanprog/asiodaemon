@@ -50,15 +50,14 @@ bool RedisRBuffer::parse_one(redis::RespData &respond)
 
 void RedisRBuffer::when_new_data_acc(size_t bytes_readed)
 {
-
 }
 
-size_t RedisRBuffer::calculate_mem()
-{
-    size_t reserve_bl_count {2};
-    size_t _expected_part_size {256}; // Tmp value.
-    return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
-}
+//size_t RedisRBuffer::calculate_mem()
+//{
+//    size_t reserve_bl_count {2};
+//    size_t _expected_part_size {256}; // Tmp value.
+//    return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
+//}
 
 void RedisRBuffer::when_reseted()
 {
@@ -306,12 +305,13 @@ void RedisRBuffer::parsing_error_hendler()
 {
     _error_status = true;
     _err_message = "Reply data parsing error.";
-    log_debug(_err_message);
+
+    throw std::logic_error(_err_message);
 }
 
 void RedisRBuffer::manage_mem()
 {
-    if (_unparsed_offset >= top_offset()) {
+    if (_unparsed_offset == top_offset()) {
         reset(true);
         return;
     }
@@ -359,21 +359,6 @@ size_t RedisWBuffer::new_data_size()
 
 bool RedisWBuffer::add_query(const std::string &query)
 {
-//    std::vector<std::string> splited_query;
-//    hstrings::split(query, splited_query,' ', true);
-//    if (!splited_query.size())
-//        return false;
-//    std::string formated_query;
-//    if (splited_query.size() == 1) {
-//        formated_query += "$" + std::to_string(splited_query[0].size()) + "\r\n" + splited_query[0] + "\r\n";
-
-//    }  else
-//    {
-//        formated_query += '*' + std::to_string(splited_query.size()) + "\r\n";
-//        for (auto & pt : splited_query)
-//            formated_query += '$' + std::to_string(pt.size()) + "\r\n" + pt + "\r\n";
-
-//    }
     *this << query;
     *this << "\r\n";
 
@@ -384,12 +369,6 @@ void RedisWBuffer::when_new_data_acc(size_t bytes_readed)
 {
 }
 
-size_t RedisWBuffer::calculate_mem()
-{
-    size_t reserve_bl_count {2};
-    size_t _expected_part_size {256}; // Tmp value.
-    return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
-}
 
 void RedisWBuffer::when_reseted()
 {

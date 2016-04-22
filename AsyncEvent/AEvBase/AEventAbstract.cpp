@@ -17,7 +17,7 @@ AEventAbstract::AEventAbstract(aev::AEvRootConf & config)
       _timer(_ev_loop->get_io_service())
 {
     log_debug("AEventsAbstract CONSTRUCTOR! ");
-    config.evloop = std::make_shared<asio::strand>(_ev_loop->get_io_service());
+    config.evloop = _ev_loop;
 }
 
 AEventAbstract::AEventAbstract(AEvChildConf &&config)

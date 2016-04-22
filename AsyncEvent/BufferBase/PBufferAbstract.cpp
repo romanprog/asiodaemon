@@ -76,10 +76,10 @@ const DataOffsetList &PBufferAbstract::get_offsets_list() const
     return _data_parts;
 }
 
-size_t PBufferAbstract::calculate_mem()
+size_t PBufferAbstract::calculate_mem(size_t block_size)
 {
     size_t reserve_bl_count {2};
-    return ((top_offset() + size_filled()) / _expected_part_size + reserve_bl_count) * _expected_part_size;
+    return ((top_offset() + size_filled()) / block_size + reserve_bl_count) * block_size;
 }
 
 void PBufferAbstract::when_new_data_acc(size_t bytes_readed)

@@ -22,8 +22,6 @@ private:
     RedisRetFunc ret_function_cb;
     int err {0};
 
-
-
     virtual void _ev_begin() override;
     virtual void _ev_finish() override;
     virtual void _ev_stop() override;
