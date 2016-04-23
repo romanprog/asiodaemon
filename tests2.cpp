@@ -128,7 +128,7 @@ int main () {
         exit(0);
     }
     Config::glob().set_opt("logging_level", "3");
-    RedisRBuffer buff;
+    RESProto buff;
     // log_main("%", sizeof(aev::AEventAbstract));
 //    std::string result;
 

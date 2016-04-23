@@ -124,6 +124,11 @@ size_t BuffAbstract::calculate_mem(size_t block_size)
     return ((_top_offset + size_filled()) / block_size + reserve_bl_count) * block_size;
 }
 
+void BuffAbstract::when_new_data_acc(size_t bytes_readed)
+{
+
+}
+
 void BuffAbstract::when_reseted()
 {
 

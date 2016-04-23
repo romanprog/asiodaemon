@@ -6,7 +6,8 @@ namespace aev {
 
 AEvRedisMod::AEvRedisMod(AEvStrandPtr main_loop_)
     : _ev_loop(std::move(main_loop_)),
-      _socket(_ev_loop->get_io_service())
+      _socket(_ev_loop->get_io_service()),
+      _reading_buff(_resp_parser.buff())
 {
 
 }
@@ -14,8 +15,8 @@ AEvRedisMod::AEvRedisMod(AEvStrandPtr main_loop_)
 AEvRedisMod::~AEvRedisMod()
 {
     disconnect();
-    if (procs_tread.joinable())
-        procs_tread.join();
+    if (_procs_tread.joinable())
+        _procs_tread.join();
 }
 
 void AEvRedisMod::async_connect(const std::string &ip_, const unsigned port_, ConnCallback cb_)
@@ -81,20 +82,15 @@ void AEvRedisMod::async_query(const std::string &query_, redis::RedisCallback cb
     }
 
     {
-#ifdef AEV_REDIS_IN_MULTITHREADING
         std::lock_guard<std::mutex> lock(_send_buff_mux);
-#endif // AEV_REDIS_IN_MULTITHREADING
         _cb_queue.push(cb_);
-        _sending_buff << query_;
-        _sending_buff << "\r\n";
-
+        _sending_buff.add_query(query_);
     }
-    _req_proc_manager();
+    __req_proc_manager();
 }
 
 void AEvRedisMod::__req_poc()
 {
-
     auto req_handler = [this](std::error_code ec, std::size_t bytes_sent)
     {
         if (!ec) {
@@ -102,27 +98,25 @@ void AEvRedisMod::__req_poc()
             _sending_buff.sending_report(bytes_sent);
         }
 
-        _req_proc_running = false;
-        _req_proc_manager();
+        _req_proc_running.store(false);
+        __req_proc_manager();
 
     };
     _socket.async_write_some(asio::buffer(_sending_buff.new_data(), _sending_buff.new_data_size()), _ev_loop->wrap(req_handler));
 }
 
-void AEvRedisMod::_req_proc_manager()
+void AEvRedisMod::__req_proc_manager()
 {
-    std::lock_guard<std::mutex> lock_req_check (_req_proc_mux);
+    bool cmp_tmp {false};
 
-    if (_req_proc_running)
-        return;
-
-    if (_sending_buff.nothing_to_send()) {
-        return;
+    if (_req_proc_running.compare_exchange_weak(cmp_tmp, true, std::memory_order_release, std::memory_order_relaxed))
+    {
+        if (_sending_buff.nothing_to_send()) {
+            _req_proc_running.store(false);
+            return;
+        }
+        __req_poc();
     }
-
-    _req_proc_running = true;
-    __req_poc();
-
 }
 
 void AEvRedisMod::__resp_proc()
@@ -136,7 +130,7 @@ void AEvRedisMod::__resp_proc()
           }
           _reading_buff.accept(bytes_sent);
 
-          while (_reading_buff.parse_one(_respond))
+          while (_resp_parser.parse_one(_respond))
           {
               // Critical error. Answer resived, but no one callback in queue.
               if (_cb_queue.empty())
@@ -146,25 +140,25 @@ void AEvRedisMod::__resp_proc()
               _cb_queue.call_and_pop(0, _respond);
 
               if (_stop_in_progress && _cb_queue.empty())
-                  __work_done();
+                  work_done_report();
 
           }
           __resp_proc();
-      };
+    };
 
     _socket.async_read_some(asio::buffer(_reading_buff.data_top(), _reading_buff.size_avail()), _ev_loop->wrap(resp_handler));
 }
 
-void AEvRedisMod::__run_procs_thread()
+void AEvRedisMod::run_procs_thread()
 {
-    procs_tread = std::thread(
+    _procs_tread = std::thread(
                 [this]()
     {
         _ev_loop->get_io_service().run();
     });
 }
 
-void AEvRedisMod::__work_done()
+void AEvRedisMod::work_done_report()
 {
     _work_done_waiter.set_value();
     _disconnect_waiters.call_and_pop_all();
@@ -172,7 +166,6 @@ void AEvRedisMod::__work_done()
 
 
 /// Blocking operations. Only for "procs in separate thread". (AEV_REDIS_IN_MULTITHREADING define)
-#ifdef AEV_REDIS_IN_MULTITHREADING
 
 bool AEvRedisMod::connect(const std::string &ip_, const unsigned port_)
 {
@@ -199,7 +192,7 @@ bool AEvRedisMod::connect(const std::string &ip_, const unsigned port_, asio::er
     _stop_in_progress = false;
 
     __resp_proc();
-    __run_procs_thread();
+    run_procs_thread();
     return true;
 }
 
@@ -224,8 +217,7 @@ void AEvRedisMod::disconnect()
 
 
     _cb_queue.clear();
-    if (procs_tread.joinable())
-        procs_tread.join();
+    if (_procs_tread.joinable())
+        _procs_tread.join();
 }
-#endif // AEV_REDIS_IN_MULTITHREADING
 } // namespace

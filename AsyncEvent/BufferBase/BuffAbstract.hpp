@@ -58,7 +58,7 @@ public:
 
 protected:
     virtual size_t calculate_mem(size_t block_size);
-    virtual void when_new_data_acc(size_t bytes_readed) = 0;
+    virtual void when_new_data_acc(size_t bytes_readed);
     virtual void when_reseted();
     size_t top_offset() const;
     void change_data_top(size_t new_data_top);

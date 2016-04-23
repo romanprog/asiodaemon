@@ -65,17 +65,17 @@ int main () {
 
 
     redis_db.async_query("LRANGE mylist1 0 -1", ra_handler);
-//    for (int i = 0; i < 1000000; ++i)
-//    {
-//        redis_db.async_query("LRANGE mylist1 0 -1", ra_handler);
-//    }
+    for (int i = 0; i < 500000; ++i)
+    {
+        redis_db.async_query("LRANGE mylist1 0 -1", ra_handler);
+    }
     log_main("All sended.");
 
     redis_db.disconnect();
     log_main("Resived main = %, t1 = %, t2 = %", respond_count_main, respond_count_t1, respond_count_t2);
     //    t1.join();
 
-    sleep(1);
+    // sleep(1);
 
 }
 

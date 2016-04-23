@@ -38,7 +38,7 @@ public:
 protected:
     virtual size_t calculate_mem(size_t block_size) override;
     virtual void when_new_data_acc(size_t bytes_readed) override;
-    virtual void when_have_new_part(const size_t begin_offset, const size_t size) = 0;
+    virtual void when_have_new_part(const size_t begin_offset, const size_t size) {}
     virtual void when_parsed_all(size_t new_parts) {}
 
 private:

@@ -8,6 +8,7 @@ int main () {
 
     // To learn and using:
     std::accumulate();
+    std::mem_fn();
 
     RedisRBuffer rbuff;
 

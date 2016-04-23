@@ -93,7 +93,7 @@ public:
             _func_list.pop();
 
     }
-    bool empty()
+    bool empty() const
     {
         std::lock_guard<std::mutex> lm(_rw_lock);
         return _func_list.empty();
@@ -101,8 +101,7 @@ public:
 
 private:
 
-    FnType t;
-    std::mutex _rw_lock;
+    mutable std::mutex _rw_lock;
     std::queue<FnType> _func_list;
 
 };

@@ -2,6 +2,7 @@
 #define AEvRedisCli_HPP
 
 #include "../AEvBase/AEventAbstract.hpp"
+#include "RESProto.hpp"
 #include "RedisBuffer.hpp"
 
 namespace aev {
@@ -18,7 +19,7 @@ private:
     asio::ip::tcp::socket _socket;
     std::string _query;
     asio::ip::tcp::endpoint endpoint;
-    RedisRBuffer buff;
+    RESProto _proto_parser;
     RedisRetFunc ret_function_cb;
     int err {0};
 

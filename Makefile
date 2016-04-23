@@ -57,6 +57,8 @@ SOURCES = async_daemon.cpp \
              AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
              AsyncEvent/Redis/RedisBuffer.cpp \
+             AsyncEvent/Redis/RESProto.cpp \
+             AsyncEvent/Redis/RESPBuffer.cpp \
              AsyncEvent/Redis/AEvRedisCli.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp
@@ -76,7 +78,9 @@ TESTING_SOURCES = testing.cpp \
              AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
              AsyncEvent/Redis/RedisBuffer.cpp \
+             AsyncEvent/Redis/RESProto.cpp \
 	     AsyncEvent/Redis/AEvRedisMod.cpp \
+             AsyncEvent/Redis/RESPBuffer.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp \
              Atomic/AtomicTypes.cpp

@@ -61,7 +61,6 @@ void AEvRedisCli::_send_request()
                                   return;
                               }
                               log_debug("sended Redis Request");
-                              buff.reset(true);
                               _get_respond();
                           })
             );
@@ -69,8 +68,8 @@ void AEvRedisCli::_send_request()
 
 void AEvRedisCli::_get_respond()
 {
-    buff.release(2048);
-    _socket.async_read_some(asio::buffer(buff.data_top(), buff.size_avail()),
+    _proto_parser.buff().release(2048);
+    _socket.async_read_some(asio::buffer(_proto_parser.buff().data_top(), _proto_parser.buff().size_avail()),
                                    _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_sent)
         {
                                        if (ec) {
@@ -79,10 +78,10 @@ void AEvRedisCli::_get_respond()
                                            return;
                                        }
                                        log_debug("received Redis Respond");
-                                       buff.accept(bytes_sent);
+                                       _proto_parser.buff().accept(bytes_sent);
 
-                                       if (!buff.is_complate())
-                                            _get_respond();
+//                                       if (!buff.is_complate())
+//                                            _get_respond();
 
                                        stop();
                                    })
