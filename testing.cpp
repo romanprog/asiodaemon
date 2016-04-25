@@ -17,66 +17,157 @@
 #include "AsyncEvent/Redis/AEvRedisMod.hpp"
 #include "AsyncEvent/Redis/RedisBuffer.hpp"
 
-redis::RespData result;
-
-asio::io_service main_io;
-
-aev::AEvStrandPtr _ev_loop(std::make_shared<asio::strand>(main_io));
-
-int respond_count_t1 = 0;
-int respond_count_t2 = 0;
-int respond_count_main = 0;
-
-
-void f(std::string const & s)
+struct set
 {
-    std::string k {s};
+    // Query is blocked connection.
+    static constexpr bool is_blocking {false};
+    static constexpr bool enable_direct_send_buff {true};
+    static constexpr bool enable_direct_recive_buff {false};
+    static constexpr bool no_params {false};
+    static constexpr auto text {"set\r\n"};
+    using return_type = redis::RespData;
+
+};
+
+struct get
+{
+    // Query is blocked connection.
+    static constexpr bool is_blocking {false};
+    static constexpr bool enable_direct_send_buff {false};
+    static constexpr bool enable_direct_recive_buff {true};
+    static constexpr bool no_params {true};
+    static constexpr auto text {"get\r\n"};
+    using return_type = redis::RespData;
+
+};
+
+struct blpop
+{
+    // Query is blocked connection.
+    static constexpr bool is_blocking {false};
+    static constexpr bool enable_direct_send_buff {false};
+    static constexpr bool enable_direct_recive_buff {true};
+    static constexpr bool no_params {false};
+    static constexpr auto text {"blpop\r\n"};
+    typedef redis::RespData return_type;
+
+};
+
+struct one_line
+{
+    // Query is blocked connection.
+    static constexpr bool is_blocking {false};
+    static constexpr bool enable_direct_send_buff {false};
+    static constexpr bool enable_direct_recive_buff {true};
+    static constexpr bool no_params {false};
+    static constexpr auto text {"blpop\r\n"};
+    typedef redis::RespData return_type;
+
+};
+
+using RedisError = int;
+
+template <typename qT>
+class rquery
+{
+public:
+    using cbType = std::function<void (RedisError, typename qT::return_type &)>;
+    template <typename T = qT,
+              typename = std::enable_if_t<T::no_params>
+              >
+    explicit rquery(cbType cb)
+        : _cb(cb),
+          _args_count(0),
+          _query("*1\r\n")
+    {
+        _query += qT::text;
+    }
+    // Overload for queryes with arguments.
+    template <typename T = qT,
+              typename ...Args,
+              typename = std::enable_if_t<!T::no_params &&
+                                          !std::is_base_of<one_line, T>::value
+                                          >
+              >
+    explicit rquery(cbType cb, Args && ...args)
+        : _cb(cb),
+          _args_count(sizeof ...(Args))
+
+    {
+        _query = "*";
+        _query += std::to_string(sizeof ...(Args));
+        _query += "\r\n";
+        _build_RESP_query(std::forward<Args>(args)...);
+
+    }
+
+    // Overload for simple one-line query(like "incr test" or "set test 1");
+    template <typename T = qT,
+              typename = std::enable_if_t<!T::no_params &&
+                                          std::is_base_of<one_line, T>::value
+                                          >
+              >
+    explicit rquery(cbType cb, const std::string & query_)
+        : _cb(cb),
+          _args_count(1),
+          _query(query_)
+
+    {
+        _query += "\r\n";
+
+    }
+    void print() {
+        log_main(_query);
+    }
+
+private:
+    cbType _cb;
+    const int _args_count;
+    std::string _query;
+
+    // Recursive query builder.
+    template <typename ...Args>
+    void _build_RESP_query(const std::string & part_, Args && ...args)
+    {
+        _build_RESP_query(part_);
+        _build_RESP_query(std::forward<Args>(args)...);
+    }
+
+    inline void _build_RESP_query(const std::string & part_)
+    {
+        _query.append("$");
+        _query += std::to_string(part_.size());
+        _query.append(part_);
+        _query.append("\r\n");
+    }
+
+};
+
+/// ///////  Single query template overloads /////////////////
+void simple_query(const std::string & query)
+{
+
+}
+
+/// ///////  Pipeline queryes template overloads /////////////////
+template <typename T,
+          typename = typename std::enable_if<!T::is_blocking>::type>
+void pipeline_query_add(rquery<T> qu)
+{
+
 }
 
 int main () {
 
-    Config::glob().read_config("main.conf");
-    if (Config::glob().have_error()) {
-        CLog::glob().write("Error loading config: %", Config::glob().error_text());
-        exit(0);
-    }
-    Config::glob().set_opt("logging_level", "3");
-
-    aev::AEvRedisMod redis_db(_ev_loop);
-    if (!redis_db.connect("127.0.0.1", 6379))
-        exit(1);
-
-    auto ra_handler = [&redis_db](int err, const redis::RespData & result)
+    std::string q;
+    auto cb = [](int err, redis::RespData & res)
     {
-        if (err)
-            log_debug("Error num: %", err);
-        ++respond_count_main;
-//        log_main("%", respond_count_main);
-//        if (result.sres != "0")
-//           log_main("error 0 %", result.sres);
-        // log_main("%", result.ires);
+
     };
 
+    rquery<one_line> tq1(cb, "set test 1");
+    tq1.print();
+    pipeline_query_add(tq1);
 
-
-
-//    for (int i = 0; rbuff.parse_one(resp); ++i)
-//        log_main("% %", i, resp.sres);
-
-
-    redis_db.async_query("LRANGE mylist1 0 -1", ra_handler);
-    for (int i = 0; i < 500000; ++i)
-    {
-        redis_db.async_query("LRANGE mylist1 0 -1", ra_handler);
-    }
-    log_main("All sended.");
-
-    redis_db.disconnect();
-    log_main("Resived main = %, t1 = %, t2 = %", respond_count_main, respond_count_t1, respond_count_t2);
-    //    t1.join();
-
-    // sleep(1);
 
 }
-
-

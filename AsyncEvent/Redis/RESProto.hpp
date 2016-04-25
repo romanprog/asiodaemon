@@ -12,17 +12,15 @@
 #include <vector>
 #include <mutex>
 
-/// ////////////////////////////////////////////////////////////////
-/// \brief The RESProto class is a
-/// buffer with redis RESP (REdis Serialization Protocol) parser.
+/// ///////////////////////////////////////////////////////////////////////////
+/// \brief The RESProto class is a RESP (REdis Serialization Protocol) parser.
 /// Have simple interface.
-/// After receiving data call accept() method (BuffAbstract class).
-/// Then use parse_one() in cycle whith RespData reference as param.
+/// Use parse_one() in cycle whith RespData reference as param.
 /// Important:
 /// If there is a probability of receiving incomplete data (parted) -
 /// RespData variable should not be reseted after the call parse_one().
 /// Next call parse_one() will updated it with new data
-/// ////////////////////////////////////////////////////////////////
+/// ////////////////////////////////////////////////////////////////////////////
 
 class RESProto
 {
@@ -41,7 +39,6 @@ public:
     bool parse_one(redis::RespData & respond);
 
     RESPBuffer & buff();
-
 
 private:
 
@@ -72,5 +69,7 @@ private:
     RESPBufferPtr __buffer;
 
 };
+
+
 
 #endif // REDISPARSER_HPP

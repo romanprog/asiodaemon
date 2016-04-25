@@ -43,7 +43,7 @@ private:
     redis::RespData _respond;
 
     redis::FnHandlerQueue<void (int, const redis::RespData &)> _cb_queue;
-    redis::FnHandlerQueue<void ()> _disconnect_waiters;
+    redis::FnHandlerQueue<void ()> _disconnection_waiters;
 
     std::mutex _send_buff_mux;
     std::atomic<bool> _req_proc_running {false};

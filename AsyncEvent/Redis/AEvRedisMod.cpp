@@ -57,7 +57,7 @@ void AEvRedisMod::async_disconnect(AEvRedisMod::ConfirmCallback cb_)
     }
     _stop_in_progress = true;
 
-    _disconnect_waiters.push([this, cb_]()
+    _disconnection_waiters.push([this, cb_]()
     {
         if (_connected) {
             _connected = false;
@@ -161,7 +161,7 @@ void AEvRedisMod::run_procs_thread()
 void AEvRedisMod::work_done_report()
 {
     _work_done_waiter.set_value();
-    _disconnect_waiters.call_and_pop_all();
+    _disconnection_waiters.call_and_pop_all();
 }
 
 
