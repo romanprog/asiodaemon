@@ -10,6 +10,25 @@
 
 namespace redis {
 
+using RedisError = int;
+
+// Calculate max text length of unsigned value at compile time.
+template<unsigned long n>
+struct TLenCounter {
+    enum { value = 1 + TLenCounter<n/10>::value };
+};
+
+template <>
+struct TLenCounter<0> {
+    enum {value = 0};
+};
+
+static constexpr unsigned max_redis_list_size()
+{
+    return TLenCounter<std::numeric_limits<unsigned>::max()>::value;
+}
+static constexpr size_t query_pref_max_size {max_redis_list_size() + 3};
+
 enum class RespType
 {
     simple_str,

@@ -81,6 +81,7 @@ TESTING_SOURCES = testing.cpp \
              AsyncEvent/Redis/RESProto.cpp \
 	     AsyncEvent/Redis/AEvRedisMod.cpp \
              AsyncEvent/Redis/RESPBuffer.cpp \
+             AsyncEvent/Redis/query.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp \
              Atomic/AtomicTypes.cpp
