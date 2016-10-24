@@ -52,7 +52,7 @@ using AEvUtilPtr = std::shared_ptr<AEventUtilBase>;
 using AEvUtilCloseFunc = std::function<void()>;
 
 using AEvFinishCallback = std::function<int (AEvPtrBase, AEvExitSignal)>;
-using AEvStrandPtr = std::shared_ptr<asio::strand>;
+using AEvStrandPtr = std::shared_ptr<asio::io_service::strand>;
 using AEvTimer = asio::steady_timer;
 using AEvSet = std::set<AEvPtrBase>;
 using AEvIoPtr = std::shared_ptr<asio::io_service>;

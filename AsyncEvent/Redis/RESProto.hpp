@@ -4,7 +4,6 @@
 // Additional error check. (The correctness of the protocol.)
 // #define ADDITIONAL_ERROR_CHECK
 
-#include "../BufferBase/PBufferAbstract.hpp"
 #include "RESPBuffer.hpp"
 #include "RedisTypes.hpp"
 

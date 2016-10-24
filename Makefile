@@ -17,7 +17,7 @@ WARNINGS =     \
                 -Wno-deprecated-register \
                 -Wno-unused-function
 
-DEBUG = -g
+DEBUG =-g
 
 STDC = -std=c++1y
 
@@ -43,6 +43,7 @@ SOURCES = async_daemon.cpp \
              HUtils/AsyncQueue.cpp \
              HUtils/HFiles.cpp \
              HUtils/HDaemon.cpp \
+             HUtils/HNet.cpp \
              AsyncEvent/SMTP/AEvConnection.cpp \
              AsyncEvent/SMTP/AEvAcceptor.cpp \
              AsyncEvent/SMTP/SmtpBuffer.cpp \
@@ -75,6 +76,7 @@ TESTING_SOURCES = testing.cpp \
              HUtils/AsyncQueue.cpp \
              HUtils/HFiles.cpp \
              HUtils/HDaemon.cpp \
+             HUtils/HNet.cpp \
              AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
              AsyncEvent/Redis/RedisBuffer.cpp \
@@ -82,6 +84,7 @@ TESTING_SOURCES = testing.cpp \
 	     AsyncEvent/Redis/AEvRedisMod.cpp \
              AsyncEvent/Redis/RESPBuffer.cpp \
              AsyncEvent/Redis/query.cpp \
+             AsyncEvent/Redis/conn_pool.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp \
              Atomic/AtomicTypes.cpp

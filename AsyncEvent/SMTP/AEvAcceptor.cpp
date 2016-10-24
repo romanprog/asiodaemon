@@ -2,6 +2,7 @@
 #include "AEvConnection.hpp"
 #include "../SysSig/AEvSysSig.hpp"
 #include "../DNS/DnsBuffer.hpp"
+#include "../../HUtils/HNet.hpp"
 
 #include "iostream"
 
@@ -29,9 +30,8 @@ AEvAcceptor::AEvAcceptor(AEvChildConf && config, const std::string &ip, const un
 
 void AEvAcceptor::_ev_begin()
 {
-    asio::error_code ec;
-    asio::ip::address_v4 ip_check {asio::ip::address_v4::from_string(_conn_ip, ec)};
-    if (ec || ip_check.is_unspecified()) {
+
+    if (!hnet::is_ip_v4(_conn_ip)) {
         stop();
         return;
     }
@@ -55,7 +55,8 @@ void AEvAcceptor::_ev_finish()
 
 void AEvAcceptor::_ev_stop()
 {
-    _acceptor.cancel();
+    asio::error_code ec;
+    _acceptor.cancel(ec);
     log_debug("AEvConnection _ev_stop: " );
 }
 

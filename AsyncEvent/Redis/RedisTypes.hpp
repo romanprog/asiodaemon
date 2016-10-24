@@ -7,6 +7,7 @@
 #include <queue>
 #include <functional>
 #include <mutex>
+#include <asio.hpp>
 
 namespace redis {
 
@@ -59,6 +60,7 @@ struct RespData
 using RespDataPtr = std::unique_ptr<RespData>;
 using RedisCallback = std::function<void (int, const RespData &)>;
 using RedisCallbackQueue = std::queue<RedisCallback>;
+using DBuffsPosList = std::vector<std::pair<size_t, asio::const_buffer>>;
 
 template <typename T>
 class FnHandlerQueue

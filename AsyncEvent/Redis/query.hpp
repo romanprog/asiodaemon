@@ -6,21 +6,30 @@
 #include <cstring>
 
 #include "RedisTypes.hpp"
-#include "commands-traits.hpp"
+#include "cmd_traits.hpp"
+#include "buff_adapters.hpp"
 #include "../../Logger/Logger.hpp"
 
 namespace redis {
 
 // Utils for query builder.
-void ins_query_prefix(std::string & query_, unsigned pcount_);
+size_t ins_query_prefix(std::string & query_, unsigned pcount_);
 void add_query_part(std::string & query_, const char * part_);
+std::vector<asio::const_buffer> build_multibuffer(const std::string & query_,
+                                                  const DBuffsPosList & _ext_buffs_list);
 
-template <typename CmdType>
+template <class CmdType, typename StatusT = buff::disable_direct_buff>
 class  query
 {
 private:
     using QueryCallbackType = std::function<void (RedisError, typename CmdType::return_type &)>;
+
 public:
+    explicit query(QueryCallbackType cb)
+        :_cb(cb)
+    {
+
+    }
 
     // Overload for queryes without arguments.
     template <typename T = CmdType,
@@ -59,7 +68,11 @@ public:
         _build_RESP_next(CmdType::name, std::forward<Args>(args)...);
 
         // Add prefix "*count\r\n" (see RESP protocol docs).
-        ins_query_prefix(_query, _pcount);
+        size_t trimed = ins_query_prefix(_query, _pcount);
+
+        // Decreasing external direct buffers offsets.
+        for (auto & pos : _ext_buffs_list)
+            pos.first -= trimed;
 
     }
 
@@ -79,12 +92,20 @@ public:
     void print() {
         log_main(_query);
     }
+    std::string & get_query()
+    {
+        return _query;
+    }
+    std::vector<asio::const_buffer> get_multibuffer() const
+    {
+        return build_multibuffer(_query, _ext_buffs_list);
+    }
 
-private:
-
+protected:
     QueryCallbackType _cb;
     unsigned _pcount{0};
     std::string _query;
+    DBuffsPosList _ext_buffs_list;
 
     // Recursive query builder.
     template <typename ...Args>
@@ -134,8 +155,30 @@ private:
 
     inline void _build_RESP_next(int part_)
     {
-        std::string tmp(std::to_string(part_));
-        _build_RESP_next(tmp.c_str());
+        _build_RESP_next(std::to_string(part_).c_str());
+    }
+
+    template <typename T, typename ...Args, typename CT = CmdType, typename ST = StatusT,
+              typename = std::enable_if_t<CT::enable_direct_send_buff && std::is_same<ST, buff::enable_direct_buff>::value>>
+    void _build_RESP_next(const redis::buff::adapter<T> & _direct_buff, Args && ...args)
+    {
+        _build_RESP_next(_direct_buff);
+        _build_RESP_next(std::forward<Args>(args)...);
+    }
+
+    template <typename T, typename CT = CmdType, typename ST = StatusT,
+              typename = std::enable_if_t<CT::enable_direct_send_buff && std::is_same<ST, buff::enable_direct_buff>::value>>
+    inline void _build_RESP_next(const redis::buff::adapter<T> & direct_buff_)
+    {
+        // query_pref_max_size + additional "/r/n"
+        char pref[query_pref_max_size + 2];
+
+        size_t sz = snprintf(pref, query_pref_max_size + 2, "$%d\r\n\r\n", static_cast<unsigned>(direct_buff_.size()));
+        _query.append(pref, sz);
+
+        _ext_buffs_list.push_back(std::pair<size_t, asio::const_buffer>(_query.size() - 2,
+                                                                        asio::buffer(direct_buff_.data(),
+                                                                                     direct_buff_.size())));
     }
 
 };

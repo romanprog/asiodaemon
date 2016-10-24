@@ -109,7 +109,7 @@ void AEvRedisMod::__req_proc_manager()
 {
     bool cmp_tmp {false};
 
-    if (_req_proc_running.compare_exchange_weak(cmp_tmp, true, std::memory_order_release, std::memory_order_relaxed))
+    if (_req_proc_running.compare_exchange_strong(cmp_tmp, true, std::memory_order_release, std::memory_order_relaxed))
     {
         if (_sending_buff.nothing_to_send()) {
             _req_proc_running.store(false);

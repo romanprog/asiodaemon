@@ -6,6 +6,7 @@
 #include "RESPBuffer.hpp"
 #include "RESProto.hpp"
 #include "RedisBuffer.hpp"
+#include "thread_safe.hpp"
 #include <mutex>
 #include <thread>
 #include <future>
@@ -42,8 +43,8 @@ private:
     RedisQueryBuff _sending_buff;
     redis::RespData _respond;
 
-    redis::FnHandlerQueue<void (int, const redis::RespData &)> _cb_queue;
-    redis::FnHandlerQueue<void ()> _disconnection_waiters;
+    redis::threadsafe::functors_queue<void (int, const redis::RespData &)> _cb_queue;
+    redis::threadsafe::functors_queue<void ()> _disconnection_waiters;
 
     std::mutex _send_buff_mux;
     std::atomic<bool> _req_proc_running {false};
