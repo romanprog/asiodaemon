@@ -4,11 +4,9 @@
 #include "../DNS/AEvDnsClient.hpp"
 #include "../../HUtils/HStrings.hpp"
 #include "../../Logger/Logger.hpp"
-#include "../Redis/AEvRedisCli.hpp"
 
-SmtpSession::SmtpSession(SendHendler cb, SendWithConfirmHendler cbc)
+SmtpSession::SmtpSession(SendHendler cb)
     :send_line(cb),
-     send_and_confirm_line(cbc),
     welcome("220 Welcome my son, welcome to the machine. SMTP experimental.")
 {
 
@@ -21,7 +19,7 @@ void SmtpSession::transaction(SmtpCmdBuffer &data)
         std::string cmd_args;
         std::string cmd_line(data.get_line());
         log_debug(cmd_line);
-        CLog::glob().debug_write(cmd_line);
+        // CLog::glob().debug_write(cmd_line);
 
         if (_state.waiting_for_data)
         {
@@ -86,32 +84,13 @@ void SmtpSession::transaction(SmtpCmdBuffer &data)
 
         }
 
-//        case smtp::SmtpCmd::unknown:
-//        {
-//            send_line(smtp::utils::err_to_str(smtp::SmtpErr::unrecognized));
-//            break;
-//        }
+        case smtp::SmtpCmd::unknown:
+        {
+            send_line(smtp::utils::err_to_str(smtp::SmtpErr::unrecognized));
+            break;
+        }
 
         default:
-            _create_child<aev::AEvRedisCli>(1, cmd_line,
-                                            [this](int err, redis::RespDataPtr && respond)
-            {
-                if (err)
-                {
-                    log_debug("Redis client error");
-                    return;
-                }
-                switch (respond->type) {
-                case redis::RespType::integer:
-                    send_line(std::to_string(respond->ires) + "\r\n");
-                    break;
-                default:
-                    send_line(respond->sres + "\r\n");
-                    break;
-                }
-
-
-            });
             break;
 
         }
@@ -135,8 +114,6 @@ void SmtpSession::begin(std::string &&ip)
         if (!err)
             for (auto & r : result->alist)
                 _state.client_ip_ptr = r.answer;
-
-
     });
 
     send_line(welcome + " " + _state.client_ip_ptr + " " + prim_hostname + " greeting you\r\n");

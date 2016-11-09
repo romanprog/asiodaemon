@@ -6,6 +6,8 @@
 #include <map>
 #include <vector>
 #include <unordered_set>
+#include <memory>
+#include <functional>
 
 namespace smtp {
 
@@ -103,6 +105,8 @@ struct SmtpState
     size_t rcpts_uninited{0};
 };
 
+using SmtpStatePtr = std::shared_ptr<SmtpState>;
+
 const std::unordered_map<std::string, SmtpCmd> cmd_map {
     {"helo", SmtpCmd::helo},
     {"mail", SmtpCmd::mail},
@@ -115,6 +119,11 @@ const std::unordered_map<std::string, SmtpCmd> cmd_map {
     {"noop", SmtpCmd::noop},
     {"quit", SmtpCmd::quit}
 };
+
+using CommandHandler = std::function<SmtpErr (const std::string & cmd)>;
+
+using CommandsMap = std::unordered_map<std::string, CommandHandler>;
+using CommandsMapPtr = std::shared_ptr<CommandsMap>;
 
 namespace utils
 {

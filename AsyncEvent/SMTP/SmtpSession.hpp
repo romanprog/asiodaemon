@@ -11,12 +11,12 @@
 
 using ConfirmHendler = std::function<void (bool err)>;
 using SendHendler = std::function<void (std::string answer)>;
-using SendWithConfirmHendler = std::function<void (std::string answer, ConfirmHendler confirm)>;
+// using SendWithConfirmHendler = std::function<void (std::string answer, ConfirmHendler confirm)>;
 
 class SmtpSession: public aev::AEventUtilBase
 {
 public:
-    SmtpSession(SendHendler cb, SendWithConfirmHendler cbc);
+    SmtpSession(SendHendler cb);
 
     void transaction(SmtpCmdBuffer &data);
     void accept_data(SmtpDataBuffer &data);
@@ -27,7 +27,7 @@ public:
 private:
 
     SendHendler send_line;
-    SendWithConfirmHendler send_and_confirm_line;
+    // SendWithConfirmHendler send_and_confirm_line;
     std::string welcome;
     std::string prim_hostname {"examlpe.my.home"};
     smtp::SmtpState _state;

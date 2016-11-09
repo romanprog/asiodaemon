@@ -49,6 +49,7 @@ SOURCES = async_daemon.cpp \
              AsyncEvent/SMTP/SmtpBuffer.cpp \
              AsyncEvent/SMTP/SmtpTypes.cpp \
              AsyncEvent/SMTP/SmtpSession.cpp \
+             AsyncEvent/SMTP/Modules/BaseMod.cpp \
              AsyncEvent/DNS/DnsBuffer.cpp \
              AsyncEvent/DNS/AEvDnsClient.cpp \
              AsyncEvent/DNS/DnsUtils.cpp \
@@ -57,10 +58,6 @@ SOURCES = async_daemon.cpp \
              AsyncEvent/AEvBase/AEventUtilBase.cpp \
              AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
-             AsyncEvent/Redis/RedisBuffer.cpp \
-             AsyncEvent/Redis/RESProto.cpp \
-             AsyncEvent/Redis/RESPBuffer.cpp \
-             AsyncEvent/Redis/AEvRedisCli.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp
 
@@ -79,12 +76,6 @@ TESTING_SOURCES = testing.cpp \
              HUtils/HNet.cpp \
              AsyncEvent/BufferBase/PBufferAbstract.cpp \
              AsyncEvent/BufferBase/BuffAbstract.cpp \
-             AsyncEvent/Redis/RedisBuffer.cpp \
-             AsyncEvent/Redis/RESProto.cpp \
-	     AsyncEvent/Redis/AEvRedisMod.cpp \
-             AsyncEvent/Redis/RESPBuffer.cpp \
-             AsyncEvent/Redis/query.cpp \
-             AsyncEvent/Redis/conn_pool.cpp \
              Logger/Logger.cpp \
              Config/GlobalConf.cpp \
              Atomic/AtomicTypes.cpp

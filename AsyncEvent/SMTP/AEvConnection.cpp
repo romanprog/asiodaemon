@@ -9,8 +9,7 @@ namespace aev {
 AEvConnection::AEvConnection(AEvChildConf &&config, asio::ip::tcp::socket &&_soc)
     :AEventAbstract::AEventAbstract(std::move(config)),
      _socket(std::move(_soc)),
-     session(std::bind(&AEvConnection::_respond_handler, this, std::placeholders::_1, nullptr),
-             std::bind(&AEvConnection::_respond_handler, this, std::placeholders::_1, std::placeholders::_2))
+     session(std::bind(&AEvConnection::_respond_handler, this, std::placeholders::_1, nullptr))
 {
      log_debug("AEvConnection CONSTRUCTOR! ");
 }
