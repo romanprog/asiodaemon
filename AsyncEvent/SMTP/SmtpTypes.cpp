@@ -23,7 +23,8 @@ const std::unordered_map<SmtpErr, std::string, EnumClassHash> err_mess_map {
     {SmtpErr::unrecognized, "500 Syntax error, command unrecognised."},
     {SmtpErr::sync, "503 Bad sequence of commands."},
     {SmtpErr::trcpt, "503 More then 1 rcpts in transaction."},
-    {SmtpErr::emlformat, "511 Bad <reverse-path> email addres."}
+    {SmtpErr::emlformat, "511 Bad <reverse-path> email addres."},
+    {SmtpErr::no_rcpts, "RCPT first."}
 };
 }
 
@@ -35,13 +36,7 @@ SmtpCmd parse_line(const std::string &line)
     if (line.size() < 4)
         return SmtpCmd::unknown;
 
-    // First 4 chars !must! contain a command.
-    std::string cmd(line.substr(0, 4));
-
-    // Commands and replies are not case sensitive. RFC 821, 2. THE SMTP MODEL
-    hstrings::to_lower(cmd);
-
-    auto cmd_type = cmd_map.find(cmd);
+    auto cmd_type = cmd_map.find(get_cmd_str(line));
 
     if (cmd_type == cmd_map.end())
         return SmtpCmd::unknown;
@@ -53,12 +48,10 @@ SmtpErr parse_helo(const std::string &helo_line, std::string &result)
 {
     std::vector<std::string> s_helo;
     hstrings::split(helo_line, s_helo, ' ', true);
-    if (s_helo.size() > 2)
+    if (s_helo.size() != 2)
         return SmtpErr::syntax;
 
-    if (s_helo.size() == 2)
-        result = s_helo[1];
-
+    result = s_helo[1];
     return SmtpErr::noerror;
 }
 
@@ -142,7 +135,20 @@ SmtpErr parse_data(const std::string &mf_line)
     return SmtpErr::noerror;
 }
 
+std::string get_cmd_str(const std::string &line)
+{
+    std::string cmd;
+
+    if (line.size() >= 4) {
+        // First 4 chars !must! contain a command.
+        cmd = line.substr(0, 4);
+        // Commands and replies are not case sensitive. RFC 821, 2. THE SMTP MODEL
+        hstrings::to_lower(cmd);
+    }
+    return cmd;
 }
+
+} // namespace utils
 
 bool EmailAddr::set(std::string email)
 {

@@ -6,17 +6,16 @@
 #include "../../Logger/Logger.hpp"
 
 SmtpSession::SmtpSession(SendHendler cb)
-    :send_line(cb),
-    welcome("220 Welcome my son, welcome to the machine. SMTP experimental.")
+    : send_line(cb),
+      welcome("220 Welcome my son, welcome to the machine. SMTP experimental.")
 {
-
+    smtp::BaseMod::RegisterCommands(_handlers_map);
 }
 
 void SmtpSession::transaction(SmtpCmdBuffer &data)
 {
     while (!data.is_empty()) {
 
-        std::string cmd_args;
         std::string cmd_line(data.get_line());
         log_debug(cmd_line);
         // CLog::glob().debug_write(cmd_line);
@@ -27,74 +26,16 @@ void SmtpSession::transaction(SmtpCmdBuffer &data)
             continue;
         }
 
-        smtp::SmtpCmd cmd_t = smtp::utils::parse_line(cmd_line);
-
-        switch (cmd_t) {
-        case smtp::SmtpCmd::quit:
-        {
-            abrt = true;
-            cmd_args = "221 Bye!\r\n";
-            send_line(std::move(cmd_args));
-            break;
+        smtp::SmtpErr rerr = _call_mapped_cmd_handler(cmd_line);
+        abrt = _state.close_conn;
+        if (rerr != smtp::SmtpErr::noerror) {
+            send_line(smtp::utils::err_to_str(rerr));
+        } else {
+            send_line(std::move(_state.curent_reply));
         }
 
-        case smtp::SmtpCmd::helo:
-        {
-            smtp::SmtpErr rerr = smtp::utils::parse_helo(cmd_line, cmd_args);
-            if (rerr == smtp::SmtpErr::noerror)
-                _helo_cmd(cmd_args);
-            else
-                send_line(smtp::utils::err_to_str(rerr));
+        if (abrt)
             break;
-        }
-
-        case smtp::SmtpCmd::mail:
-        {
-            smtp::EmailAddr _tmp;
-            smtp::SmtpErr rerr = smtp::utils::parse_mail_from(cmd_line, _tmp);
-            if (rerr == smtp::SmtpErr::noerror)
-                _mail_cmd(std::move(_tmp));
-            else
-                send_line(smtp::utils::err_to_str(rerr));
-            break;
-        }
-
-        case smtp::SmtpCmd::rcpt:
-        {
-            smtp::EmailAddr _tmp;
-            smtp::SmtpErr rerr = smtp::utils::parse_rcpt_to(cmd_line, _tmp);
-
-            if (rerr == smtp::SmtpErr::noerror)
-                _rcpt_cmd(std::move(_tmp));
-            else
-                send_line(smtp::utils::err_to_str(rerr));
-            break;
-
-        }
-
-        case smtp::SmtpCmd::data:
-        {
-            smtp::SmtpErr rerr = smtp::utils::parse_data(cmd_line);
-
-            if (rerr == smtp::SmtpErr::noerror)
-                _data_cmd();
-            else
-                send_line(smtp::utils::err_to_str(rerr));
-            break;
-
-        }
-
-        case smtp::SmtpCmd::unknown:
-        {
-            send_line(smtp::utils::err_to_str(smtp::SmtpErr::unrecognized));
-            break;
-        }
-
-        default:
-            break;
-
-        }
-
     }
 }
 
@@ -129,61 +70,18 @@ bool SmtpSession::read_data_demand()
     return _state.waiting_for_data;
 }
 
-void SmtpSession::_helo_cmd(const std::string & args)
+
+smtp::SmtpErr SmtpSession::_call_mapped_cmd_handler(const std::string &cmd_line)
 {
-    _state.client_hello.text = args;
-    if (dns::utils::is_fqdn(_state.client_hello.text)) {
-        _state.client_hello.is_fqdn = true;
-        _create_child<aev::AEvDnsClient>(1, _state.client_hello.text, dns::DnsQType::A,
-                                         [this](int err, dns::DnsRespondPtr && result)
-        {
-            if (!err)
-                _state.client_hello.ip = dns::utils::get_rand_rec_value(*result);
-        });
-
+    smtp::SmtpErr res;
+    try {
+        auto functor = _handlers_map.at(smtp::utils::get_cmd_str(cmd_line));
+        res = functor(cmd_line, _state);
     }
-
-    std::string reply = "250 " + prim_hostname + " " + (_state.client_ip_ptr.empty() ? _state.client_ip : _state.client_ip_ptr) + "\r\n";
-    _state.client_hello.inited = true;
-    send_line(reply);
-}
-
-void SmtpSession::_mail_cmd(smtp::EmailAddr &&email)
-{
-    if (!_state.client_hello.inited) {
-        send_line(smtp::utils::err_to_str(smtp::SmtpErr::heloneed));
-        return;
+    catch (std::out_of_range& oor)
+    {
+        return smtp::SmtpErr::unrecognized;
     }
-    _state.mailform = email;
-
-    std::string reply = "250 " + email.text + " Parsed email:" + _state.mailform.text + "\r\n";
-
-    send_line(reply);
-
-}
-
-void SmtpSession::_rcpt_cmd(smtp::EmailAddr &&email)
-{
-
-    if (!_state.mailform.inited) {
-        send_line(smtp::utils::err_to_str(smtp::SmtpErr::sync));
-        return;
-    }
-    std::string reply;
-    auto dupcheck = _state.recipients.list.find(email);
-    if (dupcheck == _state.recipients.list.end()) {
-        _state.recipients.list.insert(email);
-        reply = "250 OK. Parsed email:" + email.text + "\r\n";
-    }
-    else {
-        reply = "253 OK. Parsed email:" + email.text + " Duplicate. Ignored. \r\n";
-    }
-    send_line(reply);
-}
-
-void SmtpSession::_data_cmd()
-{
-    _state.waiting_for_data = true;
-    send_line("354 OK. Redy for accept data. \r\n");
+    return res;
 }
 

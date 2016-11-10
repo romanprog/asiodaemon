@@ -187,6 +187,7 @@ bool Config::_set_conf_unit(const std::string &Key, const std::string &Value)
     CHECK_AND_SET_OPT(config.logging_level);
     CHECK_AND_SET_OPT(config.redis_host);
     CHECK_AND_SET_OPT(config.redis_port);
+    CHECK_AND_SET_OPT(config.primary_hostname);
 
     error_message = "Unknown option: " + Key;
     error_status = true;

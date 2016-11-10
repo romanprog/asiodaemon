@@ -56,7 +56,9 @@ enum class SmtpErr
     // Syntax error.
     syntax,
     // Email addres format invalid.
-    emlformat
+    emlformat,
+    // Rctp first.
+    no_rcpts
 };
 
 
@@ -101,8 +103,11 @@ struct SmtpState
     bool helo_inited {false};
     bool mail_from_inited{false};
     bool waiting_for_data{false};
-    // Reply on "RCPT TO" command not sended.
+    // Reply on "RCPT TO" command not sended. --- ???
     size_t rcpts_uninited{0};
+
+    std::string curent_reply;
+    bool close_conn {false};
 };
 
 using SmtpStatePtr = std::shared_ptr<SmtpState>;
@@ -120,13 +125,14 @@ const std::unordered_map<std::string, SmtpCmd> cmd_map {
     {"quit", SmtpCmd::quit}
 };
 
-using CommandHandler = std::function<SmtpErr (const std::string & cmd)>;
+using CommandHandler = std::function<SmtpErr (const std::string & cmd, SmtpState & proto_state)>;
 
 using CommandsMap = std::unordered_map<std::string, CommandHandler>;
 using CommandsMapPtr = std::shared_ptr<CommandsMap>;
 
 namespace utils
 {
+    std::string get_cmd_str(const std::string & line);
     SmtpCmd parse_line(const std::string & line);
     SmtpErr parse_helo(const std::string & helo_line, std::string & result);
     SmtpErr parse_mail_from(const std::string & mf_line, EmailAddr &result);

@@ -4,6 +4,7 @@
 #include "../AEvBase/AEventUtilBase.hpp"
 #include "SmtpBuffer.hpp"
 #include "SmtpTypes.hpp"
+#include "Modules/BaseMod.hpp"
 
 #include <string>
 #include <vector>
@@ -31,16 +32,11 @@ private:
     std::string welcome;
     std::string prim_hostname {"examlpe.my.home"};
     smtp::SmtpState _state;
+    smtp::CommandsMap _handlers_map;
     bool abrt {false};
 
 
-    void _helo_cmd(const std::string &args);
-    void _mail_cmd(smtp::EmailAddr &&email);
-    void _rcpt_cmd(smtp::EmailAddr &&email);
-    void _data_cmd();
-
-
-
+    smtp::SmtpErr _call_mapped_cmd_handler(const std::string & cmd_line);
 };
 
 #endif // SMTPSESSION_HPP
