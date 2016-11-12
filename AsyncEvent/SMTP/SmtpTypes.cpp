@@ -24,7 +24,7 @@ const std::unordered_map<SmtpErr, std::string, EnumClassHash> err_mess_map {
     {SmtpErr::sync, "503 Bad sequence of commands."},
     {SmtpErr::trcpt, "503 More then 1 rcpts in transaction."},
     {SmtpErr::emlformat, "511 Bad <reverse-path> email addres."},
-    {SmtpErr::no_rcpts, "RCPT first."}
+    {SmtpErr::no_rcpts, "503 RCPT first."}
 };
 }
 

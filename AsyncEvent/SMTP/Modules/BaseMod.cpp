@@ -25,7 +25,6 @@ void BaseMod::RegisterCommands(CommandsMap &cmd_map_)
         log_debug("Smtp commands conflict!");
         throw std::logic_error("Commands adding conflict!");
     }
-
 }
 
 ReplySendedConfirmHandler BaseMod::_Helo_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr & err_)
@@ -140,28 +139,29 @@ ReplySendedConfirmHandler BaseMod::_Data_Handler(const std::string &cmd_line_, S
 
 ReplySendedConfirmHandler BaseMod::_Vrfy_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr & err_)
 {
-    state_.curent_reply = "252 2.1.5 Try to send message and a covert will become apparent.\r\n";
+    state_.curent_reply = "252 Try to send message and a covert will become apparent.\r\n";
     err_ = SmtpErr::noerror;
     return nullptr;
 }
 
 ReplySendedConfirmHandler BaseMod::_Rset_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr &err_)
 {
-    state_.curent_reply = "Command not supported yet.\r\n";
+    state_.reset_transaction();
+    state_.curent_reply = "250 Flushed.\r\n";
     err_ = SmtpErr::noerror;
     return nullptr;
 }
 
 ReplySendedConfirmHandler BaseMod::_Help_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr & err_)
 {
-    state_.curent_reply = "Command not supported yet.\r\n";
+    state_.curent_reply = "214 See RFC https://tools.ietf.org/html/rfc5321\r\n";
     err_ = SmtpErr::noerror;
     return nullptr;
 }
 
 ReplySendedConfirmHandler BaseMod::_Noop_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr &err_)
 {
-    state_.curent_reply = "Command not supported yet.\r\n";
+    state_.curent_reply = "250 OK\r\n";
     err_ = SmtpErr::noerror;
     return nullptr;
 }
