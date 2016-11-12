@@ -46,6 +46,10 @@ SmtpCmd parse_line(const std::string &line)
 
 SmtpErr parse_helo(const std::string &helo_line, std::string &result)
 {
+    // Space symbol must be directly after command.
+    if (!std::isspace(helo_line[4]))
+        return SmtpErr::unrecognized;
+
     std::vector<std::string> s_helo;
     hstrings::split(helo_line, s_helo, ' ', true);
     if (s_helo.size() != 2)
@@ -61,6 +65,8 @@ SmtpErr parse_mail_from(const std::string &mf_line, EmailAddr &result)
 
     // "MAIL FROM" part
     hstrings::get_part(mf_line, str_tmp, ':', 0);
+
+    hstrings::clear_dup_chars(str_tmp, ' ');
 
     hstrings::to_lower(str_tmp);
 
@@ -100,6 +106,9 @@ SmtpErr parse_rcpt_to(const std::string &mf_line, EmailAddr &result)
 
     // "RCPT TO" part
     hstrings::get_part(mf_line, str_tmp, ':', 0);
+
+    // Delete consecutive duplicate spaces.
+    hstrings::clear_dup_chars(str_tmp, ' ');
 
     hstrings::to_lower(str_tmp);
 
@@ -141,7 +150,7 @@ std::string get_cmd_str(const std::string &line)
 
     if (line.size() >= 4) {
         // First 4 chars !must! contain a command.
-        cmd = line.substr(0, 4);
+        cmd = line.substr(0, line.find(' '));
         // Commands and replies are not case sensitive. RFC 821, 2. THE SMTP MODEL
         hstrings::to_lower(cmd);
     }
@@ -166,9 +175,32 @@ bool EmailAddr::set(std::string email)
     return true;
 }
 
+void EmailAddr::reset()
+{
+    text.clear();
+    localpart.clear();
+    domain.clear();
+    inited = false;
+}
+
 bool operator ==(const EmailAddr &one, const EmailAddr &other)
 {
     return one.text == other.text;
+}
+
+void EmailRcpts::reset()
+{
+    list.clear();
+    valid_count = 0;
+    failed_count = 0;
+}
+
+void HeloArg::reset()
+{
+    text.clear();
+    ip.clear();
+    inited = false;
+    is_fqdn = false;
 }
 
 // namespace utils

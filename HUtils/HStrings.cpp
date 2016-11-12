@@ -206,4 +206,18 @@ bool cut_part(std::string &text, char delim, size_t pindex)
     return true;
 }
 
+std::string &clear_dup_chars(std::string &str_, const char symb_)
+{
+    auto res = str_.begin() + 1;
+
+    for ( auto cur_iter = str_.begin() + 1; cur_iter !=str_.end(); ++cur_iter )
+    {
+        if (!(*cur_iter == symb_ && *cur_iter == *(cur_iter - 1)))
+            *res++ = *cur_iter;
+    }
+    str_.erase(res, str_.end());
+
+    return str_;
+}
+
 } // namespace hstrings

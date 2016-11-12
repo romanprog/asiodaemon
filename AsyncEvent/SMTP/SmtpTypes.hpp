@@ -68,9 +68,12 @@ struct EmailAddr
     std::string localpart;
     std::string domain;
 
-    bool inited;
+    bool inited {false};
+
     bool set(std::string email);
     friend bool operator == (const EmailAddr& one, const EmailAddr & other);
+
+    void reset();
 };
 
 bool operator == (const EmailAddr& one, const EmailAddr & other);
@@ -81,6 +84,7 @@ struct HeloArg
     std::string text;
     bool is_fqdn {false};
     std::string ip;
+    void reset();
 };
 
 using RcptList = std::unordered_set<EmailAddr, EmailAddrHasher>;
@@ -90,7 +94,12 @@ struct EmailRcpts
     // Valid rcpts count.
     int valid_count {0};
     int failed_count {0};
+    // Any "rcpt to" client command must complated in the server side
+    // only after server send reply for it. Any others smtp commands from client
+    // before all "rcpt to" replies sended is protocol violation, see RFC 2821.
+    unsigned int unsended_responds {0};
     RcptList list;
+    void reset();
 };
 
 struct SmtpState
@@ -100,14 +109,21 @@ struct SmtpState
     smtp::HeloArg client_hello;
     std::string client_ip;
     std::string client_ip_ptr;
-    bool helo_inited {false};
-    bool mail_from_inited{false};
     bool waiting_for_data{false};
     // Reply on "RCPT TO" command not sended. --- ???
     size_t rcpts_uninited{0};
 
     std::string curent_reply;
     bool close_conn {false};
+
+    void reset_transaction()
+    {
+        recipients.reset();
+        mailform.reset();
+        waiting_for_data = false;
+        rcpts_uninited = 0;
+        curent_reply.clear();
+    }
 };
 
 using SmtpStatePtr = std::shared_ptr<SmtpState>;
@@ -125,7 +141,11 @@ const std::unordered_map<std::string, SmtpCmd> cmd_map {
     {"quit", SmtpCmd::quit}
 };
 
-using CommandHandler = std::function<SmtpErr (const std::string & cmd, SmtpState & proto_state)>;
+using ConfirmHendler = std::function<void (bool err)>;
+
+using ReplySendedConfirmHandler = std::function<void (SmtpState & proto_state)>;
+
+using CommandHandler = std::function<ReplySendedConfirmHandler (const std::string & cmd, SmtpState & proto_state, SmtpErr & err_)>;
 
 using CommandsMap = std::unordered_map<std::string, CommandHandler>;
 using CommandsMapPtr = std::shared_ptr<CommandsMap>;

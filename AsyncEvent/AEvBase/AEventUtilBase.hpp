@@ -11,7 +11,7 @@ class AEventUtilBase : public std::enable_shared_from_this<AEventUtilBase>
 {
 public:
     explicit AEventUtilBase();
-    ~AEventUtilBase();
+    virtual ~AEventUtilBase();
     void init_async(const AEvUtilConf config);
     void stop_async();
 

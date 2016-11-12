@@ -45,6 +45,9 @@ std::string & trim_l(std::string & text);
 std::string & trim_r(std::string & text);
 std::string & trim(std::string & text);
 
+// Remove consecutive duplicate characters.
+std::string & clear_dup_chars(std::string & str_, const char symb_);
+
 // Delete
 }
 #endif // HSTRINGS_HPP

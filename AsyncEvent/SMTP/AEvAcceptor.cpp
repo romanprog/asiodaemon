@@ -3,6 +3,7 @@
 #include "../SysSig/AEvSysSig.hpp"
 #include "../DNS/DnsBuffer.hpp"
 #include "../../HUtils/HNet.hpp"
+#include "Modules/BaseMod.hpp"
 
 #include "iostream"
 
@@ -44,6 +45,8 @@ void AEvAcceptor::_ev_begin()
     _acceptor.bind(endpoint);
     _acceptor.listen();
     create_child<AEvSysSig>(0);
+    // Init SMTP protocol handlers map.
+    smtp::BaseMod::RegisterCommands(_handlers_map);
     _start_acceept();
 
 }
@@ -84,7 +87,8 @@ void AEvAcceptor::_start_acceept()
                                }
 
                                log_debug("conn");
-                                create_child<AEvConnection>(0, std::move(_socket));
+
+                                create_child<AEvSmtpSession>(0, std::move(_socket), _handlers_map);
                                _start_acceept();
                            })
             );

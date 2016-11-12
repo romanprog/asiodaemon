@@ -59,10 +59,16 @@ void PBufferAbstract::reset(bool soft_reset)
 
 void PBufferAbstract::mem_reduce()
 {
-    if (!redundant_data_size()) {
+    size_t rd_data_size = redundant_data_size();
+    if (!rd_data_size) {
         reset();
         return;
     }
+    // Run memory transformation, only if actual data size less then 10% of buffer size.
+    if ((rd_data_size * 100.00)/top_offset() > 10)
+        return;
+    log_debug("Reduce memory!");
+
     size_t free_tmp = size_avail();
     std::string redundant_tmp (data() + _unparsed_offset, redundant_data_size());
     reset();
