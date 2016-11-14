@@ -48,6 +48,7 @@ SOURCES = async_daemon.cpp \
              AsyncEvent/SMTP/AEvAcceptor.cpp \
              AsyncEvent/SMTP/SmtpBuffer.cpp \
              AsyncEvent/SMTP/SmtpTypes.cpp \
+             AsyncEvent/SMTP/IncSmtpState.cpp \
              AsyncEvent/SMTP/Modules/BaseMod.cpp \
              AsyncEvent/DNS/DnsBuffer.cpp \
              AsyncEvent/DNS/AEvDnsClient.cpp \

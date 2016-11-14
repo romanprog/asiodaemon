@@ -102,32 +102,6 @@ struct EmailRcpts
     void reset();
 };
 
-struct SmtpState
-{
-    smtp::EmailRcpts recipients;
-    smtp::EmailAddr mailform;
-    smtp::HeloArg client_hello;
-    std::string client_ip;
-    std::string client_ip_ptr;
-    bool waiting_for_data{false};
-    // Reply on "RCPT TO" command not sended. --- ???
-    size_t rcpts_uninited{0};
-
-    std::string curent_reply;
-    bool close_conn {false};
-
-    void reset_transaction()
-    {
-        recipients.reset();
-        mailform.reset();
-        waiting_for_data = false;
-        rcpts_uninited = 0;
-        curent_reply.clear();
-    }
-};
-
-using SmtpStatePtr = std::shared_ptr<SmtpState>;
-
 const std::unordered_map<std::string, SmtpCmd> cmd_map {
     {"helo", SmtpCmd::helo},
     {"mail", SmtpCmd::mail},
@@ -140,15 +114,6 @@ const std::unordered_map<std::string, SmtpCmd> cmd_map {
     {"noop", SmtpCmd::noop},
     {"quit", SmtpCmd::quit}
 };
-
-using ConfirmHendler = std::function<void (bool err)>;
-
-using ReplySendedConfirmHandler = std::function<void (SmtpState & proto_state)>;
-
-using CommandHandler = std::function<ReplySendedConfirmHandler (const std::string & cmd, SmtpState & proto_state, SmtpErr & err_)>;
-
-using CommandsMap = std::unordered_map<std::string, CommandHandler>;
-using CommandsMapPtr = std::shared_ptr<CommandsMap>;
 
 namespace utils
 {

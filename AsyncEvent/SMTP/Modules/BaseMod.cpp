@@ -27,7 +27,7 @@ void BaseMod::RegisterCommands(CommandsMap &cmd_map_)
     }
 }
 
-ReplySendedConfirmHandler BaseMod::_Helo_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr & err_)
+ReplySendedConfirmHandler BaseMod::_Helo_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr & err_)
 {
     // Check line syntax.
     std::string helo_arg;
@@ -39,12 +39,12 @@ ReplySendedConfirmHandler BaseMod::_Helo_Handler(const std::string &cmd_line_, S
     }
 
     // Check argument syntax (RFC 5321 4.1.1.1).
-    hstrings::trim(helo_arg);
-    if (!hnet::is_fqdn(helo_arg) && !hnet::is_ip_v4(helo_arg)) {
-        state_.close_conn = true;
-        err_ = SmtpErr::syntax;
-        return nullptr;
-    }
+//    hstrings::trim(helo_arg);
+//    if (!hnet::is_fqdn(helo_arg) && !hnet::is_ip_v4(helo_arg)) {
+//        state_.close_conn = true;
+//        err_ = SmtpErr::syntax;
+//        return nullptr;
+//    }
 
     // Init helo status in SMTP state.
     state_.client_hello.text = helo_arg;
@@ -57,7 +57,7 @@ ReplySendedConfirmHandler BaseMod::_Helo_Handler(const std::string &cmd_line_, S
     return nullptr;
 }
 
-ReplySendedConfirmHandler BaseMod::_Mail_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr & err_)
+ReplySendedConfirmHandler BaseMod::_Mail_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr & err_)
 {
     // Check helo status (must be true).
     if (!state_.client_hello.inited) {
@@ -80,7 +80,7 @@ ReplySendedConfirmHandler BaseMod::_Mail_Handler(const std::string &cmd_line_, S
     return nullptr;
 }
 
-ReplySendedConfirmHandler BaseMod::_Rcpt_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr &err_)
+ReplySendedConfirmHandler BaseMod::_Rcpt_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr &err_)
 {
     // Check mailfrom status.
     if (!state_.mailform.inited){
@@ -101,7 +101,7 @@ ReplySendedConfirmHandler BaseMod::_Rcpt_Handler(const std::string &cmd_line_, S
         state_.recipients.list.insert(email_tmp);
         state_.curent_reply = "250 OK. Parsed email:" + email_tmp.text + "\r\n";
         ++state_.recipients.unsended_responds;
-        auto respond_confirm = [](SmtpState & proto_state)
+        auto respond_confirm = [](IncSmtpState & proto_state)
         {
             --proto_state.recipients.unsended_responds;
         };
@@ -113,7 +113,7 @@ ReplySendedConfirmHandler BaseMod::_Rcpt_Handler(const std::string &cmd_line_, S
     return nullptr;
 }
 
-ReplySendedConfirmHandler BaseMod::_Data_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr &err_)
+ReplySendedConfirmHandler BaseMod::_Data_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr &err_)
 {
 
     // Check unreplyed rcpt commands.
@@ -137,14 +137,14 @@ ReplySendedConfirmHandler BaseMod::_Data_Handler(const std::string &cmd_line_, S
     return nullptr;
 }
 
-ReplySendedConfirmHandler BaseMod::_Vrfy_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr & err_)
+ReplySendedConfirmHandler BaseMod::_Vrfy_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr & err_)
 {
     state_.curent_reply = "252 Try to send message and a covert will become apparent.\r\n";
     err_ = SmtpErr::noerror;
     return nullptr;
 }
 
-ReplySendedConfirmHandler BaseMod::_Rset_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr &err_)
+ReplySendedConfirmHandler BaseMod::_Rset_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr &err_)
 {
     state_.reset_transaction();
     state_.curent_reply = "250 Flushed.\r\n";
@@ -152,21 +152,21 @@ ReplySendedConfirmHandler BaseMod::_Rset_Handler(const std::string &cmd_line_, S
     return nullptr;
 }
 
-ReplySendedConfirmHandler BaseMod::_Help_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr & err_)
+ReplySendedConfirmHandler BaseMod::_Help_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr & err_)
 {
     state_.curent_reply = "214 See RFC https://tools.ietf.org/html/rfc5321\r\n";
     err_ = SmtpErr::noerror;
     return nullptr;
 }
 
-ReplySendedConfirmHandler BaseMod::_Noop_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr &err_)
+ReplySendedConfirmHandler BaseMod::_Noop_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr &err_)
 {
     state_.curent_reply = "250 OK\r\n";
     err_ = SmtpErr::noerror;
     return nullptr;
 }
 
-ReplySendedConfirmHandler BaseMod::_Quit_Handler(const std::string &cmd_line_, SmtpState &state_, SmtpErr & err_)
+ReplySendedConfirmHandler BaseMod::_Quit_Handler(const std::string &cmd_line_, IncSmtpState &state_, SmtpErr & err_)
 {
     state_.close_conn = true;
     state_.curent_reply = "221 Bye!\r\n";

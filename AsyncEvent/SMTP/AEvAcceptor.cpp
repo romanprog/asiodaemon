@@ -1,5 +1,4 @@
 #include "AEvAcceptor.hpp"
-#include "AEvConnection.hpp"
 #include "../SysSig/AEvSysSig.hpp"
 #include "../DNS/DnsBuffer.hpp"
 #include "../../HUtils/HNet.hpp"
@@ -88,10 +87,16 @@ void AEvAcceptor::_start_acceept()
 
                                log_debug("conn");
 
-                                create_child<AEvSmtpSession>(0, std::move(_socket), _handlers_map);
+                                create_child<AEvSmtpSession>(0, std::move(_socket), _handlers_map, std::bind(&AEvAcceptor::_new_message_handler, this, std::placeholders::_1));
                                _start_acceept();
                            })
             );
+}
+
+void AEvAcceptor::_new_message_handler(SmtpStatePtr &&message_)
+{
+    ++_msg_counter;
+    log_main("Acceepted new message. Count: " + std::to_string(_msg_counter));
 }
 
 } //namespace

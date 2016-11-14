@@ -37,6 +37,7 @@ struct PluginConfig
     std::string redis_host;
     uint redis_port;
     std::string primary_hostname;
+    std::string smtp_welcome;
 
 };
 

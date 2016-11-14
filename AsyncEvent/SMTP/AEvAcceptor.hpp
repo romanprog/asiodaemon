@@ -1,6 +1,7 @@
 #ifndef AEvAcceptor_HPP
 #define AEvAcceptor_HPP
 #include "../AEvBase/AEventAbstract.hpp"
+#include "AEvConnection.hpp"
 #include "SmtpTypes.hpp"
 
 namespace aev {
@@ -23,7 +24,9 @@ private:
     asio::ip::tcp::socket _socket;
     std::string _conn_ip;
     unsigned _conn_port;
-    smtp::CommandsMap _handlers_map;
+    // SMTP protocol commands map. "cmd" -> cmd_handler
+    CommandsMap _handlers_map;
+    size_t _msg_counter {0};
 
     virtual void _ev_begin() override;
     virtual void _ev_finish() override;
@@ -32,6 +35,7 @@ private:
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) override;
 
     void _start_acceept();
+    void _new_message_handler(SmtpStatePtr && message_);
 
 };
 
