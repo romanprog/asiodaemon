@@ -41,7 +41,7 @@ void AEvSysSig::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 
 void AEvSysSig::_sig_listen()
 {
-    _sig_set.async_wait(_ev_loop->wrap(
+    _sig_set.async_wait(wrap_callback(
                             [this] (std::error_code ec, int signal_number)
                         {
                             stop();

@@ -79,7 +79,7 @@ void AEvAcceptor::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 void AEvAcceptor::_start_acceept()
 {
     using namespace std::placeholders;
-    _acceptor.async_accept(_socket, _ev_loop->wrap(
+    _acceptor.async_accept(_socket, wrap_callback(
                                [this] (std::error_code ec)
     {
                                if (ec) {

@@ -40,7 +40,7 @@ void AEvExample::_start_read()
     log_debug("accept, free data: "<< _read_buf.size_avail());
 
     _socket.async_read_some(asio::buffer(_read_buf.data_top(), _read_buf.size_avail()),
-                           _ev_loop->wrap([this](std::error_code ec, std::size_t bytes_transferred){
+                           wrap_callback([this](std::error_code ec, std::size_t bytes_transferred){
 
         if (ec) {
             return;

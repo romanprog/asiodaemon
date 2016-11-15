@@ -68,7 +68,7 @@ void AEventAbstract::reset_and_start_timer()
 {
     _timer.expires_from_now(!_timeout ? std::chrono::seconds(ev_default_timecheck) :  std::chrono::seconds(_timeout));
     auto self_ptr = _my_ptr;
-    _timer.async_wait(_ev_loop->wrap(
+    _timer.async_wait(wrap_callback(
                           [this, self_ptr](const asio::error_code & ec)
     {
         if (ec)
