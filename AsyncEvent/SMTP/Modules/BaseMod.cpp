@@ -19,6 +19,7 @@ void BaseMod::RegisterCommands(CommandsMap &cmd_map_)
     ins_res &= cmd_map_.emplace("help", std::bind(&BaseMod::_Help_Handler, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)).second;
     ins_res &= cmd_map_.emplace("noop", std::bind(&BaseMod::_Noop_Handler, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)).second;
     ins_res &= cmd_map_.emplace("quit", std::bind(&BaseMod::_Quit_Handler, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)).second;
+    ins_res &= cmd_map_.emplace("ehlo", std::bind(&BaseMod::_Mail_Handler, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)).second;
 
     // Check for conflicts.
     if (!ins_res) {

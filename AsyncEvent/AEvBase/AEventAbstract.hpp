@@ -46,6 +46,8 @@ protected:
     virtual void _ev_timeout() = 0;
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) = 0;
 
+    std::string debug_get_id();
+
 
     // Create child event of any derived type.
     // Args: timeout seconds or 0 (without timeout), !addinional! arguments of derived type.

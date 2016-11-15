@@ -11,7 +11,8 @@
 #define log_main(fmt, ...) CLog::glob().write(fmt, ##__VA_ARGS__)
 #define log_warn(fmt, ...) CLog::glob().warn_write(fmt, ##__VA_ARGS__)
 #define log_debug(fmt, ...) CLog::glob().debug_write("Debug print: File: % (%) on line %. Message: % ", __FILE__, __FUNCTION__, __LINE__, CLog::glob().log_format_to_str(fmt, ##__VA_ARGS__))
-
+#define log_debug_aev(fmt, ...) CLog::glob().debug_write("Debug print: File: % (%) on line %. Message: %, ID: % ", __FILE__, __FUNCTION__, __LINE__, CLog::glob().log_format_to_str(fmt, ##__VA_ARGS__), debug_get_id())
+// AEventAbstract::debug_get_id()
 // Log level
 
 enum class LogLevel

@@ -20,6 +20,7 @@ public:
     std::string get_line();
     bool is_empty();
     size_t list_size() const;
+    virtual ~SmtpCmdBuffer() = default;
 
 private:
 

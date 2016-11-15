@@ -51,7 +51,7 @@ std::string PBufferAbstract::get_delimiter() const
 
 void PBufferAbstract::reset(bool soft_reset)
 {
-    log_debug("PBufferAbstract reset");
+    // log_debug("PBufferAbstract reset");
     BuffAbstract::reset(soft_reset);
     _unparsed_offset = _unsearched_offset = 0;
     _data_parts.clear();
@@ -67,7 +67,7 @@ void PBufferAbstract::mem_reduce()
     // Run memory transformation, only if actual data size less then 10% of buffer size.
     if ((rd_data_size * 100.00)/top_offset() > 10)
         return;
-    log_debug("Reduce memory!");
+    // log_debug("Reduce memory!");
 
     size_t free_tmp = size_avail();
     std::string redundant_tmp (data() + _unparsed_offset, redundant_data_size());

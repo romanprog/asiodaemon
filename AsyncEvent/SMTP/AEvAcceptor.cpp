@@ -5,6 +5,8 @@
 #include "Modules/BaseMod.hpp"
 
 #include "iostream"
+#include <thread>
+#include <chrono>
 
 namespace aev {
 
@@ -15,7 +17,7 @@ AEvAcceptor::AEvAcceptor(AEvRootConf &config, const std::string &ip, const unsig
       _conn_ip(ip),
       _conn_port(port)
 {
-     log_debug("AEvAcceptor CONSTRUCTOR! ");
+     log_debug_aev("AEvAcceptor CONSTRUCTOR! ");
 }
 
 AEvAcceptor::AEvAcceptor(AEvChildConf && config, const std::string &ip, const unsigned port)
@@ -25,7 +27,7 @@ AEvAcceptor::AEvAcceptor(AEvChildConf && config, const std::string &ip, const un
      _conn_ip(ip),
      _conn_port(port)
 {
-     log_debug("AEvAcceptor CONSTRUCTOR! ");
+     log_debug_aev("AEvAcceptor CONSTRUCTOR! ");
 }
 
 void AEvAcceptor::_ev_begin()
@@ -59,7 +61,7 @@ void AEvAcceptor::_ev_stop()
 {
     asio::error_code ec;
     _acceptor.cancel(ec);
-    log_debug("AEvConnection _ev_stop: " );
+    log_debug_aev("AEvConnection _ev_stop: " );
 }
 
 void AEvAcceptor::_ev_timeout()
@@ -85,7 +87,7 @@ void AEvAcceptor::_start_acceept()
                                    return;
                                }
 
-                               log_debug("conn");
+                               log_debug_aev("conn");
 
                                 create_child<AEvSmtpSession>(0, std::move(_socket), _handlers_map, std::bind(&AEvAcceptor::_new_message_handler, this, std::placeholders::_1));
                                _start_acceept();

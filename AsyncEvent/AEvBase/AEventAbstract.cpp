@@ -16,7 +16,7 @@ AEventAbstract::AEventAbstract(aev::AEvRootConf & config)
       _timeout(config.timeout),
       _timer(_ev_loop->get_io_service())
 {
-    log_debug("AEventsAbstract CONSTRUCTOR! ");
+    // log_debug_aev("AEventsAbstract CONSTRUCTOR! ");
     config.evloop = _ev_loop;
 }
 
@@ -27,20 +27,28 @@ AEventAbstract::AEventAbstract(AEvChildConf &&config)
       _timeout(config.timeout),
       _timer(_ev_loop->get_io_service())
 {
-    log_debug("AEventsAbstract CONSTRUCTOR!");
+    //log_debug_aev("AEventsAbstract CONSTRUCTOR!");
 }
 
 AEventAbstract::~AEventAbstract()
 {
-    log_debug("AEventsAbstract DESTRUCTOR!");
+    //log_debug_aev("AEventsAbstract DESTRUCTOR!");
 }
 
 void AEventAbstract::begin()
 {
     _my_ptr = shared_from_this();
     reset_and_start_timer();
-    log_debug( "Try call _ev_begin " );
+    //log_debug_aev( "Try call _ev_begin " );
     _ev_begin();
+}
+
+std::string AEventAbstract::debug_get_id()
+{
+    const void * address = static_cast<const void*>(this);
+    std::stringstream ss;
+    ss << address;
+    return ss.str();
 }
 
 void AEventAbstract::register_util(AEvUtilCloseFunc deinit_func)
@@ -50,17 +58,20 @@ void AEventAbstract::register_util(AEvUtilCloseFunc deinit_func)
 
 void AEventAbstract::finish()
 {
-    _timer.cancel();
-    log_debug("Try call _ev_finish ");
+    //  _timer.cancel();
+    //log_debug_aev("Try call _ev_finish ");
     _ev_finish();
     _finish_callback(std::move(_my_ptr), _ev_exit_signal);
 }
 
 void AEventAbstract::reset_and_start_timer()
 {
+    // Timer templorary removed for debug;
+    return;
     _timer.expires_from_now(!_timeout ? std::chrono::seconds(ev_default_timecheck) :  std::chrono::seconds(_timeout));
+    auto self_ptr = _my_ptr;
     _timer.async_wait(_ev_loop->wrap(
-                          [this](const asio::error_code & ec)
+                          [this, self_ptr](const asio::error_code & ec)
     {
         if (ec)
             return;
@@ -72,7 +83,7 @@ void AEventAbstract::reset_and_start_timer()
             reset_and_start_timer();
         } else {
             // timeout!
-            log_debug("Try call _ev_timeout ");
+            log_debug_aev("Try call _ev_timeout ");
             _ev_timeout();
             stop();
         }
@@ -94,7 +105,7 @@ void AEventAbstract::stop()
     for (auto & child : ch_list_copy_tmp)
         child->stop();
 
-    log_debug("Try call _ev_stop ");
+    // log_debug_aev("Try call _ev_stop ");
 
     _ev_stop();
     finish();
@@ -121,7 +132,7 @@ AEvUtilConf AEventAbstract::_gen_conf_for_util()
 int AEventAbstract::_child_callback(AEvPtrBase _child, AEvExitSignal _ret)
 {
     _child_ev_list.erase(_child);
-    log_debug("Try call _ev_child_callback ");
+    // log_debug_aev("Try call _ev_child_callback ");
     _ev_child_callback(_child, _ret);
 
     return 0;

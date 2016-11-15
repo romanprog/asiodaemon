@@ -23,6 +23,10 @@ STDC = -std=c++1y
 
 LDFLAGS = -lstdc++ -pthread
 
+INCLUDES =
+
+ASIO_STANDALONE_FLAG = -DASIO_STANDALONE
+
 CXXFLAGS = $(OPTIMIZATION) -fPIC -fstack-protector $(CFLAGS) $(WARNINGS) $(DEBUG) $(STDC) -DUSE_CXX0X
 
 STDLIB =
@@ -30,6 +34,9 @@ ifeq ($(shell uname -s), FreeBSD)
 STDLIB +=  -stdlib=libc++
 LIBXML_INCLUDES =
 LIBXML_INCLUDES = -I/usr/local/include/libxml2
+FREEBSD_ASIO_INCLUDE ?= -I/raspberry/asio/product/include
+INCLUDES += $(FREEBSD_ASIO_INCLUDE)
+
 endif
 CXXFLAGS +=  $(STDLIB)
 
@@ -93,7 +100,7 @@ $(TESTING_EXEC): $(TESTING_OBJ)
 	$(CXX) $(LDFLAGS) $(TESTING_OBJ) -o $@
 
 .cpp.o:
-	$(CXX) $(CXXFLAGS) $< -o $@
+	$(CXX) $(ASIO_STANDALONE_FLAG) $(INCLUDES) $(CXXFLAGS) $< -o $@
 
 clean: 
 	rm $(OBJECTS) $(EXECUTABLE) $(TESTING_OBJ) $(TESTING_EXEC)
