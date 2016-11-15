@@ -65,6 +65,14 @@ protected:
         _child_ev_list.insert(child_ev);
         child_ev->begin();
     }
+    // Wrap handler for async events (like asio::async_read()), add pointer to AEv object, which pushed this handler in queue.
+    // A function object that, when invoked, passes the wrapped handler to the strand's dispatch function. (see asio::strand::wrap)
+    template <typename T>
+    auto wrap_callback(T&& cb)
+    {
+        AEvHandlerWrapper<T> res {std::forward<T>(cb), _my_ptr};
+        return _ev_loop->wrap(res);
+    }
 
     // Registration of AEv vutil deinit function.
     void register_util(AEvUtilCloseFunc deinit_func);

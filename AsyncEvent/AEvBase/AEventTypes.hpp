@@ -7,6 +7,7 @@
 #include <asio.hpp>
 #include <unordered_map>
 #include <asio/steady_timer.hpp>
+#include <functional>
 
 // Asyncronus Events namespace
 namespace aev {
@@ -58,6 +59,25 @@ using AEvSet = std::set<AEvPtrBase>;
 using AEvIoPtr = std::shared_ptr<asio::io_service>;
 using AEvUtilsClosersList = std::vector<AEvUtilCloseFunc>;
 
+template <typename F>
+class AEvHandlerWrapper
+{
+public:
+    explicit  AEvHandlerWrapper(F &&fn_, AEvPtrBase ptr_)
+        : __functor(std::forward<F>(fn_)),
+          __aeb_inst_ptr(std::move(ptr_))
+    {}
+
+    template <typename... ARGS>
+    auto operator ()(ARGS&&... args)
+    {
+        return __functor(std::forward<ARGS>(args)...);
+    }
+
+private:
+    F __functor;
+    AEvPtrBase __aeb_inst_ptr;
+};
 
 // Config for base AEv type child (wich was created by "create_child").
 struct AEvChildConf
