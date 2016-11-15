@@ -58,7 +58,7 @@ void AEventAbstract::register_util(AEvUtilCloseFunc deinit_func)
 
 void AEventAbstract::finish()
 {
-    //  _timer.cancel();
+      _timer.cancel();
     //log_debug_aev("Try call _ev_finish ");
     _ev_finish();
     _finish_callback(std::move(_my_ptr), _ev_exit_signal);
@@ -66,8 +66,6 @@ void AEventAbstract::finish()
 
 void AEventAbstract::reset_and_start_timer()
 {
-    // Timer templorary removed for debug;
-    return;
     _timer.expires_from_now(!_timeout ? std::chrono::seconds(ev_default_timecheck) :  std::chrono::seconds(_timeout));
     auto self_ptr = _my_ptr;
     _timer.async_wait(_ev_loop->wrap(
