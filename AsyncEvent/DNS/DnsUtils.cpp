@@ -52,6 +52,7 @@ void buff_step_read_qdn(const char *dns_pkg, const char * &cursor, std::string &
     };
 
     // Return offset of next domain section begining (see d_section_lenth description).
+    // Increase cursor position (ref to pointer).
     auto d_section_offset = [](const char * &cursor) -> uint16_t
     {
         char offset[2];
@@ -70,7 +71,7 @@ void buff_step_read_qdn(const char *dns_pkg, const char * &cursor, std::string &
     if (!*cursor) {
         // Trim final "." symbol.
         result.pop_back();
-        // Sen cursor to first byte of next part.
+        // Set cursor to first byte of next part.
         ++cursor;
         return;
     }
@@ -86,7 +87,7 @@ void buff_step_read_qdn(const char *dns_pkg, const char * &cursor, std::string &
         // sec_ln == 0. We have a pointer to next section.
         // Do recursively using temp pointer.
         // Set temporary  pointer to next section begin.
-        const char * curs_tmp = dns_pkg + d_section_offset(cursor);;
+        const char * curs_tmp = dns_pkg + d_section_offset(cursor);
         buff_step_read_qdn(dns_pkg, curs_tmp, result);
     }
     return;

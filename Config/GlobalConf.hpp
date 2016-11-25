@@ -30,7 +30,7 @@ struct MySQLConf
     int port;
 };
 
-struct PluginConfig
+struct ConfigData
 {
     // options:
     uint logging_level {1};
@@ -58,7 +58,7 @@ public:
     // Create a global config state for use in any part of the application.
     static Config & glob();
     // Return config struct reference.
-    PluginConfig & get_conf();
+    ConfigData & get_conf();
 
 private:
     // Deletes comments from config line.
@@ -77,7 +77,7 @@ private:
     bool inited = true;
     std::string error_message = "Not inited";
     // Main config struct.
-    PluginConfig config;
+    ConfigData config;
     // Path to config file.
     std::string config_path;
 };

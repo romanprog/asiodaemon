@@ -26,6 +26,7 @@ public:
     // Return bytes count, wich not have delimiter at end (after parsing).
     // This bytes will be parsed next time. New data will be added at end.
     size_t redundant_data_size() const;
+
     // Return delimiter.
     std::string get_delimiter() const;
 
@@ -43,6 +44,15 @@ protected:
     virtual void when_have_new_part(const size_t begin_offset, const size_t size) {}
     virtual void when_parsed_all(size_t new_parts) {}
 
+    inline size_t unparsed_offset()
+    {
+        return _unparsed_offset;
+    }
+
+    // On/off parsing.
+    void parser_off();
+    void parser_on();
+
 private:
 
     int parse();
@@ -50,6 +60,7 @@ private:
     const size_t _expected_part_size;
     size_t _unsearched_offset{0};
     size_t _unparsed_offset{0};
+    bool _enable_parsing{true};
     DataOffsetList _data_parts;
 
 };

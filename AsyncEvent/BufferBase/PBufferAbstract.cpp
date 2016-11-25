@@ -27,6 +27,8 @@ int PBufferAbstract::parse()
             _unsearched_offset = _unparsed_offset;
             ++new_parts_count;
             when_have_new_part(_unparsed_offset-part_size, part_size);
+            if (!_enable_parsing)
+                break;
         } else {
             // Search optimization. Prevents re-search.
             if (top_offset() - _unparsed_offset > _delimiter.size())
@@ -90,7 +92,18 @@ size_t PBufferAbstract::calculate_mem(size_t block_size)
 
 void PBufferAbstract::when_new_data_acc(size_t bytes_readed)
 {
-    when_parsed_all(parse());
+    if (_enable_parsing)
+        when_parsed_all(parse());
+}
+
+void PBufferAbstract::parser_off()
+{
+    _enable_parsing = false;
+}
+
+void PBufferAbstract::parser_on()
+{
+    _enable_parsing = true;
 }
 
 

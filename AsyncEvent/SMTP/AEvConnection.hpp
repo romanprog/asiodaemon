@@ -20,7 +20,12 @@ class AEvSmtpSession : public AEventAbstract
 {
 public:
 
-    explicit AEvSmtpSession(AEvChildConf && config, asio::ip::tcp::socket && _soc, const CommandsMap & hm_, NewMessageHandler hdl_);
+    explicit AEvSmtpSession(AEvChildConf && config,
+                            asio::ip::tcp::socket && _soc,
+                            const CommandsMap & hm_,
+                            NewMessageHandler hdl_,
+                            ConfigData main_conf_);
+
     virtual ~AEvSmtpSession() override;
 
 private:
@@ -31,6 +36,7 @@ private:
     SmtpStatePtr _main_smtp_state;
     NewMessageHandler _rcv_msg_handler;
     const CommandsMap _handlers_map;
+    ConfigData _main_config;
 
 protected:
     virtual void _ev_begin() override;
@@ -40,7 +46,7 @@ protected:
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) override;
 
     void _read_command();
-    void _transaction();
+    void _begin_transaction();
     void _read_data();
     void _data_acceepted();
     void _send_respond(std::string data, ConfirmHendler confirm = nullptr);

@@ -65,7 +65,7 @@ class AEvHandlerWrapper
 public:
     explicit  AEvHandlerWrapper(F &&fn_, AEvPtrBase ptr_)
         : __functor(std::forward<F>(fn_)),
-          __aeb_inst_ptr(std::move(ptr_))
+          __aev_ptr(std::move(ptr_))
     {}
 
     template <typename... ARGS>
@@ -76,7 +76,7 @@ public:
 
 private:
     F __functor;
-    AEvPtrBase __aeb_inst_ptr;
+    AEvPtrBase __aev_ptr;
 };
 
 // Config for base AEv type child (wich was created by "create_child").

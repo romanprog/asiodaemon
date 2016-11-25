@@ -66,7 +66,7 @@ void AEventAbstract::finish()
 
 void AEventAbstract::reset_and_start_timer()
 {
-    _timer.expires_from_now(!_timeout ? std::chrono::seconds(ev_default_timecheck) :  std::chrono::seconds(_timeout));
+    _timer.expires_from_now(!_timeout ? std::chrono::milliseconds(ev_default_timecheck) :  std::chrono::milliseconds(_timeout));
     auto self_ptr = _my_ptr;
     _timer.async_wait(wrap_callback(
                           [this, self_ptr](const asio::error_code & ec)
@@ -77,7 +77,7 @@ void AEventAbstract::reset_and_start_timer()
         if (!_timeout)
         {
             int todo; // Add call virtual timecheck method in case of 0 timeout.
-            _timer.expires_from_now(std::chrono::seconds(ev_default_timecheck));
+            _timer.expires_from_now(std::chrono::milliseconds(ev_default_timecheck));
             reset_and_start_timer();
         } else {
             // timeout!

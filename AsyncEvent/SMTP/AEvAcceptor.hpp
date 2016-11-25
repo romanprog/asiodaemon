@@ -26,6 +26,8 @@ private:
     unsigned _conn_port;
     // SMTP protocol commands map. "cmd" -> cmd_handler
     CommandsMap _handlers_map;
+    // Init config by static object method.
+    ConfigData _main_config {Config::glob().get_conf()};
     size_t _msg_counter {0};
 
     virtual void _ev_begin() override;

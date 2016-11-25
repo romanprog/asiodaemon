@@ -35,14 +35,16 @@ enum class LogLevel
 class Log
 {
 public:
-    Log() {}
+    Log(const unsigned logging_level = 1)
+        :_llevel(static_cast<LogLevel>(logging_level))
+    {}
     virtual ~Log() {}
 
     // Standart log write. (Typically, it's errors, and standart log information).
     template<typename ...Args>
     void write (const std::string & pattern, Args && ...args)
     {
-        if (Config::glob().get_conf().logging_level < static_cast<int>(LogLevel::general))
+        if (_llevel < LogLevel::general)
             return;
         __format_write (pattern.c_str(),  std::forward<Args>(args)...);
     }
@@ -51,7 +53,7 @@ public:
     template<typename ...Args>
     void warn_write (const std::string & pattern, Args && ...args)
     {
-        if (Config::glob().get_conf().logging_level < static_cast<int>(LogLevel::warn))
+        if (_llevel < LogLevel::warn)
             return;
         __format_write (pattern.c_str(),  std::forward<Args>(args)...);
     }
@@ -60,7 +62,7 @@ public:
     template<typename ...Args>
     void debug_write (const std::string & pattern, Args && ...args)
     {
-        if (Config::glob().get_conf().logging_level < static_cast<int>(LogLevel::debug))
+        if (_llevel < LogLevel::debug)
             return;
         __format_write (pattern.c_str(),  std::forward<Args>(args)...);
     }
@@ -82,13 +84,19 @@ public:
         return result;
     }
 
-    const std::string &log_format_to_str(const std::string & pattern)
+    inline const std::string &log_format_to_str(const std::string & pattern)
     {
         return pattern;
     }
+
     static Log & glob();
 
+    void change_llevel(unsigned ll_);
+
+
 private:
+
+    LogLevel _llevel;
 
     template<typename ...Args>
     void inline __format_write (const char * pattern, Args && ...args)

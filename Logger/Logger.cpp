@@ -49,3 +49,11 @@ Log &Log::glob()
     static Log global_log_utils;
     return global_log_utils;
 }
+
+void Log::change_llevel(unsigned ll_)
+{
+    if (ll_ > 3)
+        throw std::logic_error("Logging level value is out of range (0-3)");
+
+    _llevel = static_cast<LogLevel>(ll_);
+}

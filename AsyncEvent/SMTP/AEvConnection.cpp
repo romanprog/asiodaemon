@@ -7,12 +7,18 @@
 
 namespace aev {
 
-AEvSmtpSession::AEvSmtpSession(AEvChildConf &&config, asio::ip::tcp::socket &&_soc, const CommandsMap & hm_, NewMessageHandler hdl_)
+AEvSmtpSession::AEvSmtpSession(AEvChildConf &&config,
+                               asio::ip::tcp::socket &&_soc,
+                               const CommandsMap & hm_,
+                               NewMessageHandler hdl_,
+                               ConfigData main_conf_)
+
     :AEventAbstract::AEventAbstract(std::move(config)),
      _socket(std::move(_soc)),
      _main_smtp_state(std::make_shared<smtp::IncSmtpState>()),
      _rcv_msg_handler(hdl_),
-     _handlers_map(hm_)
+     _handlers_map(hm_),
+     _main_config(std::move(main_conf_))
 {
      log_debug_aev("AEvConnection CONSTRUCTOR! ");
 }
@@ -25,7 +31,7 @@ AEvSmtpSession::~AEvSmtpSession()
 void AEvSmtpSession::_ev_begin()
 {
     log_debug_aev("AEvConnection START");
-    _send_respond("220 " + Config::glob().get_conf().smtp_welcome + "\r\n");
+    _send_respond("220 " + _main_config.smtp_welcome + "\r\n");
     _read_command();
 }
 
@@ -64,22 +70,23 @@ void AEvSmtpSession::_read_command()
                                     return;
                                 }
                                 _read_cmd_buffer.accept(bytes_transferred);
-                                _transaction();
-                                _read_cmd_buffer.mem_reduce();
-
-                                if (!_main_smtp_state->waiting_for_data) {
-                                    _read_command();
-                                }
-                                else {
-                                    _main_smtp_state->message_data->clear();
-                                    _read_data();
-                                }
+                                _begin_transaction();
                             }));
 }
 
-void AEvSmtpSession::_transaction()
+void AEvSmtpSession::_begin_transaction()
 {
     if (_read_cmd_buffer.is_empty()) {
+
+        _read_cmd_buffer.mem_reduce();
+
+        if (!_main_smtp_state->waiting_for_data) {
+            _read_command();
+        }
+        else {
+            _main_smtp_state->message_data->clear();
+            _read_data();
+        }
         return;
     }
 
@@ -89,7 +96,7 @@ void AEvSmtpSession::_transaction()
     if (_main_smtp_state->waiting_for_data)
     {
         _send_respond("500 Excess command after DATA in the same transaction.\r\n");
-        _transaction();
+        _begin_transaction();
         return;
     }
 
@@ -108,10 +115,12 @@ void AEvSmtpSession::_transaction()
         _send_respond(smtp::utils::err_to_str(rerr));
     }
 
-    if (_main_smtp_state->close_conn)
+    if (_main_smtp_state->close_conn) {
+        stop();
         return;
+    }
 
-    _transaction();
+    _begin_transaction();
 }
 
 void AEvSmtpSession::_read_data()
@@ -163,10 +172,6 @@ void AEvSmtpSession::_send_respond(std::string data, ConfirmHendler confirm)
             stop();
             return;
         }
-        if (_main_smtp_state->close_conn) {
-            stop();
-            return;
-        };
 
         if (confirm) {
             confirm(false);

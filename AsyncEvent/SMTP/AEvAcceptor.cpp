@@ -89,7 +89,11 @@ void AEvAcceptor::_start_acceept()
 
                                log_debug_aev("conn");
 
-                                create_child<AEvSmtpSession>(0, std::move(_socket), _handlers_map, std::bind(&AEvAcceptor::_new_message_handler, this, std::placeholders::_1));
+                                create_child<AEvSmtpSession>(0,
+                                                             std::move(_socket),
+                                                             _handlers_map,
+                                                             std::bind(&AEvAcceptor::_new_message_handler, this, std::placeholders::_1),
+                                                             _main_config);
                                _start_acceept();
                            })
             );

@@ -42,7 +42,7 @@ const std::string & Config::error_text()
 bool Config::read_config(const std::string & conf_file_path)
 {
     // if not inited
-    config = PluginConfig();
+    config = ConfigData();
     inited = false;
 
     std::ifstream config_file(conf_file_path);
@@ -136,7 +136,7 @@ Config &Config::glob()
 }
 
 
-PluginConfig &Config::get_conf()
+ConfigData &Config::get_conf()
 {
     return config;
 }

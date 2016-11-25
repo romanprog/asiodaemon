@@ -38,6 +38,8 @@ private:
     AEventAbstract & operator= (AEventAbstract &&) = delete;
 
 protected:
+    // Temporary method for debugging.
+    std::string debug_get_id();
 
     // Virtual methods.
     virtual void _ev_begin() = 0;
@@ -46,11 +48,8 @@ protected:
     virtual void _ev_timeout() = 0;
     virtual void _ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal & _ret) = 0;
 
-    std::string debug_get_id();
-
-
     // Create child event of any derived type.
-    // Args: timeout seconds or 0 (without timeout), !addinional! arguments of derived type.
+    // Args: timeout milliseconds or 0 (without timeout), !addinional! arguments of derived type.
     template <typename AEvDescT, typename... _Args>
     void create_child(int timeout, _Args&&... __args)
     {
@@ -66,7 +65,8 @@ protected:
         child_ev->begin();
     }
     // Wrap handler for async events (like asio::async_read()), add pointer to AEv object, which pushed this handler in queue.
-    // A function object that, when invoked, passes the wrapped handler to the strand's dispatch function. (see asio::strand::wrap)
+    // Return a function object that, when invoked, passes the wrapped handler to
+    // the strand's dispatch function. (see asio::io_service::strand::wrap)
     template <typename T>
     auto wrap_callback(T&& cb)
     {
