@@ -6,14 +6,16 @@
 
 /// =============== Console child ================
 
-CLog::CLog()
+CLog::CLog(unsigned lev)
+    : Log::Log(lev)
 {
 
 }
 
 CLog &CLog::glob()
+
 {
-    static CLog global_console_log;
+    static CLog global_console_log(Config::glob().get_conf().logging_level);
     return global_console_log;
 }
 
@@ -24,8 +26,8 @@ void CLog::__write_log(const std::string &log_message)
 
 /// =============  File logger child ================
 
-FLog::FLog(const std::string &&filename)
-    :log_file_name(filename)
+FLog::FLog(const std::string &&filename, unsigned lev)
+    :Log::Log(lev), log_file_name(filename)
 {
     log_file.open( filename, std::ofstream::out | std::ofstream::app );
 }
@@ -46,7 +48,7 @@ void FLog::__write_log(const std::string &log_message)
 
 Log &Log::glob()
 {
-    static Log global_log_utils;
+    static Log global_log_utils{Config::glob().get_conf().logging_level};
     return global_log_utils;
 }
 

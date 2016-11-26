@@ -35,7 +35,7 @@ enum class LogLevel
 class Log
 {
 public:
-    Log(const unsigned logging_level = 1)
+    Log(const unsigned logging_level)
         :_llevel(static_cast<LogLevel>(logging_level))
     {}
     virtual ~Log() {}
@@ -160,7 +160,7 @@ private:
 class CLog : public Log
 {
 public:
-    CLog();
+    CLog(unsigned lev);
     static CLog & glob();
 
 private:
@@ -172,7 +172,7 @@ private:
 class FLog : public Log
 {
 public:
-    FLog(const std::string && filename);
+    FLog(const std::string &&filename, unsigned lev);
     ~FLog();
 private:
     std::ofstream log_file;

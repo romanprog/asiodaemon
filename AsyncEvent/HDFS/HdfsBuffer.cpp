@@ -15,9 +15,35 @@ void HdfsBuffer::clear()
     reset();
 }
 
-size_t HdfsBuffer::accepted_content_size()
+const std::string & HdfsBuffer::h_get(const std::string &hname_)
 {
-    return top_offset() - unparsed_offset();
+    return _head_list.at(hname_);
+}
+
+bool HdfsBuffer::h_is_exist(const std::string &hname_)
+{
+    try {
+        _head_list.at(hname_);
+    }
+    catch (std::out_of_range& oor)
+    {
+        return false;
+    }
+    return true;
+}
+
+std::string HdfsBuffer::get_redirect_location()
+{
+    std::string res;
+    if (h_is_exist("Location"))
+        res = _head_list.at("Location");
+
+    return res;
+}
+
+size_t HdfsBuffer::unaccepted_content_size()
+{
+    return top_offset() - unparsed_offset() - _content_length;
 }
 
 size_t HdfsBuffer::calculate_mem(size_t block_size)
@@ -30,35 +56,8 @@ size_t HdfsBuffer::calculate_mem(size_t block_size)
 
 void HdfsBuffer::when_have_new_part(const size_t begin_offset, const size_t size)
 {
-    // HTTP head.
-    if (_http_resp_code < 0) {
-        std::vector<std::string> http_head = hstrings::splitted(std::string(data() + begin_offset, size), ' ');
-        if ((http_head.size() != 3) || (!hstrings::is_digit_only(http_head[1]))) {
-            _http_error = true;
-            return;
-        }
-        _http_ver = http_head[0];
-        _http_resp_code = std::stoi(http_head[1]);
-        _http_resp_str = http_head[2];
-        return;
-    }
-    // Headers.
-    std::vector<std::string> http_header = hstrings::splitted(std::string(data() + begin_offset, size), ':');
-    if (http_header.size() != 2) {
-        _http_error = true;
-        return;
-    }
-    if (http_header[0] == "Content-Length") {
-        if (!hstrings::is_digit_only(http_header[1])) {
-            _http_error = true;
-            return;
-        }
-        _content_length = std::stoull(http_header[1]);
-    }
-    _head_list.emplace(http_header[0], hstrings::trim(http_header[1]));
-
     // End of headers (empty line).
-    if (!size) {
+    if (size == 2) {
         if (_http_resp_code < 0) {
             _http_error = true;
             return;
@@ -67,6 +66,44 @@ void HdfsBuffer::when_have_new_part(const size_t begin_offset, const size_t size
         _waiting_for_data = true;
     }
 
+    std::string line_tmp {data() + begin_offset, size};
+    line_tmp.resize(line_tmp.size()-2);
+
+    // HTTP head.
+    if (_http_resp_code < 0) {
+        auto res = hstrings::get_part(line_tmp,_http_ver,' ');
+        std::string code_tmp;
+        res &= hstrings::get_part(line_tmp, code_tmp,' ', 1);
+
+        if (!res || !hstrings::is_digit_only(code_tmp)) {
+            _http_error = true;
+            return;
+        }
+        _http_resp_code = std::stoi(code_tmp);
+
+        _http_resp_str = std::move(line_tmp);
+        _http_resp_str.erase(_http_resp_str.begin(), _http_resp_str.begin() + code_tmp.size() + _http_ver.size() + 2);
+        return;
+    }
+
+    // Headers.
+    std::string hname;
+
+    auto res = hstrings::get_part(line_tmp, hname, ':');
+    if (!res) {
+        _http_error = true;
+        return;
+    }
+    line_tmp.erase(line_tmp.begin(), line_tmp.begin() + hname.size() + 2);
+
+    if (hname == "Content-Length") {
+        if (!hstrings::is_digit_only(line_tmp)) {
+            _http_error = true;
+            return;
+        }
+        _content_length = std::stoull(line_tmp);
+    }
+    _head_list.emplace(std::move(hname), std::move(line_tmp));
 
 }
 

@@ -20,12 +20,24 @@ public:
     {
         return _http_error;
     }
-    size_t accepted_content_size();
+    const std::string &h_get(const std::string & hname_);
 
-private:
+    bool h_is_exist(const std::string & hname_);
 
+    inline int get_resp_code()
+    {
+        return _http_resp_code;
+    }
+
+    std::string get_redirect_location();
+
+    size_t unaccepted_content_size();
+
+protected:
     virtual size_t calculate_mem(size_t block_size) override;
     virtual void when_have_new_part(const size_t begin_offset, const size_t size) override;
+
+private:
     bool redy_for_respond {false};
 
     // List of http headers.

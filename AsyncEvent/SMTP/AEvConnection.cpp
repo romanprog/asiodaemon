@@ -63,7 +63,7 @@ void AEvSmtpSession::_read_command()
     _read_cmd_buffer.release(1024);
     log_debug_aev("AEvConnection ADD NEW HANDLER");
     _socket.async_read_some(asio::buffer(_read_cmd_buffer.data_top(), _read_cmd_buffer.size_avail()),
-                            wrap_callback([this](std::error_code ec, std::size_t bytes_transferred){
+                            wrap_asio_cb([this](std::error_code ec, std::size_t bytes_transferred){
 
                                 if (ec) {
                                     stop();
@@ -130,7 +130,7 @@ void AEvSmtpSession::_read_data()
     log_debug_aev("AEvConnection ADD NEW HANDLER");
 
     _socket.async_read_some(asio::buffer(_main_smtp_state->message_data->data_top(), _main_smtp_state->message_data->size_avail()),
-                            wrap_callback([this](std::error_code ec, std::size_t bytes_transferred)
+                            wrap_asio_cb([this](std::error_code ec, std::size_t bytes_transferred)
     {
 
                                 if (ec) {
@@ -166,7 +166,7 @@ void AEvSmtpSession::_send_respond(std::string data, ConfirmHendler confirm)
 
     log_debug_aev("AEvConnection ADD NEW HANDLER");
 
-    _socket.async_send(asio::buffer(data), wrap_callback([this, confirm](std::error_code ec, std::size_t bytes_transferred)->void
+    _socket.async_send(asio::buffer(data), wrap_asio_cb([this, confirm](std::error_code ec, std::size_t bytes_transferred)->void
     {
         if (ec) {
             stop();

@@ -20,7 +20,6 @@ public:
     std::string get_line();
     bool is_empty();
     size_t list_size() const;
-    virtual ~SmtpCmdBuffer() = default;
 
 private:
 
@@ -36,7 +35,7 @@ private:
 class SmtpDataBuffer : public PBufferAbstract
 {
 public:
-    using SmtpDataCallback = std::function<void ()>;
+    // using SmtpDataCallback = std::function<void ()>;
     SmtpDataBuffer();
 
     void clear();

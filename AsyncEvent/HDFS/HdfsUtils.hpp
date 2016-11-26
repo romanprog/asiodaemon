@@ -4,10 +4,12 @@
 
 namespace hdfs {
 
-class HdfsUtils
+class utils
 {
 public:
-    HdfsUtils();
+    static bool parse_url(const std::string url_, PUri &res_);
+private:
+    utils() = default;
 };
 
 } // namespace hdfs

@@ -3,6 +3,7 @@
 #include "../DNS/DnsBuffer.hpp"
 #include "../../HUtils/HNet.hpp"
 #include "Modules/BaseMod.hpp"
+#include "../HDFS/AEvHdfs.hpp"
 
 #include "iostream"
 #include <thread>
@@ -79,30 +80,37 @@ void AEvAcceptor::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 void AEvAcceptor::_start_acceept()
 {
     using namespace std::placeholders;
-    _acceptor.async_accept(_socket, wrap_callback(
+    _acceptor.async_accept(_socket, wrap_asio_cb(
                                [this] (std::error_code ec)
-    {
-                               if (ec) {
-                                   stop();
-                                   return;
-                               }
+                               {
+                                    if (ec) {
+                                        stop();
+                                        return;
+                                    }
 
-                               log_debug_aev("conn");
+                                    log_debug_aev("conn");
 
-                                create_child<AEvSmtpSession>(0,
-                                                             std::move(_socket),
-                                                             _handlers_map,
-                                                             std::bind(&AEvAcceptor::_new_message_handler, this, std::placeholders::_1),
-                                                             _main_config);
-                               _start_acceept();
-                           })
-            );
+                                    create_child<AEvSmtpSession>(0, std::move(_socket), _handlers_map,
+                                                            wrap_cb([this](SmtpStatePtr &&message_) {
+                                                                _new_message_handler(std::move(message_));
+                                                            }),_main_config);
+                                    _start_acceept();
+                              })
+                            );
 }
 
 void AEvAcceptor::_new_message_handler(SmtpStatePtr &&message_)
 {
     ++_msg_counter;
     log_main("Acceepted new message. Count: " + std::to_string(_msg_counter));
+    hdfs::Target target_file {"http://localhost:50070", "/tmp/testfile.txt", "hduser"};
+    create_child<AEvHdfsRead>(0, std::move(target_file),
+                              wrap_cb([this](bool er_, std::string er_msg_, BuffPtr && data_)
+    {
+        if (!er_)
+            log_main(std::string(data_->data(), data_->size_filled()));
+        log_debug("HDFS answer");
+    }));
 }
 
 } //namespace

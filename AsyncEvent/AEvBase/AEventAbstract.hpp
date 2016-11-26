@@ -56,9 +56,9 @@ protected:
         static_assert(std::is_base_of<AEventAbstract, AEvDescT>::value,
                       "AEvDescT must be a descendant of AEventAbstract");
 
-        static_assert(std::is_constructible<AEvDescT, AEvChildConf, _Args...>::value,
-                      "Can't construct child object with given params. The "
-                      "first must be AEvChildConf! Please check constructor of descendant class.");
+//        static_assert(std::is_constructible<AEvDescT, AEvChildConf, _Args...>::value,
+//                      "Can't construct child object with given params. The "
+//                      "first must be AEvChildConf! Please check constructor of descendant class.");
 
         AEvPtrBase child_ev = std::make_shared<AEvDescT>(_gen_conf_for_child(timeout), std::forward<_Args>(__args)...);
         _child_ev_list.insert(child_ev);
@@ -68,10 +68,16 @@ protected:
     // Return a function object that, when invoked, passes the wrapped handler to
     // the strand's dispatch function. (see asio::io_service::strand::wrap)
     template <typename T>
-    auto wrap_callback(T&& cb)
+    auto wrap_asio_cb(T&& cb)
     {
         AEvHandlerWrapper<T> res {std::forward<T>(cb), _my_ptr};
         return _ev_loop->wrap(res);
+    }
+    template <typename T>
+    auto wrap_cb(T&& cb)
+    {
+        AEvHandlerWrapper<T> res {std::forward<T>(cb), _my_ptr};
+        return res;
     }
 
     // Registration of AEv vutil deinit function.

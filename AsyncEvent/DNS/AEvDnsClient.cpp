@@ -58,7 +58,7 @@ void AEvDnsClient::_send_request()
         return;
     }
     _socket.async_send_to(asio::buffer(buff.data(), buff.size_filled()), endpoint,
-                          wrap_callback([this](std::error_code ec, std::size_t bytes_sent)
+                          wrap_asio_cb([this](std::error_code ec, std::size_t bytes_sent)
     {
                               if (ec) {
                                   stop();
@@ -79,7 +79,7 @@ void AEvDnsClient::_get_respond()
             return;
         }
         _socket.async_receive_from(asio::buffer(buff.data_top(), buff.size_avail()), endpoint,
-                                   wrap_callback([this](std::error_code ec, std::size_t bytes_sent)
+                                   wrap_asio_cb([this](std::error_code ec, std::size_t bytes_sent)
         {
                                        if (ec) {
                                            stop();
