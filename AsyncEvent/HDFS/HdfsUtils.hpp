@@ -7,7 +7,8 @@ namespace hdfs {
 class utils
 {
 public:
-    static bool parse_url(const std::string url_, PUri &res_);
+    static bool parse_url(const std::string &url_, Endpoint &res_);
+    static bool parse_location(const std::string &lstring_, Location &res_);
 private:
     utils() = default;
 };

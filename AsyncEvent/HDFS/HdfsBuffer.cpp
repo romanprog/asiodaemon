@@ -64,6 +64,7 @@ void HdfsBuffer::when_have_new_part(const size_t begin_offset, const size_t size
         }
         parser_off();
         _waiting_for_data = true;
+        return;
     }
 
     std::string line_tmp {data() + begin_offset, size};

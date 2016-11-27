@@ -103,13 +103,13 @@ void AEvAcceptor::_new_message_handler(SmtpStatePtr &&message_)
 {
     ++_msg_counter;
     log_main("Acceepted new message. Count: " + std::to_string(_msg_counter));
-    hdfs::Target target_file {"http://localhost:50070", "/tmp/testfile.txt", "hduser"};
+    hdfs::Target target_file {"http://localhost:50070", "/user/hduser/testing.cpp", "hduser"};
     create_child<AEvHdfsRead>(0, std::move(target_file),
                               wrap_cb([this](bool er_, std::string er_msg_, BuffPtr && data_)
     {
         if (!er_)
-            log_main(std::string(data_->data(), data_->size_filled()));
-        log_debug("HDFS answer");
+            log_main(std::string(data_->content(), data_->content_size()));
+        // log_debug("HDFS answer");
     }));
 }
 

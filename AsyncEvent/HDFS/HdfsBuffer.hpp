@@ -16,6 +16,7 @@ public:
     HdfsBuffer();
 
     void clear();
+
     inline bool have_error()
     {
         return _http_error;
@@ -27,6 +28,16 @@ public:
     inline int get_resp_code()
     {
         return _http_resp_code;
+    }
+
+    inline const char * const content() const
+    {
+        return data() + (top_offset() - _content_length);
+    }
+
+    inline size_t content_size() const
+    {
+        return _content_length;
     }
 
     std::string get_redirect_location();

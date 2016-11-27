@@ -22,7 +22,7 @@ public:
 protected:
     // Try to connect to hdfs name server. @url_ is full http url.
     // Must contain proto://domain:port ("http://example.com:50075")
-    void connect(const std::string & url_);
+    void connect();
     // Send http query to server. @query_is full http query buffer with all needed headers.
     void send_request(std::shared_ptr<std::string> query_);
     // Calls when connected.
@@ -32,7 +32,7 @@ protected:
     // Calls when any error occur.
     virtual void _on_error(const std::string error_message_) = 0;
     std::shared_ptr<std::string> _full_query_ptr;
-    hdfs::PUri _parsed_url;
+    hdfs::Endpoint _endpoint;
 
 private:
     asio::ip::tcp::socket _socket;
@@ -69,12 +69,10 @@ private:
     std::string __build_uri(const hdfs::Target & ep_);
 
     bool _name_node_in_process {true};
-
-    void _conn_to_namenode();
-    void _conn_to_data_node();
     void _get_data_node_loc();
     void _get_file();
     hdfs::Target _target;
+    hdfs::Location _file_location;
     HdfsReadCb _cb;
 };
 

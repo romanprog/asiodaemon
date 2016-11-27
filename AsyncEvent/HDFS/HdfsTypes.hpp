@@ -40,17 +40,32 @@ struct Target
           filename(std::move(other.filename)),
           username(std::move(other.username))
     {}
+    Target & operator=(Target && other) noexcept
+    {
+        name_node_uri = std::move(other.name_node_uri);
+        filename = std::move(other.filename);
+        username = std::move(other.username);
+        return *this;
+    }
 
     std::string name_node_uri;
     std::string filename;
     std::string username;
 };
-struct PUri
+
+struct Endpoint
 {
     std::string proto;
     std::string domain;
     std::string port;
 };
+
+struct Location
+{
+    Endpoint endpoint;
+    std::string query;
+};
+
 
 } // namespace hdfs
 

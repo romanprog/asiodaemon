@@ -21,13 +21,9 @@ AEvHdfs::~AEvHdfs()
     log_debug("~AEvHdfs DESTRUCTOR");
 }
 
-void AEvHdfs::connect(const std::string &url_)
+void AEvHdfs::connect()
 {
-    // Check uri.
-    if (!hdfs::utils::parse_url(url_, _parsed_url)) {
-        _on_error("Bad uri.");
-        return;
-    }
+    _socket.close();
     _resolve();
 }
 
@@ -54,7 +50,7 @@ void aev::AEvHdfs::_ev_child_callback(AEvPtrBase child_ptr, AEvExitSignal &_ret)
 
 void AEvHdfs::_resolve()
 {
-    res_query = std::make_shared<asio::ip::tcp::resolver::query>(_parsed_url.domain, _parsed_url.port);
+    res_query = std::make_shared<asio::ip::tcp::resolver::query>(_endpoint.domain, _endpoint.port);
     resolver_tmp->async_resolve(*res_query, wrap_asio_cb(
                                    [this](const asio::error_code& ec, asio::ip::tcp::resolver::iterator endpoint_iterator) {
 
@@ -82,7 +78,7 @@ void AEvHdfs::_connect(asio::ip::tcp::resolver::iterator endpoint_iterator)
 
 void AEvHdfs::send_request(std::shared_ptr<std::string> query_)
 {
-    log_main(*query_);
+    // log_main(*query_);
     _socket.async_send(asio::buffer(query_->data(), query_->size()), wrap_asio_cb([this](const asio::error_code& ec, size_t bytes_transferred) {
         if (ec){
             _on_error(ec.message());
@@ -121,13 +117,20 @@ AEvHdfsRead::AEvHdfsRead(AEvChildConf &&config_, hdfs::Target ep_, HdfsReadCb cb
 
 void AEvHdfsRead::_ev_begin()
 {
-    _conn_to_data_node();
+    // Check uri.
+    if (!hdfs::utils::parse_url(_target.name_node_uri, _endpoint)) {
+        _on_error("Bad uri.");
+        return;
+    }
+    connect();
 }
 
 void AEvHdfsRead::_on_connected()
 {
     if (_name_node_in_process)
         _get_data_node_loc();
+    else
+        _get_file();
 }
 
 void AEvHdfsRead::_on_get_respond(BuffPtr buffer_)
@@ -142,9 +145,20 @@ void AEvHdfsRead::_on_get_respond(BuffPtr buffer_)
             _cb(true, "Sync error", nullptr);
             return;
         }
+
+        if (!hdfs::utils::parse_location(buffer_->get_redirect_location(), _file_location)) {
+            _cb(true, "Redirect url error", nullptr);
+            return;
+        }
+        _endpoint = _file_location.endpoint;
+        _name_node_in_process = false;
+        connect();
+        return;
     }
 
     _cb(false, "", std::move(buffer_));
+
+    stop();
 }
 
 void AEvHdfsRead::_on_error(const std::string error_message_)
@@ -154,16 +168,6 @@ void AEvHdfsRead::_on_error(const std::string error_message_)
     stop();
 }
 
-void AEvHdfsRead::_conn_to_namenode()
-{
-
-}
-
-void AEvHdfsRead::_conn_to_data_node()
-{
-    connect(_target.name_node_uri);
-}
-
 void AEvHdfsRead::_get_data_node_loc()
 {
     std::shared_ptr<std::string> request{std::make_shared<std::string>("GET ")};
@@ -171,13 +175,20 @@ void AEvHdfsRead::_get_data_node_loc()
     request->append(_target.filename);
     request->append("?user.name=");
     request->append(_target.username);
-    request->append("&op=OPEN HTTP/1.1\r\nhost: localhost\r\n\r\n");
+    request->append("&op=OPEN HTTP/1.1\r\nhost: ");
+    request->append(_endpoint.domain);
+    request->append("\r\n\r\n");
     send_request(request);
 }
 
 void AEvHdfsRead::_get_file()
 {
-
+    std::shared_ptr<std::string> request{std::make_shared<std::string>("GET ")};
+    request->append(_file_location.query);
+    request->append(" HTTP/1.1\r\nhost: ");
+    request->append(_file_location.endpoint.domain);
+    request->append("\r\n\r\n");
+    send_request(request);
 }
 
 } // namespace aev
