@@ -11,7 +11,7 @@ CLD_LIBS = -lcld2
 
 OPTIMIZATION = -O0
 
-WARNINGS =     \
+WARNINGS  =     \
                 -Wall \
                 -Wno-sign-compare \
                 -Wno-deprecated-register \
